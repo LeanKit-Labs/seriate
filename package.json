@@ -1,0 +1,26 @@
+{
+  "name": "node-mssql-test",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mssql": "~0.5.4",
+    "configya": "~0.0.3",
+    "lodash": "~2.4.1"
+  },
+    "devDependencies": {
+    "mocha": "~1.20.1",
+    "gulp": "~3.8.0",
+    "gulp-mocha": "~0.4.1",
+    "gulp-watch": "~0.6.6-1",
+    "gulp-filter": "~0.4.1",
+    "gulp-less": "~1.2.3",
+    "should": "^4.0.4"
+  }
+
+}
