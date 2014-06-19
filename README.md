@@ -32,7 +32,7 @@ See the specification tests for detailed examples of method use.
 
  * shutdown() - Closes the SQL connection for any open connection objects allocated from getNewConnectionContext calls.
 
- ### Connection Context API
+### Connection Context API
 
   * execQuery(sqlString, doneCallback, parameters) - Executes the passed SQL string. doneCallback will fire on statement completion and accepts an error parameter and the result set from the SQL statement, if any. The parameters argument is optional and only used if the sqlString value contains named "@" parameters. See [below](#paramFormat) for the format used to specify parameter values.
 
@@ -47,5 +47,5 @@ See the specification tests for detailed examples of method use.
   * rollback(doneCallback) - Executes a rollback on the transaction in progress. doneCallback is fired on completion, and accepts a single parameter with error information.
 
 
-  ### <a name="paramFormat"></a>Parameter formats
+ ### <a name="paramFormat"></a>Parameter formats
   Parameters are passed to queries as an array JSON objects. Each object's key is the parameter name that should match an @ variable name in the SQL string. Each value is a sub-object with keys "sqlType" and "value". subType should be one of the supported node-mssql [types](https://github.com/patriksimek/node-mssql#data-types). Currently, the node-mssql module must be reqired to access the variables that represent different data types. This may be fixed in future releases.
