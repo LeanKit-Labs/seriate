@@ -18,6 +18,7 @@ var sqlConn = sql.getNewConnectionContext(config, function(err) {
 		//records contains entire result set in an array of objects with
 		//key values that match the selected column names
 		console.log(records[0].object_id);
+		sql.shutdown(); // close connections
 	});
 });
 ```

@@ -1,5 +1,5 @@
 {
-  "name": "node-mssql-test",
+  "name": "ms-squeal",
   "version": "0.1.0",
   "description": "A cross platform node module for Microsoft SQL Server based on node-mssql",
   "main": "src/mssql-context.js",
