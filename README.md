@@ -47,5 +47,27 @@ See the specification tests for detailed examples of method use.
   * rollback(doneCallback) - Executes a rollback on the transaction in progress. doneCallback is fired on completion, and accepts a single parameter with error information.
 
 
- ### <a name="paramFormat"></a>Parameter formats
+### <a name="paramFormat"></a>Parameter formats
   Parameters are passed to queries as an array JSON objects. Each object's key is the parameter name that should match an @ variable name in the SQL string. Each value is a sub-object with keys "sqlType" and "value". subType should be one of the supported node-mssql [types](https://github.com/patriksimek/node-mssql#data-types). Currently, the node-mssql module must be reqired to access the variables that represent different data types. This may be fixed in future releases.
+
+Parameter example
+
+```js
+var nodemssql = require('mssql');
+var sql = "select * from sys.tables where type_desc = @usertable and is_ms_shipped = @mss";
+
+// ... assume context has been already setup
+context.execQuery(sql, function(err, records) {
+	//process results
+}, [{
+	usertable: {
+		sqlType: nodemssql.NVarChar,
+		value: 'USER_TABLE'
+	}
+}, {
+	mss: {
+		sqlType: nodemssql.Bit,
+		value: true
+	}
+}]);
+```
