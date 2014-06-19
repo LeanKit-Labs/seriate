@@ -1,10 +1,28 @@
 var config = require('configya')('local-config.json');
 var nodemssql = require('mssql');
-var sqlContext = require('../src/mssql-context.js')(config);
+var sqlContext = require('../src/mssql-context.js');
 require('should');
 var _ = require('lodash');
 
 var uniqueRowId = 0;
+
+var getConfig = function() {
+	return {
+		user: config.get('tdsUserName', 'user'),
+		password: config.get('tdsPassword', 'password'),
+		server: config.get('tdsServer', 'localhost'),
+		database: config.get('tdsDatabase', 'master'),
+		pool: {
+			max: 20,
+			min: 0,
+			idleTimeoutMillis: 30000
+		}
+	};
+};
+
+var getContext = function(done) {
+	return sqlContext.getNewConnectionContext(getConfig(), done);
+}
 
 var getTwoParmVals = function(i1Val, v1Val) {
 	return [{
@@ -22,7 +40,7 @@ var getTwoParmVals = function(i1Val, v1Val) {
 
 before(function(done) {
 	//create SQL entities for the test methods to use
-	var beforeContext = sqlContext.getNewExecutionContext(function(err) {
+	var beforeContext = getContext(function(err) {
 		console.log('issuing set single user');
 		beforeContext.execQuery("if db_id('tds_node_test') is not null ALTER DATABASE [tds_node_test] SET SINGLE_USER WITH ROLLBACK IMMEDIATE",
 			function(err, records) {
@@ -55,9 +73,9 @@ describe('SQL transaction ops', function() {
 		var inssql = "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1)";
 		var selsql = "select * from tds_node_test..NodeTestTable where i1 = @i1";
 
-		var ctxTrans = sqlContext.getNewExecutionContext(function(err) {
+		var ctxTrans = getContext(function(err) {
 			(err === null).should.be.true;
-			var ctxNoTrans = sqlContext.getNewExecutionContext(function(err) {
+			var ctxNoTrans = getContext(function(err) {
 				ctxTrans.startTransaction(function(err) {
 					(err === null).should.be.true;
 					ctxTrans.execPrepared(inssql, function(err, records) {
@@ -88,9 +106,9 @@ describe('SQL transaction ops', function() {
 		var inssql = "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1)";
 		var selsql = "select * from tds_node_test..NodeTestTable with (readpast) where i1 = @i1";
 
-		var ctxTrans = sqlContext.getNewExecutionContext(function(err) {
+		var ctxTrans = getContext(function(err) {
 			(err === null).should.be.true;
-			var ctxNoTrans = sqlContext.getNewExecutionContext(function(err) {
+			var ctxNoTrans = getContext(function(err) {
 
 				//start a trasaction in one context and insert a row
 				ctxTrans.startTransaction(function(err) {
@@ -138,7 +156,7 @@ describe('SQL DML ops', function() {
 	it('should retrieve the identity key of an inserted row', function() {
 		var rowId = ++uniqueRowId;
 		var sql = "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1)";
-		var context = sqlContext.getNewExecutionContext(function(err) {
+		var context = getContext(function(err) {
 			context.execPrepared(sql, function(err, records) {
 				if (err) console.log('sql error', err);
 				(err === null).should.be.true;
@@ -156,7 +174,7 @@ describe('SQL DML ops', function() {
 
 		var rowId = ++uniqueRowId;
 		var sql = "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1)";
-		var context = sqlContext.getNewExecutionContext(function(err) {
+		var context = getContext(function(err) {
 			context.execPrepared(sql, function(err, records) {
 				if (err) console.log('sql error', err);
 				(err === null).should.be.true;
@@ -188,7 +206,7 @@ describe('SQL DML ops', function() {
 
 		var rowId = ++uniqueRowId;
 		var sql = "insert into tds_node_test..NodeTestTableNoIdent (bi1, v1, i1) values (55, @v1, @i1)";
-		var context = sqlContext.getNewExecutionContext(function(err) {
+		var context = getContext(function(err) {
 			context.execPrepared(sql, function(err, records) {
 				if (err) console.log('sql error', err);
 				(err === null).should.be.true;
@@ -215,7 +233,7 @@ describe('SQL DML ops', function() {
 describe('prepared statement ops', function() {
 	it('should execute prepared with single param', function() {
 		var sql = "select * from sys.tables where type_desc = @usertable";
-		var context = sqlContext.getNewExecutionContext(function(err) {
+		var context = getContext(function(err) {
 			context.execPrepared(sql, function(err, records) {
 				if (err) console.log('sql error', err);
 				(err === null).should.be.true;
@@ -234,7 +252,7 @@ describe('prepared statement ops', function() {
 
 	it('should execute prepared with multiple params', function() {
 		var sql = "select * from sys.tables where type_desc = @usertable and is_ms_shipped = @mss";
-		var context = sqlContext.getNewExecutionContext(function(err) {
+		var context = getContext(function(err) {
 			context.execPrepared(sql, function(err, records) {
 				if (err) console.log('sql error', err);
 				(err === null).should.be.true;
@@ -261,7 +279,7 @@ describe('basic db select ops', function() {
 
 	it('should exec no param query', function() {
 		var sql = "select 40 + 2 as answer, 'hello world' as greeting";
-		var context = sqlContext.getNewExecutionContext(function(err) {
+		var context = getContext(function(err) {
 			context.execQuery(sql, function(err, records) {
 				if (err) console.log('sql error', err);
 				(err === null).should.be.true;
@@ -274,7 +292,7 @@ describe('basic db select ops', function() {
 
 	it('should exec query with one param', function() {
 		var sql = "select * from sys.tables where type_desc = @usertable";
-		var context = sqlContext.getNewExecutionContext(function(err) {
+		var context = getContext(function(err) {
 			context.execQuery(sql, function(err, records) {
 				if (err) console.log('sql error', err);
 				(err === null).should.be.true;
@@ -293,7 +311,7 @@ describe('basic db select ops', function() {
 
 	it('should exec query with multiple params', function() {
 		var sql = "select * from sys.tables where type_desc = @usertable and is_ms_shipped = @mss";
-		var context = sqlContext.getNewExecutionContext(function(err) {
+		var context = getContext(function(err) {
 			context.execQuery(sql, function(err, records) {
 				if (err) console.log('sql error', err);
 				(err === null).should.be.true;

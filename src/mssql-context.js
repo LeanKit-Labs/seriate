@@ -2,24 +2,8 @@ var nodemssql = require('mssql');
 var _ = require('lodash');
 
 
-var config;
-
-var getConfig = function() {
-	return {
-		user: config.get('tdsUserName', 'kanban_user'),
-		password: config.get('tdsPassword', 'wrathofkhanban.com'),
-		server: config.get('tdsServer', 'localhost'),
-		database: config.get('tdsDatabase', 'master'),
-		pool: {
-			max: 20,
-			min: 0,
-			idleTimeoutMillis: 30000
-		}
-	};
-};
-
-var getConnection = function(done) {
-	var connection = new nodemssql.Connection(getConfig(), function(err) {
+var getConnection = function(connectionConfig, done) {
+	var connection = new nodemssql.Connection(connectionConfig, function(err) {
 		done(err);
 	});
 	return connection;
@@ -56,8 +40,8 @@ var addPsInputs = function(request, params) {
 
 
 
-var SqlContext = function(done) {
-	this.connection = getConnection(done);
+var SqlContext = function(connectionConfig, done) {
+	this.connection = getConnection(connectionConfig, done);
 };
 
 SqlContext.prototype.close = function() {
@@ -140,20 +124,16 @@ SqlContext.prototype.execQuery = function(sql, done, params) {
 
 };
 
-module.exports = function(moduleConfig) {
-	config = moduleConfig;
-	var allCtx = [];
-	return {
-		getNewExecutionContext: function(done) {
-			var newctx = new SqlContext(done);
-			allCtx.push(newctx);
-			return newctx;
-		},
-		shutdown: function() {
-			_.forEach(allCtx, function(ctx) {
-				ctx.close();
-			})
-		}
+var allCtx = [];
+module.exports = {
+	getNewConnectionContext: function(connectionConfig, done) {
+		var newctx = new SqlContext(connectionConfig, done);
+		allCtx.push(newctx);
+		return newctx;
+	},
+	shutdown: function() {
+		_.forEach(allCtx, function(ctx) {
+			ctx.close();
+		})
 	}
-
-}
+};
