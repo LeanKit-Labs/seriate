@@ -1,13 +1,10 @@
 {
   "name": "node-mssql-test",
-  "version": "0.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
+  "version": "0.1.0",
+  "description": "A cross platform node module for Microsoft SQL Server based on node-mssql",
+  "main": "src/mssql-context.js",
+  "author": "Scott Walters",
+  "license": "MIT License - http://opensource.org/licenses/MIT",
   "dependencies": {
     "mssql": "~0.5.4",
     "configya": "~0.0.3",
@@ -20,7 +17,7 @@
     "gulp-watch": "~0.6.6-1",
     "gulp-filter": "~0.4.1",
     "gulp-less": "~1.2.3",
-    "should": "^4.0.4"
+    "should": "~4.0.4"
   }
 
 }
