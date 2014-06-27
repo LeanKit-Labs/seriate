@@ -209,7 +209,26 @@ This is a shortcut method to getting a `SqlContext` instance to execute one step
 		console.log( err );
 	} );
 
-##Getting Setup/Testing/etc.
+##So How Does This Work?
+Read this far, eh? Great - now we can talk about how it works under the hood.
+
+###Contexts as Acceptor-style FSMs
+The `SqlContext` constructor function is derived from `machina.Fsm` (the constructor function used to create a finite state machine in the [`machina`](https://github.com/ifandelse/machina.js) library). `SqlContext` starts with only the following states: `uninitialized`, `connecting`, `done` and `error`. The FSM loosely acts as an acceptor-style FSM - with each step resulting in either a success or error result, determining if it continues on to the eventual `done` state, or lands in `error`.
+
+###Adding Steps -> Adding States to the FSM
+When you use the `step` call to add a step to the context, the `alias` you provide becomes a new state name which is added to the underlying FSM, and the action you specify via the `queryOptions` argument (or the alternative syntax using the callback that takes the `execute` continuation), becomes the entry action for this new state. Success and error input handlers are also added to this state, and are triggered based on the results of the call to the database that occurs in the entry action. The new state names you add are queued up in a `pipeline` array, so that the order in which you added them can be maintained once the FSM begins executing.
+
+###Starting Execution
+Once you've added the steps you want executed as part of the unit of work, you have to use the `end` or `error` calls to start execution. Under the hood, calling either `end` or `error` results in the FSM being told to handle a `start` input. Let's pretend you have a `SqlContext`, and you've added two steps to it: `readCustomer` and `updateContact`. The FSM starts in the uninitialized state, and once it receives the `start` input, proceeds to the `connecting` state where it opens a connection to the database. Assuming a successful connection, it then proceeds to the `readUsers` state added by our first step. Again, assuming success, the next state would be `updateContact`, and finally the `done` state. As the FSM enters the `done` state, it emits the result to the callback passed to `end`. If any state encounters an error along the way, it transitions to the `error` state. Upon entering the `error` state, the FSM emits the error to the callback passed to `error`. Here's a directed graph showing the scenario I just described (the states that are always part of the FSM are in blue, and the ones added by the :
+
+![](SqlContextFSM.png)
+
+###TransactionContext Flow
+The `TransactionContext` is mostly identical to the SqlContext, except that it has an extra state after `connecting` - the `startingTransaction` state. Here's the same scenario we described above in a `TransactionContext`:
+
+![](TransactionContextFSM.png)
+
+##Getting Set Up/Testing/etc.
 
 * You'll need to run `npm install` at the root of this project once you clone it to install the dependencies.
 * To run unit tests: `npm test`
