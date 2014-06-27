@@ -7,7 +7,6 @@
 
 var expect = require( 'expect.js' );
 var sinon = require( 'sinon' );
-require( 'mocha-sinon' ); //?
 expect = require( 'sinon-expect' ).enhance( expect, sinon, 'was' );
 var records = require( './fakeRecordSet.json' );
 

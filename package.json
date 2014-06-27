@@ -1,10 +1,18 @@
 {
 	"name": "ms-squeal",
-	"version": "0.1.0",
-	"description": "A cross platform node module for Microsoft SQL Server based on node-mssql",
-	"main": "src/mssql-context.js",
-	"author": "Scott Walters",
+	"version": "0.2.0",
+	"description": "A cross platform module for Microsoft SQL Server that wraps the mssql module",
+	"main": "src/index.js",
+	"author": "LeanKit",
 	"license": "MIT License - http://opensource.org/licenses/MIT",
+	"contributors": [ {
+		"name": "Scott Walters",
+		"email": "scott.walters@leankit.com"
+    }, {
+		"name": "Jim Cowart",
+		"email": "jim.cowart@leankit.com",
+		"url": "http://freshbrewedcode.com/jimcowart"
+    } ],
 	"dependencies": {
 		"configya": "~0.0.4",
 		"lodash": "~2.4.1",
@@ -21,9 +29,6 @@
 		"gulp-mocha": "~0.4.1",
 		"gulp-watch": "~0.6.6-1",
 		"mocha": "~1.20.1",
-		"mocha-sinon": "^1.1.3",
-		"proxyquire": "^1.0.1",
-		"should": "~4.0.4",
 		"sinon": "^1.10.2",
 		"sinon-expect": "^0.2.0"
 	},

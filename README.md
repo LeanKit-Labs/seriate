@@ -30,3 +30,6 @@ An example `connectionConfig` argument looks like this:
 		}
 	}
 
+This method returns a `TransactionContext` instance, and allows you to add 1 or more steps to the context, with each step representing a query/command that should executed in the database.
+
+

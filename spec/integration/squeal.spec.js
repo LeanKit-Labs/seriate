@@ -1,7 +1,6 @@
 /* global describe,before,it */
 var expect = require( "expect.js" );
 var sinon = require( "sinon" );
-require( "mocha-sinon" ); //?
 expect = require( "sinon-expect" ).enhance( expect, sinon, "was" );
 
 var Monologue = require( "monologue.js" );
