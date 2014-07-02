@@ -1,0 +1,11 @@
+{
+	"server": "10.0.1.4",
+	"user": "nodejs",
+	"password": "nodejs",
+	"database": "master",
+	"pool": {
+		"max": 10,
+		"min": 4,
+		"idleTimeoutMillis": 30000
+	}
+}
