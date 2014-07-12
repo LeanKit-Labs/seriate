@@ -16,13 +16,28 @@ The follow methods are exposed on the module:
 
 ###getPlainContext(connectionConfig)
 
-An example `connectionConfig` argument looks like this:
+An example `connectionConfig` using SQL authentication looks like this:
 
 	{
 		"server": "127.0.0.1",
 		"user": "nodejs",
 		"password": "mypassword",
 		"database": "master",
+		"pool": {
+			"max": 10,
+			"min": 4,
+			"idleTimeoutMillis": 30000
+		}
+	}
+
+An example `connectionConfig` using Trusted/NTLM authentication looks like this:
+
+	{
+		"server": "127.0.0.1",
+		"user": "windowsUser",
+		"password": "windowsUserPassword",
+		"database": "master",
+		"domain": "yourDomain", // should be machine name if the server is not in an AD domain
 		"pool": {
 			"max": 10,
 			"min": 4,

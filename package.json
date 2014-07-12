@@ -1,6 +1,6 @@
 {
 	"name": "ms-squeal",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "A cross platform module for Microsoft SQL Server that wraps the mssql module",
 	"main": "src/index.js",
 	"author": "LeanKit",
@@ -12,13 +12,17 @@
 		"name": "Jim Cowart",
 		"email": "jim.cowart@leankit.com",
 		"url": "http://freshbrewedcode.com/jimcowart"
+    }, {
+    	"name": "Alex Robson",
+    	"email": "asrobson@gmail.com",
+    	"url": "http://nerdventure.io"
     } ],
 	"dependencies": {
-		"configya": "~0.0.4",
+		"configya": "~0.0.5",
 		"lodash": "~2.4.1",
 		"machina": "ifandelse/machina.js",
 		"monologue.js": "^0.2.1",
-		"mssql": "~0.5.4",
+		"mssql": "~1.1.0",
 		"when": "^3.2.3"
 	},
 	"devDependencies": {
