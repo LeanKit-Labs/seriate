@@ -1,16 +1,12 @@
-var sql = require( 'mssql' );
-var Monologue = require( 'monologue.js' );
-var machina = require( 'machina' )();
-var SqlContext = require( '../src/SqlContext.js' )( sql, Monologue, machina );
-var TransactionContext = require( '../src/TransactionContext.js' )( sql, SqlContext );
-var squeal = require( '../src/index.js' )( sql, SqlContext, TransactionContext );
-
+var sql = require( '../src/index.js' );
+console.log( 'sql', sql);
 var mod = {};
 
-squeal.getTransactionContext( {
+sql.getTransactionContext( {
 	user: 'nodejs',
 	password: 'nodejs',
 	server: '10.0.1.4',
+	// domain: '', // - uncomment to test NTLM
 	database: 'master'
 } )
 	.step( 'readTables', function( execute ) {

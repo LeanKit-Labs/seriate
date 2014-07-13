@@ -1,9 +1,10 @@
 {
-	"name": "ms-squeal",
+	"name": "seriate",
 	"version": "0.3.0",
-	"description": "A cross platform module for Microsoft SQL Server that wraps the mssql module",
+	"description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
 	"main": "src/index.js",
 	"author": "LeanKit",
+	"homepage": "http://github.com/leankit-labs/seriate",
 	"license": "MIT License - http://opensource.org/licenses/MIT",
 	"contributors": [ {
 		"name": "Scott Walters",
@@ -21,9 +22,9 @@
 		"configya": "~0.0.5",
 		"lodash": "~2.4.1",
 		"machina": "ifandelse/machina.js",
-		"monologue.js": "^0.2.1",
+		"monologue.js": "0.2.1",
 		"mssql": "~1.1.0",
-		"when": "^3.2.3"
+		"when": "3.2.3"
 	},
 	"devDependencies": {
 		"expect.js": "~0.2.0",
@@ -38,7 +39,7 @@
 	},
 	"scripts": {
 		"test": "gulp test",
-		"intspec": "mocha ./spec/integration/squeal.spec.js --reporter spec",
+		"intspec": "mocha ./spec/integration/seriate.spec.js --reporter spec",
 		"example": "node ./example/example.js"
 	}
 }

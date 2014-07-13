@@ -13,7 +13,7 @@ var records = require( './fakeRecordSet.json' );
 var Monologue = require( 'monologue.js' );
 var machina = require( 'machina' )();
 var sql = require( 'mssql' );
-var SqlContext = require( '../../src/SqlContext.js' )( sql, Monologue, machina );
+var SqlContext = require( '../../src/sqlContext.js' )( sql, Monologue, machina );
 
 describe( 'With Successful SqlContext Executions', function() {
 	var reqStub;

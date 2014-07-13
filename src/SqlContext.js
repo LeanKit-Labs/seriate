@@ -6,7 +6,7 @@ var Monologue;
 
 function errorHandler( err ) {
 	console.log( "ERR" );
-	console.log( err );
+	console.log( err.stack );
 	this.err = err;
 	this.transition( "Error" );
 }
