@@ -1,14 +1,10 @@
 /* global describe,before,it */
 var expect = require( "expect.js" );
 var sinon = require( "sinon" );
+var sql = require( 'mssql' );
 expect = require( "sinon-expect" ).enhance( expect, sinon, "was" );
 
-var Monologue = require( "monologue.js" );
-var machina = require( "machina" )();
-var sql = require( "mssql" );
-var SqlContext = require( "../../src/SqlContext.js" )( sql, Monologue, machina );
-var TransactionContext = require( "../../src/TransactionContext.js" )( sql, SqlContext );
-var squeal = require( "../../src/index.js" )( sql, SqlContext, TransactionContext );
+var seriate = require( "../../src/index.js" );
 var config = require( "./local-config.json" );
 var getRowId = ( function() {
 	var _id = 0;
@@ -17,10 +13,10 @@ var getRowId = ( function() {
 	};
 }() );
 
-describe( "Squeal Integration Tests", function() {
+describe( "Seriate Integration Tests", function() {
 	before( function( done ) {
 		this.timeout( 20000 );
-		squeal
+		seriate
 			.getPlainContext( config )
 			.step( "DropDatabase", {
 				query: "if db_id('tds_node_test') is not null drop database tds_node_test"
@@ -54,7 +50,7 @@ describe( "Squeal Integration Tests", function() {
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
-					squeal.execute( config, {
+					seriate.execute( config, {
 						preparedSql: "select * from tds_node_test..NodeTestTable where i1 = @i1",
 						params: {
 							i1: {
@@ -70,7 +66,7 @@ describe( "Squeal Integration Tests", function() {
 						done();
 					} );
 				};
-				context = squeal
+				context = seriate
 					.getTransactionContext( config )
 					.step( "insert", {
 						preparedSql: "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1); select SCOPE_IDENTITY() AS NewId;",
@@ -117,7 +113,7 @@ describe( "Squeal Integration Tests", function() {
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
-					squeal.execute( config, {
+					seriate.execute( config, {
 						preparedSql: "select * from tds_node_test..NodeTestTable where i1 = @i1",
 						params: {
 							i1: {
@@ -133,7 +129,7 @@ describe( "Squeal Integration Tests", function() {
 						done();
 					} );
 				};
-				context = squeal
+				context = seriate
 					.getTransactionContext( config )
 					.step( "insert", {
 						preparedSql: "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1)",
@@ -177,7 +173,7 @@ describe( "Squeal Integration Tests", function() {
 		before( function( done ) {
 			id = getRowId();
 			insertCheck = function( done ) {
-				squeal.execute( config, {
+				seriate.execute( config, {
 					preparedSql: "select * from tds_node_test..NodeTestTable where i1 = @i1",
 					params: {
 						i1: {
@@ -191,7 +187,7 @@ describe( "Squeal Integration Tests", function() {
 				} );
 			};
 			updateCheck = function( done ) {
-				squeal.execute( config, {
+				seriate.execute( config, {
 					preparedSql: "select * from tds_node_test..NodeTestTable where i1 = @i1",
 					params: {
 						i1: {
@@ -205,7 +201,7 @@ describe( "Squeal Integration Tests", function() {
 				} );
 			};
 			updateCmd = function( done ) {
-				squeal.execute( config, {
+				seriate.execute( config, {
 					preparedSql: "update tds_node_test..NodeTestTable set v1 = @v1 where i1 = @i1",
 					params: {
 						i1: {
@@ -223,7 +219,7 @@ describe( "Squeal Integration Tests", function() {
 					updateErr = err;
 				} );
 			};
-			squeal.execute( config, {
+			seriate.execute( config, {
 				preparedSql: "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1)",
 				params: {
 					i1: {

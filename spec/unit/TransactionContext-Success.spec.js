@@ -13,8 +13,8 @@ var records = require( './fakeRecordSet.json' );
 var Monologue = require( 'monologue.js' );
 var machina = require( 'machina' )();
 var sql = require( 'mssql' );
-var SqlContext = require( '../../src/SqlContext.js' )( sql, Monologue, machina );
-var TransactionContext = require( '../../src/TransactionContext.js' )( sql, SqlContext );
+var SqlContext = require( '../../src/sqlContext.js' )( sql, Monologue, machina );
+var TransactionContext = require( '../../src/transactionContext.js' )( sql, SqlContext );
 
 describe( 'With Successful TransactionContext Executions', function() {
 	var reqStub;
