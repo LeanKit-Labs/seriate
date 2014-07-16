@@ -5,10 +5,8 @@ var sql;
 var Monologue;
 
 function errorHandler( err ) {
-	console.log( "ERR" );
-	console.log( err.stack );
 	this.err = err;
-	this.transition( "Error" );
+	this.transition( "error" );
 }
 
 function nonPreparedSql( options ) {
@@ -167,6 +165,7 @@ module.exports = function( mssql, MonologueCtor, mach ) {
 					if ( this.connection.close ) {
 						this.connection.close();
 					}
+					this.err.message = "Seriate SqlContext Error. Failed on step '" + this.priorState + "'." + this.err.message;
 					this.emit( "error", this.err );
 				}
 			}
