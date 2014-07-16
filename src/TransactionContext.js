@@ -20,13 +20,13 @@ module.exports = function( sql, SqlContext ) {
 					this.transaction = this.transaction || new sql.Transaction( this.connection );
 					var args = [
 
-					function( err ) {
+ function( err ) {
 							if ( err ) {
 								this.handle( 'error', err );
 							} else {
 								this.handle( 'success' );
 							}
-				}.bind( this ) ];
+}.bind( this ) ];
 					if ( this.isolationLevel ) {
 						args.shift( this.isolationLevel );
 					}
