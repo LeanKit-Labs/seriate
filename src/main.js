@@ -12,10 +12,11 @@ function promisify( context, queryOptions ) {
 	} );
 }
 
-module.exports = function( SqlContextCtor, TransactionContextCtor ) {
+module.exports = function( mssql, SqlContextCtor, TransactionContextCtor ) {
 	SqlContext = SqlContextCtor;
 	TransactionContext = TransactionContextCtor;
 	return {
+		sql: mssql,
 		getTransactionContext: function( config ) {
 			return new TransactionContext( {
 				connectionCfg: config
