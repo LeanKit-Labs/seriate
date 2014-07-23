@@ -295,7 +295,7 @@ The `TransactionContext` is mostly identical to the SqlContext, except that it h
 ```
 
 ## Sql Constants
-// Pascal and Upper case verisons listed
+Pascal and Upper case properties:
 ```javascript
 VarChar 				VARCHAR
 NVarChar 				NVARCHAR
