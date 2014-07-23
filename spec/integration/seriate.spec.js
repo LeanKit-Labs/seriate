@@ -1,10 +1,9 @@
 /* global describe,before,it */
 var expect = require( "expect.js" );
 var sinon = require( "sinon" );
-var sql = require( 'mssql' );
 expect = require( "sinon-expect" ).enhance( expect, sinon, "was" );
 
-var seriate = require( "../../src/index.js" );
+var sql = require( "../../src/index.js" );
 var config = require( "./local-config.json" );
 var getRowId = ( function() {
 	var _id = 0;
@@ -16,8 +15,7 @@ var getRowId = ( function() {
 describe( "Seriate Integration Tests", function() {
 	before( function( done ) {
 		this.timeout( 20000 );
-		seriate
-			.getPlainContext( config )
+		sql.getPlainContext( config )
 			.step( "DropDatabase", {
 				query: "if db_id('tds_node_test') is not null drop database tds_node_test"
 			} )
@@ -50,7 +48,7 @@ describe( "Seriate Integration Tests", function() {
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
-					seriate.execute( config, {
+					sql.execute( config, {
 						preparedSql: "select * from tds_node_test..NodeTestTable where i1 = @i1",
 						params: {
 							i1: {
@@ -66,7 +64,7 @@ describe( "Seriate Integration Tests", function() {
 						done();
 					} );
 				};
-				context = seriate
+				context = sql
 					.getTransactionContext( config )
 					.step( "insert", {
 						preparedSql: "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1); select SCOPE_IDENTITY() AS NewId;",
@@ -113,7 +111,7 @@ describe( "Seriate Integration Tests", function() {
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
-					seriate.execute( config, {
+					sql.execute( config, {
 						preparedSql: "select * from tds_node_test..NodeTestTable where i1 = @i1",
 						params: {
 							i1: {
@@ -129,7 +127,7 @@ describe( "Seriate Integration Tests", function() {
 						done();
 					} );
 				};
-				context = seriate
+				context = sql
 					.getTransactionContext( config )
 					.step( "insert", {
 						preparedSql: "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1)",
@@ -173,7 +171,7 @@ describe( "Seriate Integration Tests", function() {
 		before( function( done ) {
 			id = getRowId();
 			insertCheck = function( done ) {
-				seriate.execute( config, {
+				sql.execute( config, {
 					preparedSql: "select * from tds_node_test..NodeTestTable where i1 = @i1",
 					params: {
 						i1: {
@@ -187,7 +185,7 @@ describe( "Seriate Integration Tests", function() {
 				} );
 			};
 			updateCheck = function( done ) {
-				seriate.execute( config, {
+				sql.execute( config, {
 					preparedSql: "select * from tds_node_test..NodeTestTable where i1 = @i1",
 					params: {
 						i1: {
@@ -201,7 +199,7 @@ describe( "Seriate Integration Tests", function() {
 				} );
 			};
 			updateCmd = function( done ) {
-				seriate.execute( config, {
+				sql.execute( config, {
 					preparedSql: "update tds_node_test..NodeTestTable set v1 = @v1 where i1 = @i1",
 					params: {
 						i1: {
@@ -219,7 +217,7 @@ describe( "Seriate Integration Tests", function() {
 					updateErr = err;
 				} );
 			};
-			seriate.execute( config, {
+			sql.execute( config, {
 				preparedSql: "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1)",
 				params: {
 					i1: {
