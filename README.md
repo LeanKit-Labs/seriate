@@ -14,6 +14,15 @@ The follow methods are exposed on the module:
 |`executeTransaction(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a transaction context
 |`execute(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a plain (transaction-less) context.
 
+### Sql Constants
+In some examples, you'll notice the use of type constants for parameterized sql and stored procedures. Those can be accessed by requiring in a module that only exposes those constants:
+
+```javascript
+var sql = require( 'seriate/sql' );
+```
+
+Constants are exposed in both Pascal Case and all capitals. See the listing at the end of this document.
+
 ###getPlainContext(connectionConfig)
 
 An example `connectionConfig` using SQL authentication looks like this:
@@ -194,6 +203,8 @@ You can see that the main difference between a `SqlContext` and `TransactionCont
 This is a shortcut method to getting a `TransactionContext` instance to execute one step. It returns a promise, and the `result` argument that's normally fed to the `end` method's callback is passed to the success handler of the promise, and any errors are passed to the error handler. For example:
 
 ```javascript
+var sql = require( 'seriate/sql' );
+
 seriate.executeTransaction( config, {
 	procedure: "UpdateCustomer",
 	params: {
@@ -224,6 +235,8 @@ seriate.executeTransaction( config, {
 This is a shortcut method to getting a `SqlContext` instance to execute one step. It returns a promise, and the `result` argument that's normally fed to the `end` method's callback is passed to the success handler of the promise, and any errors are passed to the error handler. For example:
 
 ```javascript
+var sql = require( 'seriate/sql' );
+
 seriate.execute( config, {
 	preparedSql: "select * from someTable where id = @id",
 	params: {
@@ -281,3 +294,39 @@ The `TransactionContext` is mostly identical to the SqlContext, except that it h
 }
 ```
 
+## Sql Constants
+// Pascal and Upper case verisons listed
+```javascript
+VarChar 				VARCHAR
+NVarChar 				NVARCHAR
+Text 					TEXT
+Int 					INT
+BigInt 					BIGINT
+TinyInt					TINYINT
+SmallInt 				SMALLINT
+Bit 					BIT
+Float 					FLOAT
+Numeric 				NUMERIC
+Decimal 				DECIMAL
+Real 					REAL
+Date 					DATE
+DateTime 				DATETIME
+DateTime2 				DATETIME2
+DateTimeOffset 			DATETIMEOFFSET
+SmallDateTime 			SMALLDATETIME
+Time 					TIME
+UniqueIdentifier 		UNIQUEIDENTIFIER
+SmallMoney 				SMALLMONEY
+Money 					MONEY
+Binary 					BINARY
+VarBinary				VARBINARY
+Image					IMAGE
+Xml 					XML
+Char 					CHAR
+NChar 					NCHAR
+NText					NTEXT
+						TVP			
+						UDT			
+Geography				GEOGRAPHY
+Geometry				GEOMETRY
+```
