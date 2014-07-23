@@ -14,14 +14,7 @@ The follow methods are exposed on the module:
 |`executeTransaction(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a transaction context
 |`execute(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a plain (transaction-less) context.
 
-### Sql Constants
-In some examples, you'll notice the use of type constants for parameterized sql and stored procedures. Those can be accessed by requiring in a module that only exposes those constants:
-
-```javascript
-var sql = require( 'seriate/sql' );
-```
-
-Constants are exposed in both Pascal Case and all capitals. See the listing at the end of this document.
+Sql type constants are exposed in both Pascal Case and all capitals off of the library. See the listing at the end of this document.
 
 ###getPlainContext(connectionConfig)
 
@@ -65,7 +58,7 @@ This method returns a `TransactionContext` instance, and allows you to add 1 or 
 Here's an example of using a plain context to read a table:
 
 ```javascript
-seriate.getPlainContext( {
+sql.getPlainContext( {
 	user: 'username',
 	password: 'pwd',
 	server: '127.0.0.1',
@@ -113,7 +106,7 @@ The `end` method of a `SqlContext` instance takes a callback which receives a `s
 Here's an example of using a plain context to read a table, and then use data from that read to determine details about the next step:
 
 ```javascript
-seriate.getPlainContext( {
+sql.getPlainContext( {
 	user: 'username',
 	password: 'pwd',
 	server: '127.0.0.1',
@@ -152,7 +145,7 @@ The above example shows both `step` approaches side-by-side.
 The `getTransactionContext` method returns a `TransactionContext` instance - which for the most part is nearly identical to a `SqlContext` instance - however, a transaction is started as the context begins its work, and you have the option to commit or rollback in the `end` method's callback. For example:
 
 ```javascript
-seriate.getTransactionContext( {
+sql.getTransactionContext( {
 	user: 'username',
 	password: 'pwd',
 	server: '127.0.0.1',
@@ -203,9 +196,7 @@ You can see that the main difference between a `SqlContext` and `TransactionCont
 This is a shortcut method to getting a `TransactionContext` instance to execute one step. It returns a promise, and the `result` argument that's normally fed to the `end` method's callback is passed to the success handler of the promise, and any errors are passed to the error handler. For example:
 
 ```javascript
-var sql = require( 'seriate/sql' );
-
-seriate.executeTransaction( config, {
+sql.executeTransaction( config, {
 	procedure: "UpdateCustomer",
 	params: {
 		customerid: {
@@ -235,9 +226,7 @@ seriate.executeTransaction( config, {
 This is a shortcut method to getting a `SqlContext` instance to execute one step. It returns a promise, and the `result` argument that's normally fed to the `end` method's callback is passed to the success handler of the promise, and any errors are passed to the error handler. For example:
 
 ```javascript
-var sql = require( 'seriate/sql' );
-
-seriate.execute( config, {
+sql.execute( config, {
 	preparedSql: "select * from someTable where id = @id",
 	params: {
 		id: {
