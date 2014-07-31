@@ -21,7 +21,7 @@
 	"dependencies": {
 		"configya": "~0.0.5",
 		"lodash": "~2.4.1",
-		"machina": "ifandelse/machina.js",
+		"machina": "~0.3.8",
 		"monologue.js": "0.2.1",
 		"mssql": "~1.1.0",
 		"when": "3.2.3"
