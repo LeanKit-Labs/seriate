@@ -1,6 +1,6 @@
 {
 	"name": "seriate",
-	"version": "0.3.2",
+	"version": "0.3.3",
 	"description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
 	"main": "src/index.js",
 	"author": "LeanKit",
@@ -19,7 +19,7 @@
     	"url": "http://nerdventure.io"
     } ],
 	"dependencies": {
-		"configya": "~0.0.5",
+		"configya": "~0.0.9",
 		"lodash": "~2.4.1",
 		"machina": "~0.3.8",
 		"monologue.js": "0.2.1",
