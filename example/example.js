@@ -1,11 +1,10 @@
 var sql = require( '../src/index.js' );
-console.log( 'sql', sql);
 var mod = {};
 
 sql.getTransactionContext( {
 	user: 'nodejs',
 	password: 'nodejs',
-	server: '10.0.1.4',
+	server: '10.0.1.15',
 	// domain: '', // - uncomment to test NTLM
 	database: 'master'
 } )
@@ -43,11 +42,11 @@ sql.getTransactionContext( {
 			}
 		} );
 	} ).error( function( err ) {
-		console.log( 'O NOES! \n %s', err );
-	} ).end( function( ctx ) {
-		console.log( 'All Steps Complete' );
-		console.log( Object.keys( ctx ) );
-		console.log( 'We are done here. Control+C gets you out.' );
-	} );
+	console.log( 'O NOES! \n %s', err );
+} ).end( function( ctx ) {
+	console.log( 'All Steps Complete' );
+	console.log( Object.keys( ctx ) );
+	console.log( 'We are done here. Control+C gets you out.' );
+} );
 
 module.exports = mod;

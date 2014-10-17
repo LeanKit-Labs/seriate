@@ -1,6 +1,6 @@
 {
   "name": "seriate",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
   "main": "src/index.js",
   "author": "LeanKit",
@@ -14,7 +14,7 @@
     {
       "name": "Jim Cowart",
       "email": "jim.cowart@leankit.com",
-      "url": "http://freshbrewedcode.com/jimcowart"
+      "url": "http://ifandelse.com"
     },
     {
       "name": "Alex Robson",
@@ -46,5 +46,9 @@
     "test": "gulp test",
     "intspec": "mocha ./spec/integration/seriate.spec.js --reporter spec",
     "example": "node ./example/example.js"
-  }
+  },
+  "files" : [
+    "LICENSE",
+    "src"
+  ]
 }

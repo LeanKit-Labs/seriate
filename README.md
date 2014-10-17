@@ -13,6 +13,7 @@ The follow methods are exposed on the module:
 |`getTransactionContext(connectionConfig)` | returns a context associating *one* transaction with a connection.
 |`executeTransaction(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a transaction context
 |`execute(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a plain (transaction-less) context.
+|`fromFile(path)` | Allows you to read a `.sql` file instead of in-lining your SQL in your JavaScript.
 
 Sql type constants are exposed in both Pascal Case and all capitals off of the library. See the listing at the end of this document.
 
@@ -66,6 +67,9 @@ sql.getPlainContext( {
 })
 .step( 'readUsers', {
 	query: 'select * From sys.sysusers'
+	// optionally you could do this if the
+	// above query were in a readUsers.sql file
+	// query: sql.fromFile( 'readUsers' );
 })
 .end(function(sets){
 	// sets has a "readUsers" property
@@ -314,8 +318,8 @@ Xml 					XML
 Char 					CHAR
 NChar 					NCHAR
 NText					NTEXT
-						TVP			
-						UDT			
+						TVP
+						UDT
 Geography				GEOGRAPHY
 Geometry				GEOMETRY
 ```
