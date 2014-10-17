@@ -1,8 +1,8 @@
-var when = require( 'when' );
+var when = require( "when" );
 
 function errorHandler( err ) {
 	this.err = err;
-	this.transition( 'Error' );
+	this.transition( "Error" );
 }
 
 module.exports = function( sql, SqlContext ) {
@@ -10,23 +10,21 @@ module.exports = function( sql, SqlContext ) {
 	var TransactionContext = SqlContext.extend( {
 		states: {
 			uninitialized: {
-				'start': 'connecting'
+				"start": "connecting"
 			},
 			connecting: {
-				success: 'startingTransaction'
+				success: "startingTransaction"
 			},
 			startingTransaction: {
 				_onEnter: function() {
 					this.transaction = this.transaction || new sql.Transaction( this.connection );
-					var args = [
-
- function( err ) {
+					var args = [ function( err ) {
 							if ( err ) {
-								this.handle( 'error', err );
+								this.handle( "error", err );
 							} else {
-								this.handle( 'success' );
+								this.handle( "success" );
 							}
-}.bind( this ) ];
+					}.bind( this ) ];
 					if ( this.isolationLevel ) {
 						args.shift( this.isolationLevel );
 					}
@@ -40,7 +38,7 @@ module.exports = function( sql, SqlContext ) {
 			done: {
 				_onEnter: function() {
 					var self = this;
-					self.emit( 'end', {
+					self.emit( "end", {
 						sets: self.results,
 						transaction: {
 							commit: function() {
