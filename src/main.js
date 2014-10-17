@@ -1,15 +1,17 @@
-var when = require( 'when' );
+var when = require( "when" );
+var fs = require( "fs" );
+var path = require( "path" );
 var SqlContext;
 var TransactionContext;
 
 function promisify( context, queryOptions ) {
-	context.step( 'result', queryOptions );
+	context.step( "result", queryOptions );
 	return when.promise( function( resolve, reject, notify ) {
-		context
-			.end( resolve )
-			.error( reject )
-			.on( 'data', notify );
-	} );
+			context
+				.end( resolve )
+				.error( reject )
+				.on( "data", notify );
+		} );
 }
 
 module.exports = function( SqlContextCtor, TransactionContextCtor ) {
@@ -18,23 +20,28 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 	return {
 		getTransactionContext: function( config ) {
 			return new TransactionContext( {
-				connectionCfg: config
-			} );
+					connectionCfg: config
+				} );
 		},
 		getPlainContext: function( config ) {
 			return new SqlContext( {
-				connectionCfg: config
-			} );
+					connectionCfg: config
+				} );
 		},
 		executeTransaction: function( connCfg, queryOptions ) {
 			return promisify( new TransactionContext( {
-				connectionCfg: connCfg
-			} ), queryOptions );
+					connectionCfg: connCfg
+				} ), queryOptions );
 		},
 		execute: function( connCfg, queryOptions ) {
 			return promisify( new SqlContext( {
-				connectionCfg: connCfg
-			} ), queryOptions );
+					connectionCfg: connCfg
+				} ), queryOptions );
+		},
+		fromFile: function( p ) {
+			var ext = path.extname( p );
+			p = ( ext === "." ) ? ( p + "sql" ) : ( ext.length === 0 ) ? p + ".sql" : p;
+			return fs.readFileSync( p, { encoding: "utf8" } );
 		}
 	};
 };
