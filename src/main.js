@@ -8,11 +8,11 @@ var callsite = require( "callsite" );
 function promisify( context, queryOptions ) {
 	context.step( "result", queryOptions );
 	return when.promise( function( resolve, reject, notify ) {
-			context
-				.end( resolve )
-				.error( reject )
-				.on( "data", notify );
-		} );
+		context
+			.end( resolve )
+			.error( reject )
+			.on( "data", notify );
+	} );
 }
 
 function isAbsolutePath( p ) {
@@ -35,13 +35,13 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 		},
 		executeTransaction: function( connCfg, queryOptions ) {
 			return promisify( new TransactionContext( {
-					connectionCfg: connCfg
-				} ), queryOptions );
+				connectionCfg: connCfg
+			} ), queryOptions );
 		},
 		execute: function( connCfg, queryOptions ) {
 			return promisify( new SqlContext( {
-					connectionCfg: connCfg
-				} ), queryOptions );
+				connectionCfg: connCfg
+			} ), queryOptions );
 		},
 		fromFile: function( p ) {
 			// If we're not dealing with an absolute path, then we

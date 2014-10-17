@@ -21,14 +21,14 @@ function nonPreparedSql( options ) {
 	var operation = options.query ? "query" : "execute";
 	var sqlCmd = options.query || options.procedure;
 	return when.promise( function( resolve, reject ) {
-			req[ operation ]( sqlCmd, function( err, result ) {
-				if ( err ) {
-					reject( err );
-				} else {
-					resolve( result );
-				}
-			} );
+		req[ operation ]( sqlCmd, function( err, result ) {
+			if ( err ) {
+				reject( err );
+			} else {
+				resolve( result );
+			}
 		} );
+	} );
 }
 
 function preparedSql( options ) {
@@ -44,24 +44,24 @@ function preparedSql( options ) {
 		}
 	} );
 	return when.promise( function( resolve, reject ) {
-			cmd.prepare( options.preparedSql, function( err ) {
+		cmd.prepare( options.preparedSql, function( err ) {
+			if ( err ) {
+				reject( err );
+			}
+			cmd.execute( paramKeyValues, function( err, result ) {
 				if ( err ) {
 					reject( err );
 				}
-				cmd.execute( paramKeyValues, function( err, result ) {
+				cmd.unprepare( function( err ) {
 					if ( err ) {
 						reject( err );
+					} else {
+						resolve( result );
 					}
-					cmd.unprepare( function( err ) {
-						if ( err ) {
-							reject( err );
-						} else {
-							resolve( result );
-						}
-					} );
 				} );
 			} );
 		} );
+	} );
 }
 
 function executeSql( options ) {
@@ -87,9 +87,9 @@ function addState( fsm, name, stepAction ) {
 					.then( null, fsm.handle.bind( fsm, "error" ) );
 			}.bind( fsm );
 			stepAction.call(
-			fsm,
-			exec,
-			fsm.results
+				fsm,
+				exec,
+				fsm.results
 			);
 		},
 		success: function( result ) {

@@ -43,31 +43,31 @@ module.exports = function( sql, SqlContext ) {
 						transaction: {
 							commit: function() {
 								return when.promise( function( resolve, reject ) {
-										self.transaction.commit( function( err ) {
-											if ( self.connection.close ) {
-												self.connection.close();
-											}
-											if ( err ) {
-												reject( err );
-											} else {
-												resolve();
-											}
-										} );
+									self.transaction.commit( function( err ) {
+										if ( self.connection.close ) {
+											self.connection.close();
+										}
+										if ( err ) {
+											reject( err );
+										} else {
+											resolve();
+										}
 									} );
+								} );
 							},
 							rollback: function() {
 								return when.promise( function( resolve, reject ) {
-										self.transaction.rollback( function( err ) {
-											if ( self.connection.close ) {
-												self.connection.close();
-											}
-											if ( err ) {
-												reject( err );
-											} else {
-												resolve();
-											}
-										} );
+									self.transaction.rollback( function( err ) {
+										if ( self.connection.close ) {
+											self.connection.close();
+										}
+										if ( err ) {
+											reject( err );
+										} else {
+											resolve();
+										}
 									} );
+								} );
 							}
 						}
 					} );
