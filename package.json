@@ -1,45 +1,50 @@
 {
-	"name": "seriate",
-	"version": "0.3.3",
-	"description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
-	"main": "src/index.js",
-	"author": "LeanKit",
-	"homepage": "http://github.com/leankit-labs/seriate",
-	"license": "MIT License - http://opensource.org/licenses/MIT",
-	"contributors": [ {
-		"name": "Scott Walters",
-		"email": "scott.walters@leankit.com"
-    }, {
-		"name": "Jim Cowart",
-		"email": "jim.cowart@leankit.com",
-		"url": "http://freshbrewedcode.com/jimcowart"
-    }, {
-    	"name": "Alex Robson",
-    	"email": "asrobson@gmail.com",
-    	"url": "http://nerdventure.io"
-    } ],
-	"dependencies": {
-		"configya": "~0.0.9",
-		"lodash": "~2.4.1",
-		"machina": "~0.3.8",
-		"monologue.js": "0.2.1",
-		"mssql": "~1.1.0",
-		"when": "3.2.3"
-	},
-	"devDependencies": {
-		"expect.js": "~0.2.0",
-		"gulp": "~3.8.0",
-		"gulp-filter": "~0.4.1",
-		"gulp-less": "~1.2.3",
-		"gulp-mocha": "~0.4.1",
-		"gulp-watch": "~0.6.6-1",
-		"mocha": "~1.20.1",
-		"sinon": "^1.10.2",
-		"sinon-expect": "^0.2.0"
-	},
-	"scripts": {
-		"test": "gulp test",
-		"intspec": "mocha ./spec/integration/seriate.spec.js --reporter spec",
-		"example": "node ./example/example.js"
-	}
+  "name": "seriate",
+  "version": "0.3.3",
+  "description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
+  "main": "src/index.js",
+  "author": "LeanKit",
+  "homepage": "http://github.com/leankit-labs/seriate",
+  "license": "MIT License - http://opensource.org/licenses/MIT",
+  "contributors": [
+    {
+      "name": "Scott Walters",
+      "email": "scott.walters@leankit.com"
+    },
+    {
+      "name": "Jim Cowart",
+      "email": "jim.cowart@leankit.com",
+      "url": "http://freshbrewedcode.com/jimcowart"
+    },
+    {
+      "name": "Alex Robson",
+      "email": "asrobson@gmail.com",
+      "url": "http://nerdventure.io"
+    }
+  ],
+  "dependencies": {
+    "callsite": "^1.0.0",
+    "configya": "~0.0.9",
+    "lodash": "~2.4.1",
+    "machina": "~0.3.8",
+    "monologue.js": "0.2.1",
+    "mssql": "~1.1.0",
+    "when": "3.2.3"
+  },
+  "devDependencies": {
+    "expect.js": "~0.2.0",
+    "gulp": "~3.8.0",
+    "gulp-filter": "~0.4.1",
+    "gulp-less": "~1.2.3",
+    "gulp-mocha": "~0.4.1",
+    "gulp-watch": "~0.6.6-1",
+    "mocha": "~1.20.1",
+    "sinon": "^1.10.2",
+    "sinon-expect": "^0.2.0"
+  },
+  "scripts": {
+    "test": "gulp test",
+    "intspec": "mocha ./spec/integration/seriate.spec.js --reporter spec",
+    "example": "node ./example/example.js"
+  }
 }
