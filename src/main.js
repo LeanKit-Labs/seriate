@@ -4,6 +4,7 @@ var path = require( "path" );
 var SqlContext;
 var TransactionContext;
 var callsite = require( "callsite" );
+var _config;
 
 function promisify( context, queryOptions ) {
 	context.step( "result", queryOptions );
@@ -25,22 +26,22 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 	return {
 		getTransactionContext: function( config ) {
 			return new TransactionContext( {
-					connectionCfg: config
+					connectionCfg: config || _config
 				} );
 		},
 		getPlainContext: function( config ) {
 			return new SqlContext( {
-					connectionCfg: config
+					connectionCfg: config || _config
 				} );
 		},
 		executeTransaction: function( connCfg, queryOptions ) {
 			return promisify( new TransactionContext( {
-				connectionCfg: connCfg
+				connectionCfg: connCfg || _config
 			} ), queryOptions );
 		},
 		execute: function( connCfg, queryOptions ) {
 			return promisify( new SqlContext( {
-				connectionCfg: connCfg
+				connectionCfg: connCfg || _config
 			} ), queryOptions );
 		},
 		fromFile: function( p ) {
@@ -55,6 +56,9 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 			var ext = path.extname( p );
 			p = ( ext === "." ) ? ( p + "sql" ) : ( ext.length === 0 ) ? p + ".sql" : p;
 			return fs.readFileSync( p, { encoding: "utf8" } );
+		},
+		setDefaultConfig: function( config ) {
+			_config = config;
 		}
 	};
 };
