@@ -10,7 +10,7 @@ var getRowId = ( function() {
 	return function() {
 		return _id++;
 	};
-}() );
+}());
 
 describe( "Seriate Integration Tests", function() {
 	before( function( done ) {
@@ -25,8 +25,8 @@ describe( "Seriate Integration Tests", function() {
 			.step( "CreateTable", {
 				query: "create table tds_node_test..NodeTestTable (bi1 bigint not null identity(1,1) primary key, v1 varchar(255), i1 int null)"
 			} ).step( "CreateSecondTable", {
-				query: "create table tds_node_test..NodeTestTableNoIdent (bi1 bigint not null primary key, v1 varchar(255), i1 int null)"
-			} )
+			query: "create table tds_node_test..NodeTestTableNoIdent (bi1 bigint not null primary key, v1 varchar(255), i1 int null)"
+		} )
 			.end( function() {
 				done();
 			} )
@@ -60,9 +60,9 @@ describe( "Seriate Integration Tests", function() {
 						resultsCheck = res;
 						done();
 					}, function( err ) {
-						checkError = err;
-						done();
-					} );
+							checkError = err;
+							done();
+						} );
 				};
 				context = sql
 					.getTransactionContext( config )
@@ -123,9 +123,9 @@ describe( "Seriate Integration Tests", function() {
 						resultsCheck = res;
 						done();
 					}, function( err ) {
-						checkError = err;
-						done();
-					} );
+							checkError = err;
+							done();
+						} );
 				};
 				context = sql
 					.getTransactionContext( config )
@@ -214,8 +214,8 @@ describe( "Seriate Integration Tests", function() {
 				} ).then( function() {
 					updateCheck( done );
 				}, function( err ) {
-					updateErr = err;
-				} );
+						updateErr = err;
+					} );
 			};
 			sql.execute( config, {
 				preparedSql: "insert into tds_node_test..NodeTestTable (v1, i1) values (@v1, @i1)",
@@ -240,6 +240,22 @@ describe( "Seriate Integration Tests", function() {
 		it( "should show the updates", function( done ) {
 			updateCmd( function() {
 				expect( updResults.result[ 0 ].v1 ).to.be( "updatey" );
+				done();
+			} );
+		} );
+	} );
+	describe( "When using default connection configuration option", function() {
+		it( "Should utilize default options", function( done ) {
+			sql.setDefaultConfig( config );
+			sql.execute( {
+				preparedSql: "select * from tds_node_test..NodeTestTable where i1 = @i1",
+				params: {
+					i1: {
+						val: getRowId(),
+						type: sql.INT
+					}
+				}
+			} ).then( function( res ) {
 				done();
 			} );
 		} );

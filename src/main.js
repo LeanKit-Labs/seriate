@@ -35,11 +35,19 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 				} );
 		},
 		executeTransaction: function( connCfg, queryOptions ) {
+			if ( arguments.length === 1 ) {
+				queryOptions = connCfg;
+				connCfg = undefined;
+			}
 			return promisify( new TransactionContext( {
 				connectionCfg: connCfg || _config
 			} ), queryOptions );
 		},
 		execute: function( connCfg, queryOptions ) {
+			if ( arguments.length === 1 ) {
+				queryOptions = connCfg;
+				connCfg = undefined;
+			}
 			return promisify( new SqlContext( {
 				connectionCfg: connCfg || _config
 			} ), queryOptions );
