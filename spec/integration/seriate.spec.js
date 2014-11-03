@@ -93,7 +93,7 @@ describe( "Seriate Integration Tests", function() {
 					} );
 			} );
 			it( "should have return inserted row", function() {
-				expect( resultsCheck.result.length ).to.be( 1 );
+				expect( resultsCheck.length ).to.be( 1 );
 				expect( checkError ).to.not.be.ok();
 			} );
 			it( "should have returned the identity of inserted row", function() {
@@ -155,7 +155,7 @@ describe( "Seriate Integration Tests", function() {
 					} );
 			} );
 			it( "should show that the row was not inserted", function() {
-				expect( resultsCheck.result.length ).to.be( 0 );
+				expect( resultsCheck.length ).to.be( 0 );
 				expect( checkError ).to.not.be.ok();
 			} );
 		} );
@@ -235,11 +235,11 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		it( "should have inserted the row", function() {
-			expect( insResults.result.length ).to.be( 1 );
+			expect( insResults.length ).to.be( 1 );
 		} );
 		it( "should show the updates", function( done ) {
 			updateCmd( function() {
-				expect( updResults.result[ 0 ].v1 ).to.be( "updatey" );
+				expect( updResults[ 0 ].v1 ).to.be( "updatey" );
 				done();
 			} );
 		} );
@@ -255,7 +255,7 @@ describe( "Seriate Integration Tests", function() {
 						type: sql.INT
 					}
 				}
-			} ).then( function( res ) {
+			} ).then( function( /* res */ ) {
 				done();
 			} );
 		} );

@@ -50,7 +50,10 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 			}
 			return promisify( new SqlContext( {
 				connectionCfg: connCfg || _config
-			} ), queryOptions );
+			} ), queryOptions )
+				.then( function( data ) {
+					return data.result;
+				} );
 		},
 		fromFile: function( p ) {
 			// If we're not dealing with an absolute path, then we

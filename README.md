@@ -213,10 +213,12 @@ sql.executeTransaction( config, {
 			type: sql.MONEY
 		}
 	}
-} ).then( function( res ) {
+} ).then( function( data ) {
 	// you can choose to commit or rollback here
-	// result sets would be under res.sets
-	return res.transaction
+	// data.result is your result set
+	// data also contains a transaction prop
+	// with commit/rollback methods
+	return data.transaction
 		.commit()
 		.then(function(){
 			console.log("Updated customer balance....")
@@ -228,7 +230,7 @@ sql.executeTransaction( config, {
 
 
 ###execute(connectionConfig, queryOptions)
-This is a shortcut method to getting a `SqlContext` instance to execute one step. It returns a promise, and the `result` argument that's normally fed to the `end` method's callback is passed to the success handler of the promise, and any errors are passed to the error handler. For example:
+This is a shortcut method to getting a `SqlContext` instance to execute one step. It returns a promise, and the query result is passed to the success handler of the promise, and any errors are passed to the error handler. For example:
 
 ```javascript
 sql.execute( config, {
@@ -240,7 +242,7 @@ sql.execute( config, {
 		}
 	}
 } ).then( function( data ) {
-	//result sets are directly under data here
+	//data is the query result set
 }, function( err ) {
 	console.log( err );
 } );
