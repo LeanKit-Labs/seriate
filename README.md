@@ -9,12 +9,15 @@ The follow methods are exposed on the module:
 
 |method name         | description              |
 |--------------------|--------------------------|
-|`getPlainContext(connectionConfig)` | returns transaction-less database context.
-|`getTransactionContext(connectionConfig)` | returns a context associating *one* transaction with a connection.
-|`executeTransaction(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a transaction context
-|`execute(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a plain (transaction-less) context.
+|`getPlainContext([connectionConfig])` | returns transaction-less database context.
+|`getTransactionContext([connectionConfig])` | returns a context associating *one* transaction with a connection.
+|`executeTransaction([connectionConfig,] queryOptions)` | shortcut method to execute *one* command on a transaction context
+|`execute([connectionConfig,] queryOptions)` | shortcut method to execute *one* command on a plain (transaction-less) context.
+|`first([connectionConfig,] queryOptions)` | shortcut method that returns only the first row of a result set (calls `execute` under the hood)
 |`fromFile(path)` | Allows you to read a `.sql` file instead of in-lining your SQL in your JavaScript.
 |`setDefaultConfig(config)` | Allows you to store database connection info/creds. Subsequent calls to methods that take `connectionConfig` arguments will use the default config if nothing is passed in.
+
+> NOTE: The `connectionConfig` argument is only optional above if you've specified a default configuration by calling `setDefaultConfig`.
 
 Sql type constants are exposed in both Pascal Case and all capitals off of the library. See the listing at the end of this document.
 

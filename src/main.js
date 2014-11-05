@@ -55,6 +55,12 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 					return data.result;
 				} );
 		},
+		first: function() {
+			var args = Array.prototype.slice.call( arguments, 0 );
+			return this.execute.apply( this, args ).then( function( rows ) {
+				return rows[ 0 ];
+			} );
+		},
 		fromFile: function( p ) {
 			// If we're not dealing with an absolute path, then we
 			// need to get the *calling* code's directory, since
