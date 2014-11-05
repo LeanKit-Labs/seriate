@@ -33,7 +33,7 @@ describe( 'With Successful SqlContext Executions', function() {
 		prepStub.unprepare.callsArgWith( 0, null );
 
 		// Now that we have stub instances, we need to stub
-		// the calls to the constructor functions to return 
+		// the calls to the constructor functions to return
 		// our stubs instead
 		sinon.stub( sql, 'Connection', function( opt, fn ) {
 			process.nextTick( fn );

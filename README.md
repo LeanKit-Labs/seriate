@@ -9,11 +9,15 @@ The follow methods are exposed on the module:
 
 |method name         | description              |
 |--------------------|--------------------------|
-|`getPlainContext(connectionConfig)` | returns transaction-less database context.
-|`getTransactionContext(connectionConfig)` | returns a context associating *one* transaction with a connection.
-|`executeTransaction(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a transaction context
-|`execute(connectionConfig, queryOptions)` | shortcut method to execute *one* command on a plain (transaction-less) context.
+|`getPlainContext([connectionConfig])` | returns transaction-less database context.
+|`getTransactionContext([connectionConfig])` | returns a context associating *one* transaction with a connection.
+|`executeTransaction([connectionConfig,] queryOptions)` | shortcut method to execute *one* command on a transaction context
+|`execute([connectionConfig,] queryOptions)` | shortcut method to execute *one* command on a plain (transaction-less) context.
+|`first([connectionConfig,] queryOptions)` | shortcut method that returns only the first row of a result set (calls `execute` under the hood)
 |`fromFile(path)` | Allows you to read a `.sql` file instead of in-lining your SQL in your JavaScript.
+|`setDefaultConfig(config)` | Allows you to store database connection info/creds. Subsequent calls to methods that take `connectionConfig` arguments will use the default config if nothing is passed in.
+
+> NOTE: The `connectionConfig` argument is only optional above if you've specified a default configuration by calling `setDefaultConfig`.
 
 Sql type constants are exposed in both Pascal Case and all capitals off of the library. See the listing at the end of this document.
 
@@ -212,10 +216,12 @@ sql.executeTransaction( config, {
 			type: sql.MONEY
 		}
 	}
-} ).then( function( res ) {
+} ).then( function( data ) {
 	// you can choose to commit or rollback here
-	// result sets would be under res.sets
-	return res.transaction
+	// data.result is your result set
+	// data also contains a transaction prop
+	// with commit/rollback methods
+	return data.transaction
 		.commit()
 		.then(function(){
 			console.log("Updated customer balance....")
@@ -227,7 +233,7 @@ sql.executeTransaction( config, {
 
 
 ###execute(connectionConfig, queryOptions)
-This is a shortcut method to getting a `SqlContext` instance to execute one step. It returns a promise, and the `result` argument that's normally fed to the `end` method's callback is passed to the success handler of the promise, and any errors are passed to the error handler. For example:
+This is a shortcut method to getting a `SqlContext` instance to execute one step. It returns a promise, and the query result is passed to the success handler of the promise, and any errors are passed to the error handler. For example:
 
 ```javascript
 sql.execute( config, {
@@ -239,7 +245,7 @@ sql.execute( config, {
 		}
 	}
 } ).then( function( data ) {
-	//result sets are directly under data here
+	//data is the query result set
 }, function( err ) {
 	console.log( err );
 } );
