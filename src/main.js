@@ -21,16 +21,17 @@ function isAbsolutePath( p ) {
 }
 
 module.exports = function( SqlContextCtor, TransactionContextCtor ) {
-	SqlContext = SqlContextCtor;
-	TransactionContext = TransactionContextCtor;
+
 	return {
+		SqlContext: SqlContextCtor,
+		TransactionContext: TransactionContextCtor,
 		getTransactionContext: function( config ) {
-			return new TransactionContext( {
+			return new this.TransactionContext( {
 					connectionCfg: config || _config
 				} );
 		},
 		getPlainContext: function( config ) {
-			return new SqlContext( {
+			return new this.SqlContext( {
 					connectionCfg: config || _config
 				} );
 		},
@@ -39,7 +40,7 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 				queryOptions = connCfg;
 				connCfg = undefined;
 			}
-			return promisify( new TransactionContext( {
+			return promisify( new this.TransactionContext( {
 				connectionCfg: connCfg || _config
 			} ), queryOptions );
 		},
@@ -48,7 +49,7 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 				queryOptions = connCfg;
 				connCfg = undefined;
 			}
-			return promisify( new SqlContext( {
+			return promisify( new this.SqlContext( {
 				connectionCfg: connCfg || _config
 			} ), queryOptions )
 				.then( function( data ) {

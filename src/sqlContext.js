@@ -66,9 +66,9 @@ function preparedSql( options ) {
 
 function executeSql( options ) {
 	if ( options.query || options.procedure ) {
-		return nonPreparedSql.call( this, options );
+		return this.nonPreparedSql.call( this, options );
 	} else {
-		return preparedSql.call( this, options );
+		return this.preparedSql.call( this, options );
 	}
 }
 
@@ -82,7 +82,7 @@ function addState( fsm, name, stepAction ) {
 	fsm.states[ name ] = {
 		_onEnter: function() {
 			var exec = function( options ) {
-				executeSql.call( fsm, options )
+				this.executeSql.call( fsm, options )
 					.then( fsm.handle.bind( fsm, "success" ) )
 					.then( null, fsm.handle.bind( fsm, "error" ) );
 			}.bind( fsm );
@@ -111,7 +111,7 @@ module.exports = function( mssql, MonologueCtor, mach ) {
 		initialState: "uninitialized",
 
 		initialize: function( options ) {
-			this.connectionCfg = options.connectionCfg;
+			this.connectionCfg = options.connectionCfg || {};
 			this.results = {};
 			this.pipeline = [];
 			this.pipePos = -1;
@@ -207,7 +207,13 @@ module.exports = function( mssql, MonologueCtor, mach ) {
 
 		abort: function() {
 			this.handle( "error", "Operation aborted" );
-		}
+		},
+
+		executeSql: executeSql,
+
+		nonPreparedSql: nonPreparedSql,
+
+		preparedSql: preparedSql
 
 	} );
 
