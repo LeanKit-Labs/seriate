@@ -7,7 +7,7 @@ var callsite = require( "callsite" );
 var _config;
 
 function promisify( context, queryOptions ) {
-	context.step( "result", queryOptions );
+	context.step( "__result__", queryOptions );
 	return when.promise( function( resolve, reject, notify ) {
 		context
 			.end( resolve )
@@ -53,7 +53,7 @@ module.exports = function( SqlContextCtor, TransactionContextCtor ) {
 				connectionCfg: connCfg || _config
 			} ), queryOptions )
 				.then( function( data ) {
-					return data.result;
+					return data.__result__;
 				} );
 		},
 		first: function() {
