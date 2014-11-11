@@ -17,6 +17,9 @@
         "name": "Alex Robson",
         "email": "asrobson@gmail.com",
         "url": "http://nerdventure.io"
+    },{
+        "name": "Brian Edgerton",
+        "email": "brian.edgerton@leankit.com"
     }],
     "dependencies": {
         "callsite": "^1.0.0",
