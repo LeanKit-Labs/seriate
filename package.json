@@ -1,6 +1,6 @@
 {
     "name": "seriate",
-    "version": "0.3.5",
+    "version": "0.3.6",
     "description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
     "main": "src/index.js",
     "author": "LeanKit",
@@ -17,6 +17,9 @@
         "name": "Alex Robson",
         "email": "asrobson@gmail.com",
         "url": "http://nerdventure.io"
+    },{
+        "name": "Brian Edgerton",
+        "email": "brian.edgerton@leankit.com"
     }],
     "dependencies": {
         "callsite": "^1.0.0",
