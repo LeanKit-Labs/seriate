@@ -27,7 +27,7 @@
         "lodash": "~2.4.1",
         "machina": "~0.3.8",
         "monologue.js": "0.2.1",
-        "mssql": "~1.1.0",
+        "mssql": "git+ssh://git@github.com:LeanKit-Labs/node-mssql.git#ad",
         "when": "3.2.3"
     },
     "devDependencies": {
