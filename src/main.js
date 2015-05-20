@@ -1,8 +1,6 @@
 var when = require( "when" );
 var fs = require( "fs" );
 var path = require( "path" );
-var SqlContext;
-var TransactionContext;
 var callsite = require( "callsite" );
 var _config;
 
@@ -21,7 +19,6 @@ function isAbsolutePath( p ) {
 }
 
 module.exports = function( SqlContextCtor, TransactionContextCtor ) {
-
 	return {
 		SqlContext: SqlContextCtor,
 		TransactionContext: TransactionContextCtor,

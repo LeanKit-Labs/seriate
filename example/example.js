@@ -1,52 +1,52 @@
-var sql = require( '../src/index.js' );
+var sql = require( "../src/index.js" );
 var mod = {};
 
 sql.getTransactionContext( {
-	user: 'nodejs',
-	password: 'nodejs',
-	server: '10.0.1.15',
-	// domain: '', // - uncomment to test NTLM
-	database: 'master'
+	user: "nodejs",
+	password: "nodejs",
+	server: "10.0.1.15",
+	// domain: "", // - uncomment to test NTLM
+	database: "master"
 } )
-	.step( 'readTables', function( execute ) {
+	.step( "readTables", function( execute ) {
 		execute( {
-			query: 'select * from sys.tables'
+			query: "select * from sys.tables"
 		} );
 	} )
-	.step( 'readUsers', {
-		query: 'select * From sys.sysusers'
+	.step( "readUsers", {
+		query: "select * From sys.sysusers"
 	} )
-	.step( 'readLogins', function( execute, data ) {
-		console.log( 'For example...some data from the last step: ' );
+	.step( "readLogins", function( execute, data ) {
+		console.log( "For example...some data from the last step: " );
 		console.log( data.readUsers.map( function( x ) {
 			return x.name;
 		} ) );
 		execute( {
-			query: 'select * From sys.syslogins'
+			query: "select * From sys.syslogins"
 		} );
 	} )
-	.step( 'sp_who2', {
-		procedure: 'sp_who2'
+	.step( "sp_who2", {
+		procedure: "sp_who2"
 	} )
-	.step( 'sp_who', {
-		procedure: 'sp_who'
+	.step( "sp_who", {
+		procedure: "sp_who"
 	} )
-	.step( 'preparedSql', function( execute ) {
+	.step( "preparedSql", function( execute ) {
 		execute( {
-			preparedSql: 'select * from sys.tables where type_desc = @usertable',
+			preparedSql: "select * from sys.tables where type_desc = @usertable",
 			params: {
 				usertable: {
 					type: sql.NVarChar,
-					val: 'USER_TABLE'
+					val: "USER_TABLE"
 				}
 			}
 		} );
 	} ).error( function( err ) {
-	console.log( 'O NOES! \n %s', err );
+	console.log( "O NOES! \n %s", err );
 } ).end( function( ctx ) {
-	console.log( 'All Steps Complete' );
+	console.log( "All Steps Complete" );
 	console.log( Object.keys( ctx ) );
-	console.log( 'We are done here. Control+C gets you out.' );
+	console.log( "We are done here. Control+C gets you out." );
 } );
 
 module.exports = mod;

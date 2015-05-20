@@ -10,7 +10,7 @@ var getRowId = ( function() {
 	return function() {
 		return _id++;
 	};
-}());
+}() );
 
 describe( "Seriate Integration Tests", function() {
 	before( function( done ) {
@@ -33,7 +33,6 @@ describe( "Seriate Integration Tests", function() {
 			.error( function( err ) {
 				console.log( err );
 			} );
-
 	} );
 
 	describe( "When executing within a TransactionContext", function() {

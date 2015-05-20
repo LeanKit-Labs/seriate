@@ -5,18 +5,18 @@
 
 ****************************************************/
 
-var expect = require( 'expect.js' );
-var sinon = require( 'sinon' );
-expect = require( 'sinon-expect' ).enhance( expect, sinon, 'was' );
-var records = require( './fakeRecordSet.json' );
+var expect = require( "expect.js" );
+var sinon = require( "sinon" );
+expect = require( "sinon-expect" ).enhance( expect, sinon, "was" );
+var records = require( "./fakeRecordSet.json" );
 
-var Monologue = require( 'monologue.js' );
-var machina = require( 'machina' )();
-var sql = require( 'mssql' );
-var SqlContext = require( '../../src/sqlContext.js' )( sql, Monologue, machina );
-var TransactionContext = require( '../../src/transactionContext.js' )( sql, SqlContext );
+var Monologue = require( "monologue.js" );
+var machina = require( "machina" )();
+var sql = require( "mssql" );
+var SqlContext = require( "../../src/sqlContext.js" )( sql, Monologue, machina );
+var TransactionContext = require( "../../src/transactionContext.js" )( sql, SqlContext );
 
-describe( 'With Successful TransactionContext Executions', function() {
+describe( "With Successful TransactionContext Executions", function() {
 	var reqStub;
 	var connStub;
 	var prepStub;
@@ -46,22 +46,22 @@ describe( 'With Successful TransactionContext Executions', function() {
 		tranStub.rollback.callsArgWith( 0, null );
 
 		// Now that we have stub instances, we need to stub
-		// the calls to the constructor functions to return 
+		// the calls to the constructor functions to return
 		// our stubs instead
-		sinon.stub( sql, 'Connection', function( opt, fn ) {
+		sinon.stub( sql, "Connection", function( opt, fn ) {
 			process.nextTick( fn );
 			return connStub;
 		} );
 
-		sinon.stub( sql, 'Request', function() {
+		sinon.stub( sql, "Request", function() {
 			return reqStub;
 		} );
 
-		sinon.stub( sql, 'PreparedStatement', function() {
+		sinon.stub( sql, "PreparedStatement", function() {
 			return prepStub;
 		} );
 
-		sinon.stub( sql, 'Transaction', function() {
+		sinon.stub( sql, "Transaction", function() {
 			return tranStub;
 		} );
 	} );
@@ -72,59 +72,58 @@ describe( 'With Successful TransactionContext Executions', function() {
 		sql.Transaction.restore();
 	} );
 
-	describe( 'when getting a TransactionContext instance', function() {
+	describe( "when getting a TransactionContext instance", function() {
 		var ctx;
 		before( function() {
 			ctx = new TransactionContext();
 		} );
-		it( 'should start in uninitialized', function() {
+		it( "should start in uninitialized", function() {
 			expect( ctx.states.uninitialized ).to.be.ok();
 		} );
 	} );
-	describe( 'when adding a step using query options object', function() {
-
+	describe( "when adding a step using query options object", function() {
 		/***************************************************
 			PLAIN QUERY TESTING WITH SUCCESSFUL EXECUTION
 		****************************************************/
-		describe( 'with a plain query to execute', function() {
+		describe( "with a plain query to execute", function() {
 			var ctx;
 			before( function() {
 				ctx = new TransactionContext();
-				ctx.step( 'read', {
-					query: 'select * from sys.tables'
+				ctx.step( "read", {
+					query: "select * from sys.tables"
 				} );
 			} );
-			it( 'should create a "read" state', function() {
+			it( "should create a \"read\" state", function() {
 				expect( ctx.states.read ).to.be.ok();
 			} );
-			it( 'should create "read" state success handler', function() {
+			it( "should create \"read\" state success handler", function() {
 				expect( ctx.states.read.success ).to.be.ok();
 			} );
-			it( 'should create "read" state error handler', function() {
+			it( "should create \"read\" state error handler", function() {
 				expect( ctx.states.read.error ).to.be.ok();
 			} );
 		} );
-		describe( 'and executing a query with no params', function() {
+		describe( "and executing a query with no params", function() {
 			var ctx;
 			beforeEach( function() {
 				ctx = new TransactionContext();
-				ctx.step( 'read', {
-					query: 'select * from sys.tables'
+				ctx.step( "read", {
+					query: "select * from sys.tables"
 				} );
 			} );
-			it( 'should call "begin" on the Transaction property', function( done ) {
+			it( "should call \"begin\" on the Transaction property", function( done ) {
 				ctx.end( function() {
 					expect( tranStub.begin ).was.calledOnce();
 					done();
 				} );
 			} );
-			it( 'should call "query" on the Request instance', function( done ) {
+			it( "should call \"query\" on the Request instance", function( done ) {
 				ctx.end( function() {
-					expect( reqStub.query ).was.calledWith( 'select * from sys.tables' );
+					expect( reqStub.query ).was.calledWith( "select * from sys.tables" );
 					done();
 				} );
 			} );
-			it( 'should provide correct structure in results object', function( done ) {
+			it( "should provide correct structure in results object", function( done ) {
 				ctx.end( function( res ) {
 					expect( res.sets ).to.be.ok();
 					expect( res.sets.read ).to.be.ok();
@@ -132,7 +131,7 @@ describe( 'With Successful TransactionContext Executions', function() {
 					done();
 				} );
 			} );
-			it( 'should NOT call the error handler on a successful execution', function( done ) {
+			it( "should NOT call the error handler on a successful execution", function( done ) {
 				var calledErr = false;
 				ctx.error( function() {
 					calledErr = true;
@@ -146,45 +145,45 @@ describe( 'With Successful TransactionContext Executions', function() {
 		/*******************************************************
 			STORED PROCEDURE TESTING WITH SUCCESSFUL EXECUTION
 		********************************************************/
-		describe( 'with a stored procedure', function() {
+		describe( "with a stored procedure", function() {
 			var ctx;
 			beforeEach( function() {
 				ctx = new TransactionContext();
-				ctx.step( 'proc', {
-					procedure: 'sp_who2'
+				ctx.step( "proc", {
+					procedure: "sp_who2"
 				} );
 			} );
-			it( 'should create a "proc" state', function() {
+			it( "should create a \"proc\" state", function() {
 				expect( ctx.states.proc ).to.be.ok();
 			} );
-			it( 'should create "proc" state success handler', function() {
+			it( "should create \"proc\" state success handler", function() {
 				expect( ctx.states.proc.success ).to.be.ok();
 			} );
-			it( 'should create "proc" state error handler', function() {
+			it( "should create \"proc\" state error handler", function() {
 				expect( ctx.states.proc.error ).to.be.ok();
 			} );
 		} );
-		describe( 'and executing a proc with no params', function() {
+		describe( "and executing a proc with no params", function() {
 			var ctx;
 			beforeEach( function() {
 				ctx = new TransactionContext();
-				ctx.step( 'proc', {
-					procedure: 'sp_who2'
+				ctx.step( "proc", {
+					procedure: "sp_who2"
 				} );
 			} );
-			it( 'should call "begin" on the Transaction property', function( done ) {
+			it( "should call \"begin\" on the Transaction property", function( done ) {
 				ctx.end( function() {
 					expect( tranStub.begin ).was.calledOnce();
 					done();
 				} );
 			} );
-			it( 'should call "execute" on the Request instance', function( done ) {
+			it( "should call \"execute\" on the Request instance", function( done ) {
 				ctx.end( function() {
-					expect( reqStub.execute ).was.calledWith( 'sp_who2' );
+					expect( reqStub.execute ).was.calledWith( "sp_who2" );
 					done();
 				} );
 			} );
-			it( 'should provide correct structure in results object', function( done ) {
+			it( "should provide correct structure in results object", function( done ) {
 				ctx.end( function( res ) {
 					expect( res.sets ).to.be.ok();
 					expect( res.sets.proc ).to.be.ok();
@@ -192,7 +191,7 @@ describe( 'With Successful TransactionContext Executions', function() {
 					done();
 				} );
 			} );
-			it( 'should NOT call the error handler on a successful execution', function( done ) {
+			it( "should NOT call the error handler on a successful execution", function( done ) {
 				var calledErr = false;
 				ctx.error( function() {
 					calledErr = true;
@@ -202,34 +201,34 @@ describe( 'With Successful TransactionContext Executions', function() {
 				} );
 			} );
 		} );
-		describe( 'and executing a proc with params', function() {
+		describe( "and executing a proc with params", function() {
 			var ctx;
 			beforeEach( function() {
 				ctx = new TransactionContext();
-				ctx.step( 'proc', {
-					procedure: 'sp_who2',
+				ctx.step( "proc", {
+					procedure: "sp_who2",
 					params: {
 						param1: {
 							type: sql.INT,
 							val: 9
 						},
-						param2: 'Hai Mom'
+						param2: "Hai Mom"
 					}
 				} );
 			} );
-			it( 'should call "begin" on the Transaction property', function( done ) {
+			it( "should call \"begin\" on the Transaction property", function( done ) {
 				ctx.end( function() {
 					expect( tranStub.begin ).was.calledOnce();
 					done();
 				} );
 			} );
-			it( 'should call "execute" on the Request instance', function( done ) {
+			it( "should call \"execute\" on the Request instance", function( done ) {
 				ctx.end( function() {
-					expect( reqStub.execute ).was.calledWith( 'sp_who2' );
+					expect( reqStub.execute ).was.calledWith( "sp_who2" );
 					done();
 				} );
 			} );
-			it( 'should provide correct structure in results object', function( done ) {
+			it( "should provide correct structure in results object", function( done ) {
 				ctx.end( function( res ) {
 					expect( res.sets ).to.be.ok();
 					expect( res.sets.proc ).to.be.ok();
@@ -237,21 +236,21 @@ describe( 'With Successful TransactionContext Executions', function() {
 					done();
 				} );
 			} );
-			it( 'should call "input" on the Request instance for param1', function( done ) {
+			it( "should call \"input\" on the Request instance for param1", function( done ) {
 				ctx.end( function() {
 					expect( reqStub.input ).was.calledTwice();
-					expect( reqStub.input ).was.calledWith( 'param1', sql.INT, 9 );
+					expect( reqStub.input ).was.calledWith( "param1", sql.INT, 9 );
 					done();
 				} );
 			} );
-			it( 'should call "input" on the Request instance for param2', function( done ) {
+			it( "should call \"input\" on the Request instance for param2", function( done ) {
 				ctx.end( function() {
 					expect( reqStub.input ).was.calledTwice();
-					expect( reqStub.input ).was.calledWith( 'param2', 'Hai Mom' );
+					expect( reqStub.input ).was.calledWith( "param2", "Hai Mom" );
 					done();
 				} );
 			} );
-			it( 'should NOT call the error handler on a successful execution', function( done ) {
+			it( "should NOT call the error handler on a successful execution", function( done ) {
 				var calledErr = false;
 				ctx.error( function() {
 					calledErr = true;
@@ -265,71 +264,71 @@ describe( 'With Successful TransactionContext Executions', function() {
 		/*******************************************************
 			PREPARED SQL TESTING WITH SUCCESSFUL EXECUTION
 		********************************************************/
-		describe( 'with prepared sql', function() {
+		describe( "with prepared sql", function() {
 			var ctx;
 			beforeEach( function() {
 				ctx = new TransactionContext();
-				ctx.step( 'prepped', {
-					preparedSql: 'select * from sys.tables where type_desc = @usertable',
+				ctx.step( "prepped", {
+					preparedSql: "select * from sys.tables where type_desc = @usertable",
 					params: {
 						usertable: {
 							type: sql.NVarChar,
-							val: 'USER_TABLE'
+							val: "USER_TABLE"
 						}
 					}
 				} );
 			} );
-			it( 'should create a "prepped" state', function() {
+			it( "should create a \"prepped\" state", function() {
 				expect( ctx.states.prepped ).to.be.ok();
 			} );
-			it( 'should create "prepped" state success handler', function() {
+			it( "should create \"prepped\" state success handler", function() {
 				expect( ctx.states.prepped.success ).to.be.ok();
 			} );
-			it( 'should create "prepped" state error handler', function() {
+			it( "should create \"prepped\" state error handler", function() {
 				expect( ctx.states.prepped.error ).to.be.ok();
 			} );
 		} );
-		describe( 'and executing prepared sql with params', function() {
+		describe( "and executing prepared sql with params", function() {
 			var ctx;
 			beforeEach( function() {
 				ctx = new TransactionContext();
-				ctx.step( 'prepped', {
-					preparedSql: 'select * from sys.tables where type_desc = @usertable',
+				ctx.step( "prepped", {
+					preparedSql: "select * from sys.tables where type_desc = @usertable",
 					params: {
 						usertable: {
 							type: sql.NVarChar,
-							val: 'USER_TABLE'
+							val: "USER_TABLE"
 						}
 					}
 				} );
 			} );
-			it( 'should call "begin" on the Transaction property', function( done ) {
+			it( "should call \"begin\" on the Transaction property", function( done ) {
 				ctx.end( function() {
 					expect( tranStub.begin ).was.calledOnce();
 					done();
 				} );
 			} );
-			it( 'should call "prepare" on the PreparedStatement instance', function( done ) {
+			it( "should call \"prepare\" on the PreparedStatement instance", function( done ) {
 				ctx.end( function() {
-					expect( prepStub.prepare ).was.calledWith( 'select * from sys.tables where type_desc = @usertable' );
+					expect( prepStub.prepare ).was.calledWith( "select * from sys.tables where type_desc = @usertable" );
 					done();
 				} );
 			} );
-			it( 'should call "execute" on the PreparedStatement instance', function( done ) {
+			it( "should call \"execute\" on the PreparedStatement instance", function( done ) {
 				ctx.end( function() {
 					expect( prepStub.execute ).was.calledWith( {
-						usertable: 'USER_TABLE'
+						usertable: "USER_TABLE"
 					} );
 					done();
 				} );
 			} );
-			it( 'should call "unprepare" on the PreparedStatement instance', function( done ) {
+			it( "should call \"unprepare\" on the PreparedStatement instance", function( done ) {
 				ctx.end( function() {
 					expect( prepStub.unprepare ).was.calledOnce();
 					done();
 				} );
 			} );
-			it( 'should provide correct structure in results object', function( done ) {
+			it( "should provide correct structure in results object", function( done ) {
 				ctx.end( function( res ) {
 					expect( res.sets ).to.be.ok();
 					expect( res.sets.prepped ).to.be.ok();
@@ -337,14 +336,14 @@ describe( 'With Successful TransactionContext Executions', function() {
 					done();
 				} );
 			} );
-			it( 'should call "input" on the PreparedStatement instance for usertable parameter', function( done ) {
+			it( "should call \"input\" on the PreparedStatement instance for usertable parameter", function( done ) {
 				ctx.end( function() {
 					expect( prepStub.input ).was.calledOnce();
-					expect( prepStub.input ).was.calledWith( 'usertable', sql.NVarChar );
+					expect( prepStub.input ).was.calledWith( "usertable", sql.NVarChar );
 					done();
 				} );
 			} );
-			it( 'should NOT call the error handler on a successful execution', function( done ) {
+			it( "should NOT call the error handler on a successful execution", function( done ) {
 				var calledErr = false;
 				ctx.error( function() {
 					calledErr = true;
