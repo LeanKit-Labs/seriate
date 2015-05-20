@@ -1,53 +1,70 @@
 {
-    "name": "seriate",
-    "version": "0.3.6",
-    "description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
-    "main": "src/index.js",
-    "author": "LeanKit",
-    "homepage": "http://github.com/leankit-labs/seriate",
-    "license": "MIT License - http://opensource.org/licenses/MIT",
-    "contributors": [{
-        "name": "Scott Walters",
-        "email": "scott.walters@leankit.com"
-    }, {
-        "name": "Jim Cowart",
-        "email": "jim.cowart@leankit.com",
-        "url": "http://ifandelse.com"
-    }, {
-        "name": "Alex Robson",
-        "email": "asrobson@gmail.com",
-        "url": "http://nerdventure.io"
-    },{
-        "name": "Brian Edgerton",
-        "email": "brian.edgerton@leankit.com"
-    }],
-    "dependencies": {
-        "callsite": "^1.0.0",
-        "configya": "~0.0.9",
-        "lodash": "~2.4.1",
-        "machina": "~0.3.8",
-        "monologue.js": "0.2.1",
-        "mssql": "~1.1.0",
-        "when": "3.2.3"
+  "name": "seriate",
+  "version": "0.3.6",
+  "description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
+  "main": "src/index.js",
+  "author": "LeanKit",
+  "homepage": "http://github.com/leankit-labs/seriate",
+  "license": "MIT License - http://opensource.org/licenses/MIT",
+  "contributors": [
+    {
+      "name": "Scott Walters",
+      "email": "scott.walters@leankit.com"
     },
-    "devDependencies": {
-        "expect.js": "~0.2.0",
-        "gulp": "~3.8.0",
-        "gulp-filter": "~0.4.1",
-        "gulp-less": "~1.2.3",
-        "gulp-mocha": "~0.4.1",
-        "gulp-watch": "~0.6.6-1",
-        "mocha": "~1.20.1",
-        "sinon": "^1.10.2",
-        "sinon-expect": "^0.2.0"
+    {
+      "name": "Jim Cowart",
+      "email": "jim.cowart@leankit.com",
+      "url": "http://ifandelse.com"
     },
-    "scripts": {
-        "test": "gulp test",
-        "intspec": "mocha ./spec/integration/seriate.spec.js --reporter spec",
-        "example": "node ./example/example.js"
+    {
+      "name": "Alex Robson",
+      "email": "asrobson@gmail.com",
+      "url": "http://nerdventure.io"
     },
-    "files": [
-        "LICENSE",
-        "src"
-    ]
+    {
+      "name": "Brian Edgerton",
+      "email": "brian.edgerton@leankit.com"
+    }
+  ],
+  "dependencies": {
+    "callsite": "^1.0.0",
+    "configya": "~0.0.9",
+    "lodash": "~2.4.1",
+    "machina": "~0.3.8",
+    "monologue.js": "0.2.1",
+    "mssql": "~1.1.0",
+    "when": "3.2.3"
+  },
+  "devDependencies": {
+    "chai": "^2.3.0",
+    "chai-as-promised": "^5.0.0",
+    "expect.js": "^0.3.1",
+    "gulp": "^3.8.8",
+    "gulp-changed": "^1.2.1",
+    "gulp-istanbul": "^0.9.0",
+    "gulp-jscs": "^1.6.0",
+    "gulp-jshint": "^1.10.0",
+    "gulp-mocha": "^2.0.1",
+    "gulp-spawn-mocha": "^0.5.2",
+    "gulp-util": "^3.0.4",
+    "istanbul": "^0.3.2",
+    "jshint-stylish": "^1.0.1",
+    "mocha": "^2.1.0",
+    "open": "0.0.5",
+    "proxyquire": "^1.4.0",
+    "sinon": "^1.10.2",
+    "sinon-as-promised": "^3.0.0",
+    "sinon-chai": "^2.7.0",
+    "sinon-expect": "^0.2.0"
+  },
+  "scripts": {
+    "test": "gulp test",
+    "intspec": "mocha ./spec/integration/seriate.spec.js --reporter spec",
+    "example": "node ./example/example.js",
+    "show-coverage": "open ./coverage/lcov-report/index.html"
+  },
+  "files": [
+    "LICENSE",
+    "src"
+  ]
 }

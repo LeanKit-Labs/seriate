@@ -125,7 +125,7 @@ module.exports = function( mssql, MonologueCtor, mach ) {
 
 		states: {
 			uninitialized: {
-				"start": "connecting"
+				start: "connecting"
 			},
 
 			connecting: {

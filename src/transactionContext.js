@@ -6,11 +6,10 @@ function errorHandler( err ) {
 }
 
 module.exports = function( sql, SqlContext ) {
-
 	var TransactionContext = SqlContext.extend( {
 		states: {
 			uninitialized: {
-				"start": "connecting"
+				start: "connecting"
 			},
 			connecting: {
 				success: "startingTransaction"
@@ -19,11 +18,11 @@ module.exports = function( sql, SqlContext ) {
 				_onEnter: function() {
 					this.transaction = this.transaction || new sql.Transaction( this.connection );
 					var args = [ function( err ) {
-							if ( err ) {
-								this.handle( "error", err );
-							} else {
-								this.handle( "success" );
-							}
+						if ( err ) {
+							this.handle( "error", err );
+						} else {
+							this.handle( "success" );
+						}
 					}.bind( this ) ];
 					if ( this.isolationLevel ) {
 						args.shift( this.isolationLevel );
@@ -48,7 +47,11 @@ module.exports = function( sql, SqlContext ) {
 											self.connection.close();
 										}
 										if ( err ) {
-											reject( err );
+											self.transaction.rollback( function() {
+												// TODO: capture error if one happens during
+												// rollback and attach as inner exception?
+												reject( err );
+											} );
 										} else {
 											resolve();
 										}
@@ -71,7 +74,17 @@ module.exports = function( sql, SqlContext ) {
 							}
 						}
 					} );
-
+				}
+			},
+			error: {
+				_onEnter: function() {
+					if ( this.connection.close ) {
+						this.connection.close();
+					}
+					this.err.message = "Seriate SqlContext Error. Failed on step '" + this.priorState + "'." + this.err.message;
+					this.transaction.rollback( function() {
+						this.emit( "error", this.err );
+					}.bind( this ) );
 				}
 			}
 		}
