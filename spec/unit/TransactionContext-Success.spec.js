@@ -1,69 +1,52 @@
-/*global describe,before,afterEach,it,beforeEach */
 /***************************************************
 
 	TransactionContext *Successful* Execution Tests
 
 ****************************************************/
-
-var expect = require( "expect.js" );
-var sinon = require( "sinon" );
-expect = require( "sinon-expect" ).enhance( expect, sinon, "was" );
-var records = require( "./fakeRecordSet.json" );
-
-var Monologue = require( "monologue.js" );
-var machina = require( "machina" )();
-var sql = require( "mssql" );
-var SqlContext = require( "../../src/sqlContext.js" )( sql, Monologue, machina );
-var TransactionContext = require( "../../src/transactionContext.js" )( sql, SqlContext );
-
 describe( "With Successful TransactionContext Executions", function() {
-	var reqStub;
-	var connStub;
-	var prepStub;
-	var tranStub;
+	var reqStub, connStub, prepStub, tranStub, sql, SqlContext, TransactionContext;
 	beforeEach( function() {
-		// First - we need stub instances of several mssql
-		// constructors,and we need to invoke callbacks
-		// passed to some of them
-		// mssql Request Stub & callback execution setup
-		reqStub = sinon.createStubInstance( sql.Request );
-		reqStub.query.callsArgWith( 1, null, records );
-		reqStub.execute.callsArgWith( 1, null, records );
+		sql = mssqlFactory( {}, function( _sql ) {
+			// First - we need stub instances of several mssql
+			// constructors,and we need to invoke callbacks
+			// passed to some of them
+			// mssql Request Stub & callback execution setup
+			reqStub = sinon.createStubInstance( _sql.Request );
+			reqStub.query.callsArgWith( 1, null, fakeRecords );
+			reqStub.execute.callsArgWith( 1, null, fakeRecords );
+			connStub = sinon.createStubInstance( _sql.Connection );
+			prepStub = sinon.createStubInstance( _sql.PreparedStatement );
+			prepStub.prepare.callsArgWith( 1, null );
+			prepStub.execute.callsArgWith( 1, null, fakeRecords );
+			prepStub.unprepare.callsArgWith( 0, null );
+			tranStub = sinon.createStubInstance( _sql.Transaction );
+			tranStub.begin.callsArgWith( 0, null );
+			tranStub.commit.callsArgWith( 0, null );
+			tranStub.rollback.callsArgWith( 0, null );
 
-		// mssql Connection Stub
-		connStub = sinon.createStubInstance( sql.Connection );
+			// Now that we have stub instances, we need to stub
+			// the calls to the constructor functions to return
+			// our stubs instead
+			sinon.stub( _sql, "Connection", function( opt, fn ) {
+				process.nextTick( fn );
+				return connStub;
+			} );
 
-		// mssql PreparedStatement Stub & callback execution setup
-		prepStub = sinon.createStubInstance( sql.PreparedStatement );
-		prepStub.prepare.callsArgWith( 1, null );
-		prepStub.execute.callsArgWith( 1, null, records );
-		prepStub.unprepare.callsArgWith( 0, null );
+			sinon.stub( _sql, "Request", function() {
+				return reqStub;
+			} );
 
-		// mssql Transaction Stub & callback execution setup
-		tranStub = sinon.createStubInstance( sql.Transaction );
-		tranStub.begin.callsArgWith( 0, null );
-		tranStub.commit.callsArgWith( 0, null );
-		tranStub.rollback.callsArgWith( 0, null );
+			sinon.stub( _sql, "PreparedStatement", function() {
+				return prepStub;
+			} );
 
-		// Now that we have stub instances, we need to stub
-		// the calls to the constructor functions to return
-		// our stubs instead
-		sinon.stub( sql, "Connection", function( opt, fn ) {
-			process.nextTick( fn );
-			return connStub;
+			sinon.stub( _sql, "Transaction", function() {
+				return tranStub;
+			} );
 		} );
 
-		sinon.stub( sql, "Request", function() {
-			return reqStub;
-		} );
-
-		sinon.stub( sql, "PreparedStatement", function() {
-			return prepStub;
-		} );
-
-		sinon.stub( sql, "Transaction", function() {
-			return tranStub;
-		} );
+		SqlContext = require( "../../src/sqlContext.js" )( sql, Monologue, machina );
+		TransactionContext = require( "../../src/transactionContext.js" )( sql, SqlContext );
 	} );
 	afterEach( function() {
 		sql.Connection.restore();
@@ -74,7 +57,7 @@ describe( "With Successful TransactionContext Executions", function() {
 
 	describe( "when getting a TransactionContext instance", function() {
 		var ctx;
-		before( function() {
+		beforeEach( function() {
 			ctx = new TransactionContext();
 		} );
 		it( "should start in uninitialized", function() {

@@ -1,8 +1,3 @@
-/* global describe,before,it */
-var expect = require( "expect.js" );
-var sinon = require( "sinon" );
-expect = require( "sinon-expect" ).enhance( expect, sinon, "was" );
-
 var sql = require( "../../src/index.js" );
 var config = require( "./local-config.json" );
 var getRowId = ( function() {
@@ -37,13 +32,7 @@ describe( "Seriate Integration Tests", function() {
 
 	describe( "When executing within a TransactionContext", function() {
 		describe( "and committing the transaction", function() {
-			var id;
-			var context;
-			var insError;
-			var insResult;
-			var resultsCheck;
-			var checkError;
-			var readCheck;
+			var id, context, insError, insResult, resultsCheck, checkError, readCheck;
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
@@ -101,12 +90,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 		} );
 		describe( "and rolling back the transaction", function() {
-			var id;
-			var context;
-			var insError;
-			var readCheck;
-			var resultsCheck;
-			var checkError;
+			var id, context, insError, readCheck, resultsCheck, checkError;
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
@@ -160,13 +144,7 @@ describe( "Seriate Integration Tests", function() {
 		} );
 	} );
 	describe( "When updating a row", function() {
-		var id;
-		var insertCheck;
-		var insResults;
-		var updateCmd;
-		var updateErr;
-		var updateCheck;
-		var updResults;
+		var id, insertCheck, insResults, updateCmd, updateErr, updateCheck, updResults;
 		before( function( done ) {
 			id = getRowId();
 			insertCheck = function( done ) {

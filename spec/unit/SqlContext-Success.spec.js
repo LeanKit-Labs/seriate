@@ -1,52 +1,42 @@
-/*global describe,before,afterEach,it,beforeEach */
 /***************************************************
 
 	SqlContext *Successful* Execution Tests
 
 ****************************************************/
-
-var expect = require( "expect.js" );
-var sinon = require( "sinon" );
-expect = require( "sinon-expect" ).enhance( expect, sinon, "was" );
-var records = require( "./fakeRecordSet.json" );
-
-var Monologue = require( "monologue.js" );
-var machina = require( "machina" )();
-var sql = require( "mssql" );
-var SqlContext = require( "../../src/sqlContext.js" )( sql, Monologue, machina );
-
 describe( "With Successful SqlContext Executions", function() {
-	var reqStub;
-	var connStub;
-	var prepStub;
+	var reqStub, connStub, prepStub, sql, SqlContext;
 	beforeEach( function() {
-		// First - we need stub instances of several mssql
-		// constructors,and we need to invoke callbacks
-		// passed to some of them
-		reqStub = sinon.createStubInstance( sql.Request );
-		reqStub.query.callsArgWith( 1, null, records );
-		reqStub.execute.callsArgWith( 1, null, records );
-		connStub = sinon.createStubInstance( sql.Connection );
-		prepStub = sinon.createStubInstance( sql.PreparedStatement );
-		prepStub.prepare.callsArgWith( 1, null );
-		prepStub.execute.callsArgWith( 1, null, records );
-		prepStub.unprepare.callsArgWith( 0, null );
+		sql = mssqlFactory( {}, function( _sql ) {
+			// First - we need stub instances of several mssql
+			// constructors,and we need to invoke callbacks
+			// passed to some of them
+			reqStub = sinon.createStubInstance( _sql.Request );
+			reqStub.query.callsArgWith( 1, null, fakeRecords );
+			reqStub.execute.callsArgWith( 1, null, fakeRecords );
+			connStub = sinon.createStubInstance( _sql.Connection );
+			prepStub = sinon.createStubInstance( _sql.PreparedStatement );
+			prepStub.prepare.callsArgWith( 1, null );
+			prepStub.execute.callsArgWith( 1, null, fakeRecords );
+			prepStub.unprepare.callsArgWith( 0, null );
 
-		// Now that we have stub instances, we need to stub
-		// the calls to the constructor functions to return
-		// our stubs instead
-		sinon.stub( sql, "Connection", function( opt, fn ) {
-			process.nextTick( fn );
-			return connStub;
+			// Now that we have stub instances, we need to stub
+			// the calls to the constructor functions to return
+			// our stubs instead
+			sinon.stub( _sql, "Connection", function( opt, fn ) {
+				process.nextTick( fn );
+				return connStub;
+			} );
+
+			sinon.stub( _sql, "Request", function() {
+				return reqStub;
+			} );
+
+			sinon.stub( _sql, "PreparedStatement", function() {
+				return prepStub;
+			} );
 		} );
 
-		sinon.stub( sql, "Request", function() {
-			return reqStub;
-		} );
-
-		sinon.stub( sql, "PreparedStatement", function() {
-			return prepStub;
-		} );
+		SqlContext = require( "../../src/sqlContext.js" )( sql, Monologue, machina );
 	} );
 	afterEach( function() {
 		sql.Connection.restore();
@@ -56,7 +46,7 @@ describe( "With Successful SqlContext Executions", function() {
 
 	describe( "when getting a SqlContext instance", function() {
 		var ctx;
-		before( function() {
+		beforeEach( function() {
 			ctx = new SqlContext();
 		} );
 		it( "should start in uninitialized", function() {
@@ -69,7 +59,7 @@ describe( "With Successful SqlContext Executions", function() {
 		****************************************************/
 		describe( "with a plain query to execute", function() {
 			var ctx;
-			before( function() {
+			beforeEach( function() {
 				ctx = new SqlContext();
 				ctx.step( "read", {
 					query: "select * from sys.tables"
@@ -102,7 +92,7 @@ describe( "With Successful SqlContext Executions", function() {
 			it( "should provide correct structure in results object", function( done ) {
 				ctx.end( function( res ) {
 					expect( res ).to.eql( {
-						read: records
+						read: fakeRecords
 					} );
 					done();
 				} );
@@ -156,7 +146,7 @@ describe( "With Successful SqlContext Executions", function() {
 			it( "should provide correct structure in results object", function( done ) {
 				ctx.end( function( res ) {
 					expect( res ).to.eql( {
-						proc: records
+						proc: fakeRecords
 					} );
 					done();
 				} );
@@ -195,7 +185,7 @@ describe( "With Successful SqlContext Executions", function() {
 			it( "should provide correct structure in results object", function( done ) {
 				ctx.end( function( res ) {
 					expect( res ).to.eql( {
-						proc: records
+						proc: fakeRecords
 					} );
 					done();
 				} );
@@ -289,7 +279,7 @@ describe( "With Successful SqlContext Executions", function() {
 			it( "should provide correct structure in results object", function( done ) {
 				ctx.end( function( res ) {
 					expect( res ).to.eql( {
-						prepped: records
+						prepped: fakeRecords
 					} );
 					done();
 				} );

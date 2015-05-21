@@ -1,52 +1,41 @@
-/*global describe,afterEach,it,beforeEach */
 /***************************************************
 
 	SqlContext *FAILING* Execution Tests
 
 ****************************************************/
-
-var expect = require( "expect.js" );
-var sinon = require( "sinon" );
-expect = require( "sinon-expect" ).enhance( expect, sinon, "was" );
-var records = require( "./fakeRecordSet.json" );
-
-var Monologue = require( "monologue.js" );
-var machina = require( "machina" )();
-var sql = require( "mssql" );
-var SqlContext = require( "../../src/sqlContext.js" )( sql, Monologue, machina );
-
 describe( "With Failing SqlContext Executions: ", function() {
-	var reqStub;
-	var connStub;
-	var prepStub;
+	var reqStub, connStub, prepStub, sql, SqlContext;
 	beforeEach( function() {
-		// First - we need stub instances of several mssql
-		// constructors,and we need to invoke callbacks
-		// passed to some of them
-		reqStub = sinon.createStubInstance( sql.Request );
-		reqStub.query.callsArgWith( 1, new Error(), null );
-		reqStub.execute.callsArgWith( 1, new Error(), null );
-		connStub = sinon.createStubInstance( sql.Connection );
-		prepStub = sinon.createStubInstance( sql.PreparedStatement );
-		prepStub.prepare.callsArgWith( 1, null );
-		prepStub.execute.callsArgWith( 1, new Error(), null );
-		prepStub.unprepare.callsArgWith( 0, null );
+		sql = mssqlFactory( {}, function( _sql ) {
+			// First - we need stub instances of several mssql
+			// constructors,and we need to invoke callbacks
+			// passed to some of them
+			reqStub = sinon.createStubInstance( _sql.Request );
+			reqStub.query.callsArgWith( 1, new Error(), null );
+			reqStub.execute.callsArgWith( 1, new Error(), null );
+			connStub = sinon.createStubInstance( _sql.Connection );
+			prepStub = sinon.createStubInstance( _sql.PreparedStatement );
+			prepStub.prepare.callsArgWith( 1, null );
+			prepStub.execute.callsArgWith( 1, new Error(), null );
+			prepStub.unprepare.callsArgWith( 0, null );
 
-		// Now that we have stub instances, we need to stub
-		// the calls to the constructor functions to return
-		// our stubs instead
-		sinon.stub( sql, "Connection", function( opt, fn ) {
-			process.nextTick( fn );
-			return connStub;
-		} );
+			// Now that we have stub instances, we need to stub
+			// the calls to the constructor functions to return
+			// our stubs instead
+			sinon.stub( _sql, "Connection", function( opt, fn ) {
+				process.nextTick( fn );
+				return connStub;
+			} );
 
-		sinon.stub( sql, "Request", function() {
-			return reqStub;
-		} );
+			sinon.stub( _sql, "Request", function() {
+				return reqStub;
+			} );
 
-		sinon.stub( sql, "PreparedStatement", function() {
-			return prepStub;
+			sinon.stub( _sql, "PreparedStatement", function() {
+				return prepStub;
+			} );
 		} );
+		SqlContext = require( "../../src/sqlContext.js" )( sql, Monologue, machina );
 	} );
 	afterEach( function() {
 		sql.Connection.restore();

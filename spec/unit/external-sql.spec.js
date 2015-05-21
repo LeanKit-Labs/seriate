@@ -7,7 +7,6 @@
 
 var sql = require( "../../src/index.js" );
 var path = require( "path" );
-var expect = require( "expect.js" );
 
 describe( "When calling seriate.fromFile", function() {
 	var expected = "SELECT\t [Id]\n\t\t,[Title]\n\t\t,[Description]\n\t\t,[ClassOfServiceEnabled]\n\t\t,[OrganizationId]\nFROM\t[dbo].[Board]\nWHERE\tid = @id\n";

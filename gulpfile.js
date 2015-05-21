@@ -12,7 +12,10 @@ var gutil = require( "gulp-util" );
 function runMocha( singleRun, files ) {
 	return gulp.src( files, { read: false } )
 		.pipe( gulpMocha( {
-			R: "spec"
+			R: "spec",
+			r: [
+				"./spec/helpers/node-setup.js"
+			]
 		} ) ).on( "error", function() {
 			if ( singleRun ) {
 				process.exit( 1 );
@@ -68,7 +71,7 @@ gulp.task( "coverage", function( cb ) {
 		.pipe( istanbul() ) // Covering files
 		.pipe( istanbul.hookRequire() ) // Force `require` to return covered files
 		.on( "finish", function() {
-			gulp.src( [ allTestFiles ] )
+			gulp.src( [ "./spec/helpers/node-setup.js", allTestFiles ] )
 				.pipe( mocha() )
 				.pipe( istanbul.writeReports() ) // Creating the reports after tests runned
 				.on( "end", function() {
