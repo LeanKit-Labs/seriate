@@ -2,7 +2,7 @@ var when = require( "when" );
 
 function errorHandler( err ) {
 	this.err = err;
-	this.transition( "Error" );
+	this.transition( "error" );
 }
 
 module.exports = function( sql, SqlContext ) {
@@ -25,7 +25,7 @@ module.exports = function( sql, SqlContext ) {
 						}
 					}.bind( this ) ];
 					if ( this.isolationLevel ) {
-						args.shift( this.isolationLevel );
+						args.unshift( this.isolationLevel );
 					}
 					this.transaction.begin.apply( this.transaction, args );
 				},
@@ -78,13 +78,13 @@ module.exports = function( sql, SqlContext ) {
 			},
 			error: {
 				_onEnter: function() {
-					if ( this.connection.close ) {
-						this.connection.close();
-					}
 					this.err.message = "Seriate SqlContext Error. Failed on step '" + this.priorState + "'." + this.err.message;
 					this.transaction.rollback( function() {
 						this.emit( "error", this.err );
 					}.bind( this ) );
+					if ( this.connection.close ) {
+						this.connection.close();
+					}
 				}
 			}
 		}

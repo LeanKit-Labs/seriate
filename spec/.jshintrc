@@ -94,12 +94,12 @@
 		"require",
 		"__dirname",
 		"_",
-		"expect",
 		"sinon",
 		"proxyquire",
 		"Monologue",
 		"machina",
 		"mssqlFactory",
+		"seriateFactory",
 		"fakeRecords"
 	],
 

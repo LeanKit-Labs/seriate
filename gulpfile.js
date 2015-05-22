@@ -1,7 +1,6 @@
 var gulp = require( "gulp" );
 var mocha = require( "gulp-mocha" );
 var istanbul = require( "gulp-istanbul" );
-var open = require( "open" ); //jshint ignore:line
 var allSrcFiles = "./src/**/*.js";
 var allTestFiles = "./spec/**/*.spec.js";
 var unitTestFiles = "./spec/unit/**/*.spec.js";
@@ -66,7 +65,7 @@ gulp.task( "watch", [ "test" ], function() {
 	gulp.watch( [ allTestFiles, allSrcFiles ], [ "test" ] );
 } );
 
-gulp.task( "coverage", function( cb ) {
+gulp.task( "coverage", [ "format" ], function( cb ) {
 	gulp.src( [ allSrcFiles ] )
 		.pipe( istanbul() ) // Covering files
 		.pipe( istanbul.hookRequire() ) // Force `require` to return covered files

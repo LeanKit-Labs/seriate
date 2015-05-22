@@ -153,10 +153,6 @@ module.exports = function( mssql, MonologueCtor, mach ) {
 						this.connection.close();
 					}
 					this.emit( "end", this.results );
-				},
-				error: function( err ) {
-					this.err = err;
-					this.transition( "error" );
 				}
 			},
 

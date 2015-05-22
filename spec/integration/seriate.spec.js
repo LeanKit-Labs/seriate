@@ -1,4 +1,4 @@
-var sql = require( "../../src/index.js" );
+var sql = seriateFactory();
 var config = require( "./local-config.json" );
 var getRowId = ( function() {
 	var _id = 0;
@@ -81,12 +81,12 @@ describe( "Seriate Integration Tests", function() {
 					} );
 			} );
 			it( "should have return inserted row", function() {
-				expect( resultsCheck.length ).to.be( 1 );
-				expect( checkError ).to.not.be.ok();
+				resultsCheck.length.should.equal( 1 );
+				( typeof checkError ).should.equal( "undefined" );
 			} );
 			it( "should have returned the identity of inserted row", function() {
-				expect( insResult.sets.insert[ 0 ].NewId ).to.be.ok();
-				expect( typeof insResult.sets.insert[ 0 ].NewId ).to.be( "number" );
+				insResult.sets.insert[ 0 ].NewId.should.be.ok;
+				( typeof insResult.sets.insert[ 0 ].NewId ).should.equal( "number" );
 			} );
 		} );
 		describe( "and rolling back the transaction", function() {
@@ -138,8 +138,8 @@ describe( "Seriate Integration Tests", function() {
 					} );
 			} );
 			it( "should show that the row was not inserted", function() {
-				expect( resultsCheck.length ).to.be( 0 );
-				expect( checkError ).to.not.be.ok();
+				resultsCheck.length.should.equal( 0 );
+				( typeof checkError ).should.equal( "undefined" );
 			} );
 		} );
 	} );
@@ -212,11 +212,11 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		it( "should have inserted the row", function() {
-			expect( insResults.length ).to.be( 1 );
+			insResults.length.should.equal( 1 );
 		} );
 		it( "should show the updates", function( done ) {
 			updateCmd( function() {
-				expect( updResults[ 0 ].v1 ).to.be( "updatey" );
+				updResults[ 0 ].v1.should.equal( "updatey" );
 				done();
 			} );
 		} );
