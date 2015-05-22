@@ -1,9 +1,4 @@
-/* global describe,before,it */
-var expect = require( "expect.js" );
-var sinon = require( "sinon" );
-expect = require( "sinon-expect" ).enhance( expect, sinon, "was" );
-
-var sql = require( "../../src/index.js" );
+var sql = seriateFactory();
 var config = require( "./local-config.json" );
 var getRowId = ( function() {
 	var _id = 0;
@@ -37,13 +32,7 @@ describe( "Seriate Integration Tests", function() {
 
 	describe( "When executing within a TransactionContext", function() {
 		describe( "and committing the transaction", function() {
-			var id;
-			var context;
-			var insError;
-			var insResult;
-			var resultsCheck;
-			var checkError;
-			var readCheck;
+			var id, context, insError, insResult, resultsCheck, checkError, readCheck;
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
@@ -92,21 +81,16 @@ describe( "Seriate Integration Tests", function() {
 					} );
 			} );
 			it( "should have return inserted row", function() {
-				expect( resultsCheck.length ).to.be( 1 );
-				expect( checkError ).to.not.be.ok();
+				resultsCheck.length.should.equal( 1 );
+				( typeof checkError ).should.equal( "undefined" );
 			} );
 			it( "should have returned the identity of inserted row", function() {
-				expect( insResult.sets.insert[ 0 ].NewId ).to.be.ok();
-				expect( typeof insResult.sets.insert[ 0 ].NewId ).to.be( "number" );
+				insResult.sets.insert[ 0 ].NewId.should.be.ok;
+				( typeof insResult.sets.insert[ 0 ].NewId ).should.equal( "number" );
 			} );
 		} );
 		describe( "and rolling back the transaction", function() {
-			var id;
-			var context;
-			var insError;
-			var readCheck;
-			var resultsCheck;
-			var checkError;
+			var id, context, insError, readCheck, resultsCheck, checkError;
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
@@ -154,19 +138,13 @@ describe( "Seriate Integration Tests", function() {
 					} );
 			} );
 			it( "should show that the row was not inserted", function() {
-				expect( resultsCheck.length ).to.be( 0 );
-				expect( checkError ).to.not.be.ok();
+				resultsCheck.length.should.equal( 0 );
+				( typeof checkError ).should.equal( "undefined" );
 			} );
 		} );
 	} );
 	describe( "When updating a row", function() {
-		var id;
-		var insertCheck;
-		var insResults;
-		var updateCmd;
-		var updateErr;
-		var updateCheck;
-		var updResults;
+		var id, insertCheck, insResults, updateCmd, updateErr, updateCheck, updResults;
 		before( function( done ) {
 			id = getRowId();
 			insertCheck = function( done ) {
@@ -234,11 +212,11 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		it( "should have inserted the row", function() {
-			expect( insResults.length ).to.be( 1 );
+			insResults.length.should.equal( 1 );
 		} );
 		it( "should show the updates", function( done ) {
 			updateCmd( function() {
-				expect( updResults[ 0 ].v1 ).to.be( "updatey" );
+				updResults[ 0 ].v1.should.equal( "updatey" );
 				done();
 			} );
 		} );

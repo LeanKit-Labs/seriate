@@ -4,7 +4,7 @@
 
 ****************************************************/
 describe( "Seriate Unit Tests", function() {
-	describe( "With Successful TransactionContext Executions", function() {
+	describe( "With Unsuccessful TransactionContext Executions", function() {
 		var reqStub, connStub, prepStub, tranStub, sql, seriate;
 		beforeEach( function() {
 			sql = mssqlFactory( {}, function( _sql ) {
@@ -13,12 +13,12 @@ describe( "Seriate Unit Tests", function() {
 				// passed to some of them
 				// mssql Request Stub & callback execution setup
 				reqStub = sinon.createStubInstance( _sql.Request );
-				reqStub.query.callsArgWith( 1, null, fakeRecords );
-				reqStub.execute.callsArgWith( 1, null, fakeRecords );
+				reqStub.query.callsArgWith( 1, new Error(), null );
+				reqStub.execute.callsArgWith( 1, new Error(), null );
 				connStub = sinon.createStubInstance( _sql.Connection );
 				prepStub = sinon.createStubInstance( _sql.PreparedStatement );
 				prepStub.prepare.callsArgWith( 1, null );
-				prepStub.execute.callsArgWith( 1, null, fakeRecords );
+				prepStub.execute.callsArgWith( 1, new Error(), null );
 				prepStub.unprepare.callsArgWith( 0, null );
 				tranStub = sinon.createStubInstance( _sql.Transaction );
 				tranStub.begin.callsArgWith( 0, null );
@@ -51,19 +51,9 @@ describe( "Seriate Unit Tests", function() {
 			} );
 		} );
 
-		describe( "when getting a TransactionContext instance", function() {
-			var ctx;
-			beforeEach( function() {
-				ctx = new seriate.TransactionContext();
-			} );
-			it( "should start in uninitialized", function() {
-				ctx.states.uninitialized.should.be.ok;
-			} );
-		} );
-
 		describe( "when adding a step using query options object", function() {
 			/***************************************************
-				PLAIN QUERY TESTING WITH SUCCESSFUL EXECUTION
+				PLAIN QUERY TESTING WITH FAILED QUERY EXECUTION
 			****************************************************/
 			describe( "with a plain query to execute", function() {
 				var ctx;
@@ -84,64 +74,41 @@ describe( "Seriate Unit Tests", function() {
 				} );
 			} );
 
-			describe( "with a plain query and explicit isolation level", function() {
-				var ctx;
-				beforeEach( function() {
-					tranStub.begin.callsArgWith( 1, null );
-					ctx = new seriate.TransactionContext( { isolationLevel: "serializable" } );
-					ctx.step( "read", {
-						query: "select * from sys.tables"
-					} );
-				} );
-				it( "should call transaction.begin with the isolation level", function( done ) {
-					ctx.end( function() {
-						tranStub.begin.should.be.calledWith( "serializable" );
-						done();
-					} );
-				} );
-			} );
-
 			describe( "and executing a query with no params", function() {
-				var ctx;
+				var ctx, errEvent;
 				beforeEach( function() {
 					ctx = new seriate.TransactionContext();
+					ctx.on( "error", function() {
+						errEvent = true;
+					} );
 					ctx.step( "read", {
 						query: "select * from sys.tables"
 					} );
 				} );
 				it( "should call \"begin\" on the Transaction property", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						tranStub.begin.should.be.calledOnce;
 						done();
 					} );
 				} );
 				it( "should call \"query\" on the Request instance", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						reqStub.query.should.be.calledWith( "select * from sys.tables" );
 						done();
 					} );
 				} );
-				it( "should provide correct structure in results object", function( done ) {
-					ctx.end( function( res ) {
-						res.sets.should.be.ok;
-						res.sets.read.should.be.ok;
-						res.transaction.should.be.ok;
+				it( "should call the error handler on a successful execution", function( done ) {
+					ctx.error( function() {
 						done();
 					} );
 				} );
-				it( "should NOT call the error handler on a successful execution", function( done ) {
-					var calledErr = false;
-					ctx.error( function() {
-						calledErr = true;
-					} ).end( function() {
-						calledErr.should.equal( false );
-						done();
-					} );
+				it( "should emit an error event", function() {
+					errEvent.should.be.ok;
 				} );
 			} );
 
 			/*******************************************************
-				STORED PROCEDURE TESTING WITH SUCCESSFUL EXECUTION
+				STORED PROCEDURE TESTING WITH FAILED EXECUTION
 			********************************************************/
 			describe( "with a stored procedure", function() {
 				var ctx;
@@ -171,31 +138,19 @@ describe( "Seriate Unit Tests", function() {
 					} );
 				} );
 				it( "should call \"begin\" on the Transaction property", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						tranStub.begin.should.be.calledOnce;
 						done();
 					} );
 				} );
 				it( "should call \"execute\" on the Request instance", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						reqStub.execute.should.be.calledWith( "sp_who2" );
 						done();
 					} );
 				} );
-				it( "should provide correct structure in results object", function( done ) {
-					ctx.end( function( res ) {
-						res.sets.should.be.ok;
-						res.sets.proc.should.be.ok;
-						res.transaction.should.be.ok;
-						done();
-					} );
-				} );
-				it( "should NOT call the error handler on a successful execution", function( done ) {
-					var calledErr = false;
+				it( "should call the error handler on a successful execution", function( done ) {
 					ctx.error( function() {
-						calledErr = true;
-					} ).end( function() {
-						calledErr.should.equal( false );
 						done();
 					} );
 				} );
@@ -217,51 +172,39 @@ describe( "Seriate Unit Tests", function() {
 					} );
 				} );
 				it( "should call \"begin\" on the Transaction property", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						tranStub.begin.should.be.calledOnce;
 						done();
 					} );
 				} );
 				it( "should call \"execute\" on the Request instance", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						reqStub.execute.should.be.calledWith( "sp_who2" );
 						done();
 					} );
 				} );
-				it( "should provide correct structure in results object", function( done ) {
-					ctx.end( function( res ) {
-						res.sets.should.be.ok;
-						res.sets.proc.should.be.ok;
-						res.transaction.should.be.ok;
-						done();
-					} );
-				} );
 				it( "should call \"input\" on the Request instance for param1", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						reqStub.input.should.be.calledTwice.and.calledWith( "param1", sql.INT, 9 );
 						done();
 					} );
 				} );
 				it( "should call \"input\" on the Request instance for param2", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						reqStub.input.should.be.calledTwice;
 						reqStub.input.should.be.calledWith( "param2", "Hai Mom" );
 						done();
 					} );
 				} );
-				it( "should NOT call the error handler on a successful execution", function( done ) {
-					var calledErr = false;
+				it( "should call the error handler on a successful execution", function( done ) {
 					ctx.error( function() {
-						calledErr = true;
-					} ).end( function() {
-						calledErr.should.equal( false );
 						done();
 					} );
 				} );
 			} );
 
 			/*******************************************************
-				PREPARED SQL TESTING WITH SUCCESSFUL EXECUTION
+				PREPARED SQL TESTING WITH FAILED EXECUTION
 			********************************************************/
 			describe( "with prepared sql", function() {
 				var ctx;
@@ -303,19 +246,19 @@ describe( "Seriate Unit Tests", function() {
 					} );
 				} );
 				it( "should call \"begin\" on the Transaction property", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						tranStub.begin.should.be.calledOnce;
 						done();
 					} );
 				} );
 				it( "should call \"prepare\" on the PreparedStatement instance", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						prepStub.prepare.should.be.calledWith( "select * from sys.tables where type_desc = @usertable" );
 						done();
 					} );
 				} );
 				it( "should call \"execute\" on the PreparedStatement instance", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						prepStub.execute.should.be.calledWith( {
 							usertable: "USER_TABLE"
 						} );
@@ -323,31 +266,19 @@ describe( "Seriate Unit Tests", function() {
 					} );
 				} );
 				it( "should call \"unprepare\" on the PreparedStatement instance", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						prepStub.unprepare.should.be.calledOnce;
 						done();
 					} );
 				} );
-				it( "should provide correct structure in results object", function( done ) {
-					ctx.end( function( res ) {
-						res.sets.should.be.ok;
-						res.sets.prepped.should.be.ok;
-						res.transaction.should.be.ok;
-						done();
-					} );
-				} );
 				it( "should call \"input\" on the PreparedStatement instance for usertable parameter", function( done ) {
-					ctx.end( function() {
+					ctx.error( function() {
 						prepStub.input.should.be.calledOnce.and.calledWith( "usertable", sql.NVarChar );
 						done();
 					} );
 				} );
-				it( "should NOT call the error handler on a successful execution", function( done ) {
-					var calledErr = false;
+				it( "should call the error handler on a successful execution", function( done ) {
 					ctx.error( function() {
-						calledErr = true;
-					} ).end( function() {
-						calledErr.should.equal( false );
 						done();
 					} );
 				} );

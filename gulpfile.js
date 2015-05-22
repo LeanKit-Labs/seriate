@@ -1,7 +1,6 @@
 var gulp = require( "gulp" );
 var mocha = require( "gulp-mocha" );
 var istanbul = require( "gulp-istanbul" );
-var open = require( "open" ); //jshint ignore:line
 var allSrcFiles = "./src/**/*.js";
 var allTestFiles = "./spec/**/*.spec.js";
 var unitTestFiles = "./spec/unit/**/*.spec.js";
@@ -12,7 +11,10 @@ var gutil = require( "gulp-util" );
 function runMocha( singleRun, files ) {
 	return gulp.src( files, { read: false } )
 		.pipe( gulpMocha( {
-			R: "spec"
+			R: "spec",
+			r: [
+				"./spec/helpers/node-setup.js"
+			]
 		} ) ).on( "error", function() {
 			if ( singleRun ) {
 				process.exit( 1 );
@@ -63,12 +65,12 @@ gulp.task( "watch", [ "test" ], function() {
 	gulp.watch( [ allTestFiles, allSrcFiles ], [ "test" ] );
 } );
 
-gulp.task( "coverage", function( cb ) {
+gulp.task( "coverage", [ "format" ], function( cb ) {
 	gulp.src( [ allSrcFiles ] )
 		.pipe( istanbul() ) // Covering files
 		.pipe( istanbul.hookRequire() ) // Force `require` to return covered files
 		.on( "finish", function() {
-			gulp.src( [ allTestFiles ] )
+			gulp.src( [ "./spec/helpers/node-setup.js", allTestFiles ] )
 				.pipe( mocha() )
 				.pipe( istanbul.writeReports() ) // Creating the reports after tests runned
 				.on( "end", function() {

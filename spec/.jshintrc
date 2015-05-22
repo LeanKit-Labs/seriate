@@ -93,7 +93,14 @@
 		"it",
 		"require",
 		"__dirname",
-		"_"
+		"_",
+		"sinon",
+		"proxyquire",
+		"Monologue",
+		"machina",
+		"mssqlFactory",
+		"seriateFactory",
+		"fakeRecords"
 	],
 
 	// LEGACY
