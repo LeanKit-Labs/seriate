@@ -24,6 +24,10 @@
     {
       "name": "Brian Edgerton",
       "email": "brian.edgerton@leankit.com"
+    },
+    {
+      "name": "David Neal",
+      "url": "https://github.com/reverentgeek"
     }
   ],
   "dependencies": {

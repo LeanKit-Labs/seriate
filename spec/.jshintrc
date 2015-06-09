@@ -24,7 +24,7 @@
 	"quotmark": true, //enforces the consistency of quotation marks used throughout your code
 	"regexp": false, //prohibits the use of unsafe `.` in regular expressions
 	"undef": true, //prohibits the use of explicitly undeclared variables
-	"unused": false, //warns when you define and never use your variables
+	"unused": "vars", //warns when you define and never use your variables
 	"strict": false, //requires all functions to run in EcmaScript 5's strict mode
 	"trailing": false, //makes it an error to leave a trailing whitespace in your code
 	// "maxparams":      0,      //set the max number of formal parameters allowed per function,
@@ -93,7 +93,6 @@
 		"it",
 		"require",
 		"__dirname",
-		"_",
 		"sinon",
 		"proxyquire",
 		"Monologue",
