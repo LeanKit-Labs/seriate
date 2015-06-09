@@ -1,6 +1,6 @@
 {
   "name": "seriate",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
   "main": "src/index.js",
   "author": "LeanKit",
