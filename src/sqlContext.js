@@ -11,6 +11,7 @@ function errorHandler( err ) {
 
 function nonPreparedSql( options ) {
 	var req = new sql.Request( this.transaction || this.connection );
+	req.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 	_.each( options.params, function( val, key ) {
 		if ( typeof val === "object" ) {
 			req.input( key, val.type, val.val );
@@ -33,6 +34,7 @@ function nonPreparedSql( options ) {
 
 function preparedSql( options ) {
 	var cmd = new sql.PreparedStatement( this.transaction || this.connection );
+	cmd.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 	var paramKeyValues = {};
 	_.each( options.params, function( val, key ) {
 		if ( typeof val === "object" ) {
