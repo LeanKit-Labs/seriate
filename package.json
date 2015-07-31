@@ -6,6 +6,10 @@
   "author": "LeanKit",
   "homepage": "http://github.com/leankit-labs/seriate",
   "license": "MIT License - http://opensource.org/licenses/MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeanKit-Labs/seriate.git"
+  },
   "contributors": [
     {
       "name": "Scott Walters",
