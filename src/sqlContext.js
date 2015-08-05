@@ -1,16 +1,19 @@
 var _ = require( "lodash" );
 var when = require( "when" );
-var machina;
-var sql;
-var Monologue;
+var lift = require( "when/node" ).lift;
+var sql = require( "mssql" );
+var util = require( "util" );
+var log = require( "./log" )( "seriate.sql" );
+var Monologue = require( "monologue.js" );
+var machina = require( "machina" );
 
 function errorHandler( err ) {
 	this.err = err;
 	this.transition( "error" );
 }
 
-function nonPreparedSql( options ) {
-	var req = new sql.Request( this.transaction || this.connection );
+function nonPreparedSql( state, name, options ) {
+	var req = new sql.Request( state.transaction || state.connection );
 	req.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 	_.each( options.params, function( val, key ) {
 		if ( typeof val === "object" ) {
@@ -21,19 +24,25 @@ function nonPreparedSql( options ) {
 	} );
 	var operation = options.query ? "query" : "execute";
 	var sqlCmd = options.query || options.procedure;
-	return when.promise( function( resolve, reject ) {
-		req[ operation ]( sqlCmd, function( err, result ) {
-			if ( err ) {
-				reject( err );
-			} else {
-				resolve( result );
+	if ( state.metrics ) {
+		return state.metrics.instrument(
+			{
+				key: [ "sql", name ],
+				namespace: state.metricsNamespace,
+				call: function( cb ) {
+					return req[ operation ]( sqlCmd, cb );
+				},
+				success: _.identity,
+				failure: _.identity
 			}
-		} );
-	} );
+		);
+	} else {
+		return lift( req[ operation ] ).bind( req )( sqlCmd );
+	}
 }
 
-function preparedSql( options ) {
-	var cmd = new sql.PreparedStatement( this.transaction || this.connection );
+function preparedSql( state, name, options ) {
+	var cmd = new sql.PreparedStatement( state.transaction || state.connection );
 	cmd.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 	var paramKeyValues = {};
 	_.each( options.params, function( val, key ) {
@@ -45,49 +54,66 @@ function preparedSql( options ) {
 			paramKeyValues[ key ] = val;
 		}
 	} );
-	return when.promise( function( resolve, reject ) {
-		cmd.prepare( options.preparedSql, function( err ) {
-			if ( err ) {
-				reject( err );
-			}
-			cmd.execute( paramKeyValues, function( err, result ) {
-				if ( err ) {
-					reject( err );
-				}
-				cmd.unprepare( function( err ) {
-					if ( err ) {
-						reject( err );
-					} else {
-						resolve( result );
-					}
-				} );
+	var prepare = lift( cmd.prepare ).bind( cmd );
+	var execute = lift( cmd.execute ).bind( cmd );
+	var unprepare = lift( cmd.unprepare ).bind( cmd );
+	function op() {
+		return prepare( options.preparedSql )
+			.then( function() {
+				return execute( paramKeyValues )
+					.then( function( result ) {
+						return unprepare()
+							.then( function() {
+								return result;
+							} );
+					}, function( err ) {
+						return unprepare()
+							.then( function() {
+								throw err;
+							} );
+					} );
 			} );
-		} );
-	} );
+	}
+	if ( state.metrics ) {
+		return state.metrics.instrument(
+			{
+				key: [ "sql", name ],
+				namespace: state.metricsNamespace,
+				call: function() {
+					return op();
+				},
+				success: _.identity,
+				failure: _.identity
+			}
+		);
+	} else {
+		return op();
+	}
 }
 
-function executeSql( options ) {
+function executeSql( state, name, options ) {
 	if ( options.query || options.procedure ) {
-		return this.nonPreparedSql.call( this, options );
+		return nonPreparedSql( state, name, options );
 	} else {
-		return this.preparedSql.call( this, options );
+		return preparedSql( state, name, options );
 	}
 }
 
 function addState( fsm, name, stepAction ) {
 	if ( fsm.states[ name ] ) {
-		throw new Error( "A step by that name already exists" );
+		throw new Error( "A step by that name already exists: " + fsm.instance );
 	}
 
 	fsm.pipeline.push( name );
-
 	fsm.states[ name ] = {
 		_onEnter: function() {
 			var exec = function( options ) {
-				this.executeSql.call( fsm, options )
-					.then( fsm.handle.bind( fsm, "success" ) )
-					.then( null, fsm.handle.bind( fsm, "error" ) );
-			}.bind( fsm );
+				executeSql( fsm, name, options )
+					.then(
+						fsm.handle.bind( fsm, "success" ),
+						fsm.handle.bind( fsm, "error" )
+					);
+			};
 			stepAction.call(
 				fsm,
 				exec,
@@ -103,20 +129,30 @@ function addState( fsm, name, stepAction ) {
 	};
 }
 
-module.exports = function( mssql, MonologueCtor, mach ) {
-	sql = mssql;
-	Monologue = MonologueCtor;
-	machina = mach;
-
+module.exports = function() {
 	var SqlContext = machina.Fsm.extend( {
+		_connected: function( connection ) {
+			this.connection = connection;
+			this.handle( "success" );
+		},
+
+		_connectionError: function( err ) {
+			this.handle( "error", err );
+		},
 
 		initialState: "uninitialized",
 
 		initialize: function( options ) {
-			this.connectionCfg = options.connectionCfg || {};
 			this.results = {};
 			this.pipeline = [];
 			this.pipePos = -1;
+			this.metrics = options.metrics;
+			this.metricsNamespace = options.namespace;
+			options.connection
+				.then(
+					this._connected.bind( this ),
+					this._connectionError.bind( this )
+				);
 		},
 
 		nextState: function() {
@@ -127,19 +163,12 @@ module.exports = function( mssql, MonologueCtor, mach ) {
 
 		states: {
 			uninitialized: {
-				start: "connecting"
+				start: "connecting",
+				"*": function() {
+					this.deferUntilTransition( "connecting" );
+				}
 			},
-
 			connecting: {
-				_onEnter: function() {
-					this.connection = new sql.Connection( this.connectionCfg, function( err ) {
-						if ( err ) {
-							this.handle( "error", err );
-						} else {
-							this.handle( "success" );
-						}
-					}.bind( this ) );
-				},
 				success: function() {
 					this.nextState();
 				},
@@ -151,19 +180,15 @@ module.exports = function( mssql, MonologueCtor, mach ) {
 
 			done: {
 				_onEnter: function() {
-					if ( this.connection.close ) {
-						this.connection.close();
-					}
 					this.emit( "end", this.results );
 				}
 			},
 
 			error: {
 				_onEnter: function() {
-					if ( this.connection.close ) {
-						this.connection.close();
-					}
-					this.err.message = "Seriate SqlContext Error. Failed on step '" + this.priorState + "'." + this.err.message;
+					var message = util.format( "SqlContext Error. Failed on step \"%s\" with: \"%s\"", this.priorState, this.err.message );
+					log.error( message );
+					this.err.message = message;
 					this.emit( "error", this.err );
 				}
 			}
@@ -181,37 +206,48 @@ module.exports = function( mssql, MonologueCtor, mach ) {
 			return this;
 		},
 
-		end: function( fn ) {
-			this.on( "end", fn );
+		deferredStart: function() {
 			if ( !this._started ) {
 				process.nextTick( function() {
 					this.handle( "start" );
 				}.bind( this ) );
 				this._started = true;
 			}
+		},
+
+		end: function( fn ) {
+			this.on( "end", fn );
+			this.deferredStart();
 			return this;
 		},
 
 		error: function( fn ) {
 			this.on( "error", fn );
-			if ( !this._started ) {
-				process.nextTick( function() {
-					this.handle( "start" );
-				}.bind( this ) );
-				this._started = true;
-			}
+			this.deferredStart();
 			return this;
+		},
+
+		then: function( success, failure ) {
+			var deferred = when.defer();
+			function onSuccess( result ) {
+				deferred.resolve( result );
+			}
+			function onFailure( error ) {
+				deferred.reject( error );
+			}
+			if ( success ) {
+				this.end( onSuccess );
+			}
+			if ( failure ) {
+				this.error( onFailure );
+			}
+			return deferred.promise
+				.then( success, failure );
 		},
 
 		abort: function() {
 			this.handle( "error", "Operation aborted" );
-		},
-
-		executeSql: executeSql,
-
-		nonPreparedSql: nonPreparedSql,
-
-		preparedSql: preparedSql
+		}
 
 	} );
 

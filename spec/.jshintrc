@@ -99,7 +99,10 @@
 		"machina",
 		"mssqlFactory",
 		"seriateFactory",
-		"fakeRecords"
+		"fakeRecords",
+		"should",
+		"expect",
+		"_"
 	],
 
 	// LEGACY

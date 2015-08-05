@@ -1,4 +1,4 @@
-var sql = seriateFactory();
+require( "../setup" );
 var config = require( "./local-config.json" );
 var getRowId = ( function() {
 	var _id = 0;
@@ -6,10 +6,9 @@ var getRowId = ( function() {
 		return _id++;
 	};
 }() );
-var _ = require( "lodash" );
 var id1, id2;
 
-function insertTestRows() {
+function insertTestRows( sql ) {
 	id1 = getRowId();
 	id2 = getRowId();
 	return sql.execute( config, {
@@ -35,53 +34,59 @@ function insertTestRows() {
 		} );
 }
 
-function deleteTestRows() {
+function deleteTestRows( sql ) {
 	return sql.execute( config, {
 		preparedSql: "DELETE FROM NodeTestTable"
 	} );
 }
 
 describe( "Seriate Integration Tests", function() {
-	before( function( done ) {
+	var sql;
+	before( function() {
 		this.timeout( 20000 );
-		var masterCfg = _.extend( {}, config, { database: "master" } );
-		sql.execute( masterCfg, {
-			query: "if db_id('" + config.database + "') is not null drop database " + config.database
-		} ).then( function() {
-			sql.execute( masterCfg, {
-				query: "create database " + config.database
-			} ).then( function() {
-				sql.getPlainContext( config )
-					.step( "CreateTable", {
-						query: "create table NodeTestTable (bi1 bigint not null identity(1,1) primary key, v1 varchar(255), i1 int null)"
-					} )
-					.step( "CreateSecondTable", {
-						query: "create table NodeTestTableNoIdent (bi1 bigint not null primary key, v1 varchar(255), i1 int null)"
-					} )
-					.end( function() {
-						sql.getPlainContext( config )
-							.step( "CreateProc", {
-								query: "CREATE PROC NodeTestMultipleProc ( @i1 int ) AS SELECT	bi1, v1, i1 FROM NodeTestTable WHERE i1 = @i1; SELECT totalRows = COUNT(*) FROM NodeTestTable;"
-							} )
-							.end( function() {
-								done();
-							} )
-							.error( function( err ) {
-								console.log( err );
-								done();
-							} );
-					} )
-					.error( function( err ) {
-						console.log( err );
-						done();
-					} );
+		sql = proxyquire( "../src/index", {} );
+		var masterCfg = _.extend( {}, config, { name: "master", database: "master", options: { database: "master" } } );
+
+		function dropDatabase() {
+			return sql.execute( masterCfg, {
+				query: "IF DB_ID('" + config.database + "') IS NOT NULL\n" + "BEGIN\n" + "    ALTER DATABASE " + config.database + " SET SINGLE_USER WITH ROLLBACK IMMEDIATE;\n" + "    DROP DATABASE " + config.database + ";\n" + "END"
 			} );
-		} );
+		}
+
+		function createDatabase() {
+			return sql.execute( masterCfg, {
+				query: "create database " + config.database
+			} );
+		}
+
+		function setupPrerequisites() {
+			return sql.getPlainContext( config )
+				.step( "CreateTable", {
+					query: "create table NodeTestTable (bi1 bigint not null identity(1,1) primary key, v1 varchar(255), i1 int null)"
+				} )
+				.step( "CreateSecondTable", {
+					query: "create table NodeTestTableNoIdent (bi1 bigint not null primary key, v1 varchar(255), i1 int null)"
+				} )
+				.step( "CreateProc", {
+					query: "CREATE PROC NodeTestMultipleProc ( @i1 int ) AS SELECT	bi1, v1, i1 FROM NodeTestTable WHERE i1 = @i1; SELECT totalRows = COUNT(*) FROM NodeTestTable;"
+				} )
+				.then( function() {} );
+		}
+
+		return dropDatabase()
+			.then( createDatabase )
+			.then( setupPrerequisites );
 	} );
 
-	describe( "When executing within a TransactionContext", function() {
+	after( function() {
+		sql.closeConnection( "default" );
+		sql.closeConnection( "master" );
+	} );
+
+	describe( "when executing within a TransactionContext", function() {
 		describe( "and committing the transaction", function() {
 			var id, context, insError, insResult, resultsCheck, checkError, readCheck;
+
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
@@ -129,18 +134,22 @@ describe( "Seriate Integration Tests", function() {
 						done();
 					} );
 			} );
-			after( function() {
-				return deleteTestRows();
-			} );
+
 			it( "should have return inserted row", function() {
 				resultsCheck.length.should.equal( 1 );
 				( typeof checkError ).should.equal( "undefined" );
 			} );
+
 			it( "should have returned the identity of inserted row", function() {
 				insResult.sets.insert[ 0 ].NewId.should.be.ok;
 				( typeof insResult.sets.insert[ 0 ].NewId ).should.equal( "number" );
 			} );
+
+			after( function() {
+				return deleteTestRows( sql );
+			} );
 		} );
+
 		describe( "and rolling back the transaction", function() {
 			var id, context, insError, readCheck, resultsCheck, checkError;
 			before( function( done ) {
@@ -190,7 +199,7 @@ describe( "Seriate Integration Tests", function() {
 					} );
 			} );
 			after( function() {
-				return deleteTestRows();
+				return deleteTestRows( sql );
 			} );
 			it( "should show that the row was not inserted", function() {
 				resultsCheck.length.should.equal( 0 );
@@ -198,12 +207,33 @@ describe( "Seriate Integration Tests", function() {
 			} );
 		} );
 	} );
-	describe( "When updating a row", function() {
-		var id, insertCheck, insResults, updateCmd, updateErr, updateCheck, updResults;
-		before( function( done ) {
+
+	describe( "when updating a row", function() {
+		var id, insResults, insertErr, updateErr, updResults;
+
+		before( function() {
 			id = getRowId();
-			insertCheck = function( done ) {
-				sql.execute( config, {
+
+			function insert() {
+				return sql.execute( config, {
+					preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1)",
+					params: {
+						i1: {
+							val: id,
+							type: sql.INT
+						},
+						v1: {
+							val: "inserty",
+							type: sql.NVARCHAR
+						}
+					}
+				} ).then( undefined, function( err ) {
+					insertErr = err;
+				} );
+			}
+
+			function insertCheck() {
+				return sql.execute( config, {
 					preparedSql: "select * from NodeTestTable where i1 = @i1",
 					params: {
 						i1: {
@@ -213,11 +243,11 @@ describe( "Seriate Integration Tests", function() {
 					}
 				} ).then( function( res ) {
 					insResults = res;
-					done();
 				} );
-			};
-			updateCheck = function( done ) {
-				sql.execute( config, {
+			}
+
+			function updateCheck() {
+				return sql.execute( config, {
 					preparedSql: "select * from NodeTestTable where i1 = @i1",
 					params: {
 						i1: {
@@ -227,11 +257,11 @@ describe( "Seriate Integration Tests", function() {
 					}
 				} ).then( function( res ) {
 					updResults = res;
-					done();
 				} );
-			};
-			updateCmd = function( done ) {
-				sql.execute( config, {
+			}
+
+			function update() {
+				return sql.execute( config, {
 					preparedSql: "update NodeTestTable set v1 = @v1 where i1 = @i1",
 					params: {
 						i1: {
@@ -243,62 +273,73 @@ describe( "Seriate Integration Tests", function() {
 							type: sql.NVARCHAR
 						}
 					}
-				} ).then( function() {
-					updateCheck( done );
-				}, function( err ) {
-						updateErr = err;
-					} );
-			};
-			sql.execute( config, {
-				preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1)",
-				params: {
-					i1: {
-						val: id,
-						type: sql.INT
-					},
-					v1: {
-						val: "inserty",
-						type: sql.NVARCHAR
-					}
-				}
-			} ).then( function() {
-				insertCheck( done );
-			} );
+				} ).then( undefined, function( err ) {
+					updateErr = err;
+				} );
+			}
+
+			return insert()
+				.then( insertCheck )
+				.then( update )
+				.then( updateCheck );
 		} );
+
 		after( function() {
-			return deleteTestRows();
+			return deleteTestRows( sql );
 		} );
 
 		it( "should have inserted the row", function() {
 			insResults.length.should.equal( 1 );
 		} );
-		it( "should show the updates", function( done ) {
-			updateCmd( function() {
-				updResults[ 0 ].v1.should.equal( "updatey" );
-				done();
-			} );
+
+		it( "should have updated row", function() {
+			updResults[ 0 ].v1.should.equal( "updatey" );
+		} );
+
+		it( "should not have errored on insert", function() {
+			should.not.exist( insertErr );
+		} );
+
+		it( "should not have errored on update", function() {
+			should.not.exist( updateErr );
 		} );
 	} );
-	describe( "When using default connection configuration option", function() {
-		it( "Should utilize default options", function( done ) {
-			sql.setDefaultConfig( config );
-			sql.execute( {
-				preparedSql: "select * from NodeTestTable where i1 = @i1",
-				params: {
-					i1: {
-						val: getRowId(),
-						type: sql.INT
-					}
-				}
-			} ).then( function( /* res */ ) {
-				done();
-			} );
-		} );
-	} );
-	describe( "When executing a stored procedure", function() {
-		var procResults;
+
+	describe( "when using default connection configuration option", function() {
+		var result;
+
 		before( function() {
-			return insertTestRows()
+			return insertTestRows( sql )
+				.then( function() {
+					return sql.execute( {
+						preparedSql: "select v1 from NodeTestTable where i1 = @i1",
+						params: {
+							i1: {
+								val: id1,
+								type: sql.INT
+							}
+						}
+					} );
+				} )
+				.then( function( res ) {
+					result = res;
+				} );
+		} );
+
+		after( function() {
+			return deleteTestRows( sql );
+		} );
+
+		it( "should utilize default options", function() {
+			result.should.eql( [ { v1: "result1" } ] );
+		} );
+	} );
+
+	describe( "when executing a stored procedure", function() {
+		var procResults;
+
+		before( function() {
+			return insertTestRows( sql )
 				.then( function() {
 					return sql.execute( config, {
 						procedure: "NodeTestMultipleProc",
@@ -309,15 +350,15 @@ describe( "Seriate Integration Tests", function() {
 							}
 						}
 					} ).then( function( res ) {
-						procResults = res;
-					}, function( err ) {
-						console.log( err );
+						procResults = res[ 0 ];
 					} );
 				} );
 		} );
+
 		after( function() {
-			return deleteTestRows();
+			return deleteTestRows( sql );
 		} );
+
 		it( "should return multiple recordsets because, stored procedure", function() {
 			procResults.length.should.equal( 2 );
 			procResults[ 0 ].length.should.equal( 1 );
@@ -327,17 +368,19 @@ describe( "Seriate Integration Tests", function() {
 			procResults.returnValue.should.equal( 0 );
 		} );
 	} );
-	describe( "When retrieving multiple record sets", function() {
+	describe( "when retrieving multiple record sets", function() {
 		before( function() {
-			return insertTestRows();
+			return insertTestRows( sql );
 		} );
+
 		after( function() {
-			return deleteTestRows();
+			return deleteTestRows( sql );
 		} );
+
 		describe( "with plain SQL", function() {
 			var multipleRSPlainResults;
-			before( function( done ) {
-				sql.execute( config, {
+			before( function() {
+				return sql.execute( "default", {
 					query: "select * from NodeTestTable where i1 = @i1; select * from NodeTestTable where i1 = @i2;",
 					params: {
 						i1: {
@@ -352,12 +395,9 @@ describe( "Seriate Integration Tests", function() {
 					multiple: true
 				} ).then( function( res ) {
 					multipleRSPlainResults = res;
-					done();
-				}, function( err ) {
-					console.log( err );
-					done();
 				} );
 			} );
+
 			it( "should have 2 record sets from plain sql", function() {
 				multipleRSPlainResults.length.should.equal( 2 );
 				multipleRSPlainResults[ 0 ].length.should.equal( 1 );
@@ -367,10 +407,12 @@ describe( "Seriate Integration Tests", function() {
 				( typeof multipleRSPlainResults.returnValue ).should.equal( "undefined" );
 			} );
 		} );
+
 		describe( "with prepared SQL", function() {
 			var multipleResults;
-			before( function( done ) {
-				sql.execute( config, {
+
+			before( function() {
+				return sql.execute( config, {
 					preparedSql: "select * from NodeTestTable where i1 = @i1; select * from NodeTestTable where i1 = @i2;",
 					params: {
 						i1: {
@@ -385,9 +427,9 @@ describe( "Seriate Integration Tests", function() {
 					multiple: true
 				} ).then( function( res ) {
 					multipleResults = res;
-					done();
 				} );
 			} );
+
 			it( "should have 2 record sets from prepared sql", function() {
 				multipleResults.length.should.equal( 2 );
 				multipleResults[ 0 ].length.should.equal( 1 );
@@ -399,8 +441,9 @@ describe( "Seriate Integration Tests", function() {
 		} );
 		describe( "with stored procedures", function() {
 			var multipleRSProcResults;
-			before( function( done ) {
-				sql.execute( config, {
+
+			before( function() {
+				return sql.execute( {
 					procedure: "NodeTestMultipleProc",
 					params: {
 						i1: {
@@ -409,13 +452,10 @@ describe( "Seriate Integration Tests", function() {
 						}
 					}
 				} ).then( function( res ) {
-					multipleRSProcResults = res;
-					done();
-				}, function( err ) {
-						console.log( err );
-						done();
-					} );
+					multipleRSProcResults = res[ 0 ];
+				} );
 			} );
+
 			it( "should have 2 record sets from procedure", function() {
 				multipleRSProcResults.length.should.equal( 2 );
 				multipleRSProcResults[ 0 ].length.should.equal( 1 );
