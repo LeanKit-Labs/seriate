@@ -5,9 +5,12 @@
 		"coverage/**"
 	],
 
-	"esnext": true,
+	// Added for JSX Support
+	"fileExtensions": [
+		".js"
+	],
 
-  // Normal jscsrc
+	// Normal jscsrc
 	"disallowKeywords": [
 		"with"
 	],

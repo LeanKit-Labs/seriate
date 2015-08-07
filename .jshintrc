@@ -15,7 +15,7 @@
 	"forin"     : true,   //requires all `for in` loops to filter object's items with `hasOwnProperty()`
 	"immed"     : true,   //prohibits the use of immediate function invocations without wrapping them in parentheses
 	"indent"    : 4,      //enforces specific tab width
-	"latedef"   : true,   //prohibits the use of a variable before it was defined
+	"latedef"   : "var",   //prohibits the use of a variable before it was defined
 	"newcap"    : true,   //requires you to capitalize names of constructor functions
 	"noarg"     : true,   //prohibits the use of `arguments.caller` and `arguments.callee`
 	"noempty"   : true,   //warns when you have an empty block in your code
