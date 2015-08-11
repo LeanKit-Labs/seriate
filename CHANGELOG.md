@@ -1,5 +1,9 @@
 ## 0.5.*
 
+### 0.5.1
+
+Update mssql version to 2.1.8 to get 1.12.2 of tedious - new stream parsing and corrected NTLM auth.
+
 ### 0.5.0
 
  * Refactor of how connection pools are defined and used throughout API to address the following:
