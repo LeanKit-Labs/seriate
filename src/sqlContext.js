@@ -235,12 +235,10 @@ module.exports = function() {
 			function onFailure( error ) {
 				deferred.reject( error );
 			}
-			if ( success ) {
-				this.end( onSuccess );
-			}
-			if ( failure ) {
-				this.error( onFailure );
-			}
+
+			this.end( onSuccess );
+			this.error( onFailure );
+
 			return deferred.promise
 				.then( success, failure );
 		},
