@@ -333,6 +333,10 @@ describe( "TransactionContext", function() {
 		it( "should report the error correctly", function() {
 			error.message.should.eql( "TransactionContext Error. Failed on step \"read\" with: \"so much fail\"" );
 		} );
+
+		it( "should capture the failing step name on the error", function() {
+			error.step.should.equal( "read" );
+		} );
 	} );
 
 	describe( "when calling a stored procedure without parameters throws an error", function() {
@@ -383,6 +387,9 @@ describe( "TransactionContext", function() {
 
 		it( "should report the error correctly", function() {
 			error.message.should.eql( "TransactionContext Error. Failed on step \"proc\" with: \"so much fail\"" );
+		} );
+		it( "should capture the failing step name on the error", function() {
+			error.step.should.equal( "proc" );
 		} );
 	} );
 
@@ -436,6 +443,10 @@ describe( "TransactionContext", function() {
 
 		it( "should report the error correctly", function() {
 			error.message.should.eql( "TransactionContext Error. Failed on step \"proc\" with: \"so much fail\"" );
+		} );
+
+		it( "should capture the failing step name on the error", function() {
+			error.step.should.equal( "proc" );
 		} );
 	} );
 
@@ -509,6 +520,10 @@ describe( "TransactionContext", function() {
 
 		it( "should report the error correctly", function() {
 			error.message.should.eql( "TransactionContext Error. Failed on step \"prepped\" with: \"so much fail\"" );
+		} );
+
+		it( "should capture the failing step name on the error", function() {
+			error.step.should.equal( "prepped" );
 		} );
 	} );
 

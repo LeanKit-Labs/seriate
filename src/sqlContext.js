@@ -189,6 +189,7 @@ module.exports = function() {
 					var message = util.format( "SqlContext Error. Failed on step \"%s\" with: \"%s\"", this.priorState, this.err.message );
 					log.error( message );
 					this.err.message = message;
+					this.err.step = this.priorState;
 					this.emit( "error", this.err );
 				}
 			}
