@@ -1,5 +1,9 @@
 ## 0.5.*
 
+### 0.5.3
+ * Improvement - include failed step name in  object
+ * Bug fix - don't lose error context during rollback
+
 ### 0.5.2
  * Bug fix - consistently resolve/reject when using then
  * Update node-mssql to 2.2.0
