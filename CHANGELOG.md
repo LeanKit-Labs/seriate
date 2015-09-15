@@ -1,5 +1,9 @@
 ## 0.5.*
 
+### 0.5.2
+ * Bug fix - consistently resolve/reject when using then
+ * Update node-mssql to 2.2.0
+
 ### 0.5.1
 
 Update mssql version to 2.1.8 to get 1.12.2 of tedious - new stream parsing and corrected NTLM auth.

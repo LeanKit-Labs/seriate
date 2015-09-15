@@ -1,6 +1,6 @@
 {
   "name": "seriate",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
   "main": "src/index.js",
   "author": "LeanKit",
@@ -12,10 +12,6 @@
   },
   "contributors": [
     {
-      "name": "Scott Walters",
-      "email": "scott.walters@leankit.com"
-    },
-    {
       "name": "Jim Cowart",
       "email": "jim.cowart@leankit.com",
       "url": "http://ifandelse.com"
@@ -26,8 +22,17 @@
       "url": "http://nerdventure.io"
     },
     {
+      "name": "Ryan Niemeyer",
+      "email": "ryan@knockmeout.net",
+      "url": "http://knockmeout.net"
+    },
+    {
       "name": "Brian Edgerton",
       "email": "brian.edgerton@leankit.com"
+    },
+    {
+      "name": "Scott Walters",
+      "email": "scott.walters@leankit.com"
     },
     {
       "name": "David Neal",
@@ -40,7 +45,7 @@
     "lodash": "3.x",
     "machina": "1.x",
     "monologue.js": "~0.3.1",
-    "mssql": "~2.1.8",
+    "mssql": "~2.2.0",
     "postal": "^1.0.6",
     "when": "3.x",
     "whistlepunk": "^0.3.1"
