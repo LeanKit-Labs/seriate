@@ -267,60 +267,115 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when executing a query throws an error", function() {
-		var ctx, error;
-		before( function() {
+		function reqSetup() {
 			setup();
 			reqMock.expects( "query" )
 				.withArgs( "select * from sys.tables" )
 				.callsArgWith( 1, new Error( "faux pas" ), undefined )
 				.once();
 
-			ctx = seriate.getPlainContext();
-			return ctx.step( "read", {
-				query: "select * from sys.tables"
-			} ).then( undefined, function( err ) {
-				error = err;
+			return seriate.getPlainContext();
+		}
+
+		describe( "when passing an error handler", function() {
+			var error;
+			before( function() {
+				var ctx = reqSetup();
+
+				return ctx.step( "read", {
+					query: "select * from sys.tables"
+				} ).then( undefined, function( err ) {
+					error = err;
+				} );
+			} );
+
+			it( "should report error correctly", function() {
+				error.message.should.equal( "SqlContext Error. Failed on step \"read\" with: \"faux pas\"" );
+			} );
+
+			it( "should call query on request", function() {
+				reqMock.verify();
 			} );
 		} );
 
-		it( "should report error correctly", function() {
-			error.message.should.equal( "SqlContext Error. Failed on step \"read\" with: \"faux pas\"" );
-		} );
+		describe( "when handling the error from the returned promise", function() {
+			var error;
+			before( function() {
+				var ctx = reqSetup();
 
-		it( "should call query on request", function() {
-			reqMock.verify();
+				return ctx.step( "read", {
+					query: "select * from sys.tables"
+				} ).then().catch( function( err ) {
+					error = err;
+				} );
+			} );
+
+			it( "should report error correctly", function() {
+				error.message.should.equal( "SqlContext Error. Failed on step \"read\" with: \"faux pas\"" );
+			} );
+
+			it( "should call query on request", function() {
+				reqMock.verify();
+			} );
 		} );
 	} );
 
 	describe( "when executing a proc throws an error", function() {
-		var ctx, error;
-		before( function() {
+		function reqSetup() {
 			setup();
 			reqMock.expects( "execute" )
 				.withArgs( "sp_who2" )
 				.callsArgWith( 1, new Error( "faux pas" ), undefined )
 				.once();
 
-			ctx = seriate.getPlainContext();
-			return ctx.step( "proc", {
-				procedure: "sp_who2"
-			} ).then( undefined, function( err ) {
-				error = err;
+			return seriate.getPlainContext();
+		}
+
+		describe( "when passing an error handler", function() {
+			var error;
+			before( function() {
+				var ctx = reqSetup();
+
+				return ctx.step( "proc", {
+					procedure: "sp_who2"
+				} ).then( undefined, function( err ) {
+					error = err;
+				} );
+			} );
+
+			it( "should report error correctly", function() {
+				error.message.should.equal( "SqlContext Error. Failed on step \"proc\" with: \"faux pas\"" );
+			} );
+
+			it( "should call execute on request", function() {
+				reqMock.verify();
 			} );
 		} );
 
-		it( "should report error correctly", function() {
-			error.message.should.equal( "SqlContext Error. Failed on step \"proc\" with: \"faux pas\"" );
-		} );
+		describe( "when handling the error from the returned promise", function() {
+			var error;
+			before( function() {
+				var ctx = reqSetup();
 
-		it( "should call execute on request", function() {
-			reqMock.verify();
+				return ctx.step( "proc", {
+					procedure: "sp_who2"
+				} ).then().catch( function( err ) {
+					error = err;
+				} );
+			} );
+
+			it( "should report error correctly", function() {
+				error.message.should.equal( "SqlContext Error. Failed on step \"proc\" with: \"faux pas\"" );
+			} );
+
+			it( "should call execute on request", function() {
+				reqMock.verify();
+			} );
 		} );
 	} );
 
 	describe( "when executing prepared throws an error", function() {
-		var ctx, error;
-		before( function() {
+		function prepSetup() {
 			setup();
 			prepMock.expects( "prepare" )
 				.withArgs( "select * from sys.tables where type_desc = @usertable" )
@@ -342,26 +397,61 @@ describe( "SqlContext", function() {
 				.withArgs( "usertable", sql.NVarChar )
 				.once();
 
-			ctx = seriate.getPlainContext();
-			return ctx.step( "prepped", {
-				preparedSql: "select * from sys.tables where type_desc = @usertable",
-				params: {
-					usertable: {
-						type: sql.NVarChar,
-						val: "USER_TABLE"
+			return seriate.getPlainContext();
+		}
+
+		describe( "when passing an error handler", function() {
+			var error;
+			before( function() {
+				var ctx = prepSetup();
+
+				return ctx.step( "prepped", {
+					preparedSql: "select * from sys.tables where type_desc = @usertable",
+					params: {
+						usertable: {
+							type: sql.NVarChar,
+							val: "USER_TABLE"
+						}
 					}
-				}
-			} ).then( undefined, function( err ) {
-				error = err;
+				} ).then( undefined, function( err ) {
+					error = err;
+				} );
+			} );
+
+			it( "should report error correctly", function() {
+				error.message.should.equal( "SqlContext Error. Failed on step \"prepped\" with: \"faux pas\"" );
+			} );
+
+			it( "should execute preparedSql with correct parameters", function() {
+				prepMock.verify();
 			} );
 		} );
 
-		it( "should report error correctly", function() {
-			error.message.should.equal( "SqlContext Error. Failed on step \"prepped\" with: \"faux pas\"" );
-		} );
+		describe( "when handling the error from the returned promise", function() {
+			var error;
+			before( function() {
+				var ctx = prepSetup();
 
-		it( "should execute preparedSql with correct parameters", function() {
-			prepMock.verify();
+				return ctx.step( "prepped", {
+					preparedSql: "select * from sys.tables where type_desc = @usertable",
+					params: {
+						usertable: {
+							type: sql.NVarChar,
+							val: "USER_TABLE"
+						}
+					}
+				} ).then().catch( function( err ) {
+					error = err;
+				} );
+			} );
+
+			it( "should report error correctly", function() {
+				error.message.should.equal( "SqlContext Error. Failed on step \"prepped\" with: \"faux pas\"" );
+			} );
+
+			it( "should execute preparedSql with correct parameters", function() {
+				prepMock.verify();
+			} );
 		} );
 	} );
 
