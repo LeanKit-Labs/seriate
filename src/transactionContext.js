@@ -81,6 +81,7 @@ module.exports = function( SqlContext ) {
 				_onEnter: function() {
 					var message = util.format( "TransactionContext Error. Failed on step \"%s\" with: \"%s\"", this.priorState, this.err.message );
 					this.err.message = message;
+					this.err.step = this.priorState;
 
 					if ( this.transaction ) {
 						this.transaction.rollback( function( rollbackErr ) {
@@ -89,9 +90,10 @@ module.exports = function( SqlContext ) {
 														this.priorState,
 														this.err.message,
 														rollbackErr );
+								this.err.message = message;
 							}
 							log.error( message );
-							this.emit( "error", new Error( message ) );
+							this.emit( "error", this.err );
 						}.bind( this ) );
 					} else {
 						log.error( message );

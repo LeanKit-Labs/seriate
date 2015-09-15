@@ -296,6 +296,10 @@ describe( "SqlContext", function() {
 			it( "should call query on request", function() {
 				reqMock.verify();
 			} );
+
+			it( "should capture the failing step name on the error", function() {
+				error.step.should.equal( "read" );
+			} );
 		} );
 
 		describe( "when handling the error from the returned promise", function() {
@@ -316,6 +320,10 @@ describe( "SqlContext", function() {
 
 			it( "should call query on request", function() {
 				reqMock.verify();
+			} );
+
+			it( "should capture the failing step name on the error", function() {
+				error.step.should.equal( "read" );
 			} );
 		} );
 	} );
@@ -350,6 +358,10 @@ describe( "SqlContext", function() {
 			it( "should call execute on request", function() {
 				reqMock.verify();
 			} );
+
+			it( "should capture the failing step name on the error", function() {
+				error.step.should.equal( "proc" );
+			} );
 		} );
 
 		describe( "when handling the error from the returned promise", function() {
@@ -370,6 +382,10 @@ describe( "SqlContext", function() {
 
 			it( "should call execute on request", function() {
 				reqMock.verify();
+			} );
+
+			it( "should capture the failing step name on the error", function() {
+				error.step.should.equal( "proc" );
 			} );
 		} );
 	} );
@@ -425,6 +441,10 @@ describe( "SqlContext", function() {
 			it( "should execute preparedSql with correct parameters", function() {
 				prepMock.verify();
 			} );
+
+			it( "should capture the failing step name on the error", function() {
+				error.step.should.equal( "prepped" );
+			} );
 		} );
 
 		describe( "when handling the error from the returned promise", function() {
@@ -451,6 +471,10 @@ describe( "SqlContext", function() {
 
 			it( "should execute preparedSql with correct parameters", function() {
 				prepMock.verify();
+			} );
+
+			it( "should capture the failing step name on the error", function() {
+				error.step.should.equal( "prepped" );
 			} );
 		} );
 	} );
