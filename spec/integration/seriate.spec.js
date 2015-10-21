@@ -368,6 +368,39 @@ describe( "Seriate Integration Tests", function() {
 			procResults.returnValue.should.equal( 0 );
 		} );
 	} );
+
+	describe( "when executing a bulk insert", function() {
+		var bulkResults;
+
+		before( function() {
+			return insertTestRows( sql )
+				.then( function() {
+					return sql.execute( config, {
+						bulk: true,
+						table: "NodeTestTable",
+						columns: [
+							[ "v1", sql.VarChar( 255 ), { nullable: true } ],
+							[ "i1", sql.Int, { nullable: true } ]
+						],
+						rows: [
+							[ "result1", getRowId() ],
+							[ "result2", getRowId() ]
+						]
+					} ).then( function( res ) {
+						bulkResults = res;
+					} );
+				} );
+		} );
+
+		after( function() {
+			return deleteTestRows( sql );
+		} );
+
+		it( "should return the count of 2", function() {
+			bulkResults.should.eql( 2 );
+		} );
+	} );
+
 	describe( "when retrieving multiple record sets", function() {
 		before( function() {
 			return insertTestRows( sql );

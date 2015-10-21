@@ -91,8 +91,23 @@ function preparedSql( state, name, options ) {
 	}
 }
 
+function bulkSql( state, name, options ) {
+	var table = new sql.Table( options.table );
+	var req = new sql.Request( state.transaction || state.connection );
+	table.create = options.hasOwnProperty( "create" ) ? options.create : false;
+	_.each( options.columns, function( col ) {
+		table.columns.add( col[ 0 ], col[ 1 ], col[ 2 ] );
+	} );
+	_.each( options.rows, function( row ) {
+		table.rows.add.apply( table.rows, row );
+	} );
+	return lift( req.bulk ).bind( req )( table );
+}
+
 function executeSql( state, name, options ) {
-	if ( options.query || options.procedure ) {
+	if ( options.bulk ) {
+		return bulkSql( state, name, options );
+	} else if ( options.query || options.procedure ) {
 		return nonPreparedSql( state, name, options );
 	} else {
 		return preparedSql( state, name, options );
