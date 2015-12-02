@@ -1,5 +1,8 @@
 ## 0.5.*
 
+### 0.5.4
+Update mssql to 2.3.2
+
 ### 0.5.3
  * Improvement - include failed step name in  object
  * Bug fix - don't lose error context during rollback
