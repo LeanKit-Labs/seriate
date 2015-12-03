@@ -7,9 +7,9 @@ var mockConnectionFn = require( "../data/mockConnection" );
 
 ****************************************************/
 describe( "SqlContext", function() {
-	var sql, seriate, reqMock, prepMock;
+	var sql, seriate, reqMock, prepMock, tableMock, colMock, rowMock;
 	function setup() {
-		var request = { query: _.noop, execute: _.noop, input: _.noop };
+		var request = { query: _.noop, execute: _.noop, input: _.noop, bulk: _.noop };
 		var preparedStatement = {
 			prepare: _.noop,
 			execute: _.noop,
@@ -18,8 +18,21 @@ describe( "SqlContext", function() {
 			procedure: undefined,
 			params: undefined
 		};
+		var table = {
+			create: false,
+			columns: {
+				add: _.noop
+			},
+			rows: {
+				add: _.noop
+			}
+		};
+
 		reqMock = sinon.mock( request );
 		prepMock = sinon.mock( preparedStatement );
+		colMock = sinon.mock( table.columns );
+		rowMock = sinon.mock( table.rows );
+		tableMock = sinon.mock( tableMock );
 
 		var connection = mockConnectionFn( true );
 		var mssql = require( "mssql" );
@@ -32,6 +45,9 @@ describe( "SqlContext", function() {
 			},
 			PreparedStatement: function() {
 				return preparedStatement;
+			},
+			Table: function() {
+				return table;
 			},
 			"@global": true
 		} );
@@ -149,6 +165,74 @@ describe( "SqlContext", function() {
 		it( "should provide correct structure in results object", function() {
 			result.should.eql( {
 				proc: fakeRecords
+			} );
+		} );
+	} );
+
+	describe( "when executing a bulk insert", function() {
+		var ctx, result;
+		before( function() {
+			setup();
+			reqMock.expects( "bulk" )
+				.withArgs( sinon.match.object )
+				.once()
+				.callsArgWith( 1, null, 2 );
+
+			colMock.expects( "add" )
+				.withArgs( "a", sql.Int, { nullable: true } ).once();
+			colMock.expects( "add" )
+				.withArgs( "b", sql.VarChar( 50 ), { nullable: false } ).once();
+
+			rowMock.expects( "add" )
+				.withArgs( 1, "one" ).once();
+			rowMock.expects( "add" )
+				.withArgs( 2, "two" ).once();
+
+			ctx = seriate.getPlainContext();
+			return ctx.step( "bulk", {
+				bulk: true,
+				create: true,
+				table: "bulk_test",
+				columns: [
+					[ "a", sql.Int, { nullable: true } ],
+					[ "b", sql.VarChar( 50 ), { nullable: false } ]
+				],
+				rows: [
+					[ 1, "one" ],
+					[ 2, "two" ]
+				]
+			} ).end( function( res ) {
+				result = res;
+			} );
+		} );
+
+		it( "should create a \"bulk\" state", function() {
+			ctx.states.bulk.should.be.ok;
+		} );
+
+		it( "should create \"bulk\" state success handler", function() {
+			ctx.states.bulk.success.should.be.ok;
+		} );
+
+		it( "should create \"bulk\" state error handler", function() {
+			ctx.states.bulk.error.should.be.ok;
+		} );
+
+		it( "should add column definitions", function() {
+			colMock.verify();
+		} );
+
+		it( "should add rows of data", function() {
+			rowMock.verify();
+		} );
+
+		it( "should call execute on request", function() {
+			reqMock.verify();
+		} );
+
+		it( "should provide correct structure in results object", function() {
+			result.should.eql( {
+				bulk: 2
 			} );
 		} );
 	} );
