@@ -41,7 +41,7 @@ function deleteTestRows( sql ) {
 }
 
 describe( "Seriate Integration Tests", function() {
-	var sql;
+	var sql, connected;
 	before( function() {
 		this.timeout( 20000 );
 		sql = proxyquire( "../src/index", {} );
@@ -73,12 +73,23 @@ describe( "Seriate Integration Tests", function() {
 				.then( function() {} );
 		}
 
+		sql.once( "connected", function() {
+			connected = true;
+		} );
+
 		return dropDatabase()
 			.then( createDatabase )
 			.then( setupPrerequisites );
 	} );
 
-	after( function() {
+	it( "should connect successfully", function() {
+		connected.should.equal.true;
+	} );
+
+	after( function( done ) {
+		sql.once( "closed", function( connection ) {
+			done();
+		} );
 		sql.closeConnection( "default" );
 		sql.closeConnection( "master" );
 	} );
@@ -368,6 +379,7 @@ describe( "Seriate Integration Tests", function() {
 			procResults.returnValue.should.equal( 0 );
 		} );
 	} );
+
 	describe( "when retrieving multiple record sets", function() {
 		before( function() {
 			return insertTestRows( sql );
@@ -439,6 +451,7 @@ describe( "Seriate Integration Tests", function() {
 				multipleResults.returnValue.should.equal( 0 );
 			} );
 		} );
+
 		describe( "with stored procedures", function() {
 			var multipleRSProcResults;
 
@@ -464,6 +477,29 @@ describe( "Seriate Integration Tests", function() {
 				multipleRSProcResults[ 1 ][ 0 ].totalRows.should.be.above( 0 );
 				multipleRSProcResults.returnValue.should.equal( 0 );
 			} );
+		} );
+	} );
+
+	describe( "when failing to connect", function() {
+		var failed;
+		before( function( done ) {
+			sql.once( "failed", function( connection ) {
+				failed = connection;
+				done();
+			} );
+
+			sql.addConnection( {
+				name: "lol",
+				host: "lol",
+				user: "lol",
+				password: "lol",
+				database: "lol"
+			} );
+		} );
+
+		it( "should emit failed with an error", function() {
+			failed.name.should.equal( "lol" );
+			failed.should.have.property( "error" );
 		} );
 	} );
 } );
