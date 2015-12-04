@@ -1,12 +1,14 @@
 var when = require( "when" );
 var fs = require( "fs" );
 var _ = require( "lodash" );
+var Monologue = require( "monologue.js" ).prototype;
 var path = require( "path" );
 var callsite = require( "callsite" );
 var sql = require( "mssql" );
 var connections = require( "./connections" );
 var SqlContext = require( "./sqlContext" )();
 var TransactionContext = require( "./transactionContext" )( SqlContext );
+var fileCache = {};
 
 function promisify( context, queryOptions ) {
 	var name = queryOptions.name || queryOptions.procedure || "__result__";
@@ -84,7 +86,12 @@ var seriate = {
 		p = this._getFilePath( p );
 		var ext = path.extname( p );
 		p = ( ext === "." ) ? ( p + "sql" ) : ( ext.length === 0 ) ? p + ".sql" : p;
-		return fs.readFileSync( p, { encoding: "utf8" } );
+		var content = fileCache[ p ];
+		if ( _.isEmpty( content ) ) {
+			content = fs.readFileSync( p, { encoding: "utf8" } );
+			fileCache[ p ] = content;
+		}
+		return content;
 	},
 	addConnection: function( config ) {
 		connections.add( config );
@@ -114,4 +121,18 @@ _.each( sql.TYPES, function( val, key ) {
 	seriate[ key.toUpperCase() ] = sql.TYPES[ key ];
 } );
 
-module.exports = seriate;
+var api = _.assign( seriate, Monologue );
+
+connections.on( "connected", function( info ) {
+	api.emit( "connected", info );
+} );
+
+connections.on( "closed", function( info ) {
+	api.emit( "closed", info );
+} );
+
+connections.on( "failed", function( info ) {
+	api.emit( "failed", info );
+} );
+
+module.exports = api;

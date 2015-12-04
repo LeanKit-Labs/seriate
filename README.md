@@ -44,6 +44,15 @@ A connection configuration provides information on how to connect to the datbase
 }
 ```
 
+### Connectivity Events
+Seriate emits connectivity events from the top level library:
+
+ * connected
+ * closed
+ * failed
+
+Each event includes a `name` property that represents which connection the event is happening on. If the event is failed, an `error` property will have the error that caused the failure.
+
 ## API
 
 Sql type constants are exposed in both Pascal Case and all capitals off of the library. See the listing at the end of this document.

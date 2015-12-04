@@ -1,6 +1,7 @@
 var _ = require( "lodash" );
 var when = require( "when" );
 var sql = require( "mssql" );
+var Monologue = require( "monologue.js" ).prototype;
 var log = require( "./log" )( "seriate.connection" );
 
 var state = {
@@ -9,6 +10,14 @@ var state = {
 	configurations: {},
 	aliases: {}
 };
+
+var api = _.assign( {
+	state: state,
+	add: addConnection,
+	close: closeConnection,
+	get: getConnection,
+	reset: resetState
+}, Monologue );
 
 function addConnection( config ) {
 	var name = getName( config );
@@ -52,28 +61,33 @@ function connect( name, config ) {
 	pool = state.pools[ name ] = new sql.Connection( config );
 
 	pool.on( "connect", function() {
+		api.emit( "connected", { name: name } );
 		log.info( "Connected to \"%s\"", name );
 	} );
 
 	pool.on( "close", function() {
+		api.emit( "closed", { name: name } );
 		log.info( "Closed connection to \"%s\"", name );
 		pool.removeAllListeners();
 		delete state.connections[ name ];
 		delete state.pools[ name ];
 	} );
 
-	pool.on( "error", function( err ) {
+	function onConnectionError( err ) {
+		api.emit( "failed", { name: name, error: err } );
 		log.error( "Failed to connection to \"%s\" with: %s", name, err );
 		delete state.connections[ name ];
 		delete state.pools[ name ];
 		pool.removeAllListeners();
-	} );
+	}
+
+	pool.on( "error", onConnectionError );
 
 	state.pools[ name ] = pool;
 	state.connections[ name ] = pool.connect()
 		.then( function() {
 			return pool;
-		} );
+		}, onConnectionError );
 	return state.connections[ name ];
 }
 
@@ -147,10 +161,4 @@ function resetState() {
 	};
 }
 
-module.exports = {
-	state: state,
-	add: addConnection,
-	close: closeConnection,
-	get: getConnection,
-	reset: resetState
-};
+module.exports = api;

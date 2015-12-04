@@ -1,5 +1,9 @@
 ## 0.5.*
 
+### 0.5.5
+ * Emit connectivity events
+ * Prevent reading sql files multiple times
+
 ### 0.5.4
 Update mssql to 2.3.2
 
