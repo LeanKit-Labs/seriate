@@ -11,7 +11,7 @@ A connection configuration provides information on how to connect to the datbase
 
 > Note: the name property is optional and only useful when managing multiple connection pools to different databases.
 
-#### SQL authentication example
+#### SQL authentication example (default instance)
 ```javascript
 {
 	"name": "default",
@@ -26,6 +26,37 @@ A connection configuration provides information on how to connect to the datbase
 	}
 }
 ```
+
+#### SQL authentication example (named instance)
+```javascript
+{
+	"name": "default",
+	"host": "127.0.0.1",
+	"port": "12345", // find the port of your instance in the SQL Server Configuration Manager
+	"user": "nodejs",
+	"password": "mypassword",
+	"database": "master",
+	"pool": {
+		"max": 10,
+		"min": 4,
+		"idleTimeoutMillis": 30000
+	}
+}
+```
+
+The port for your named instance can be found in SQL Server Configuration Manager under:
+`SQL Server Network Configuration ->
+ Protocols for [instance name] ->
+ TCP/IP (properties) ->
+ IP Addresses tab ->
+ IPAll group ->
+ TCP Dynamic Ports value`.
+
+Alternatively, you can specify the server as `server: yourServer\\instanceName`, but there are some caveats:
+
+ * The SQL Server Browser service must be running
+ * You cannot use `.` as the server name. It must be a name that can be resolved via DNS (ex. `localhost`)
+ * There may be local firewall configuration settings that need adjustment
 
 #### Trusted/NTLM authentication example
 ```javascript
