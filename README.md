@@ -166,7 +166,7 @@ Note that the `SqlContext` instance returns from `getPlainContext` has a `step` 
 }
 ```
 
-You can only use *one* of the three sql-related fields: `query`, `procedure` or `preparedSql`. The module infers from which one you use as to how it should execute (and it's checked in that order). If you query takes params, you can provide a `params` object, where each key represents a parameter name and the value can be an object that provides the `val` and `type` (types are pulled from the `mssql` module), or the value can be a primitive value which will be passed as the paramter value. If multiple recordsets are expected from a `query` or `preparedSql`, set the `multiple` field to `true`. Multiple recordsets are automatically supported when executing a stored procedure. (NOTE: if you use multiple recordsets, your result set for a step will be an array of records sets (i.e. - nested arrays), rather than an array of a single record set).
+You can only use *one* of the three sql-related fields: `query`, `procedure` or `preparedSql`. The module infers from which one you use as to how it should execute (and it's checked in that order). If your query takes params, you can provide a `params` object, where each key represents a parameter name and the value can be an object that provides the `val` and `type` (types are pulled from the `mssql` module), or the value can be a primitive value which will be passed as the paramter value. If multiple recordsets are expected from a `query` or `preparedSql`, set the `multiple` field to `true`. Multiple recordsets are automatically supported when executing a stored procedure. (NOTE: if you use multiple recordsets, your result set for a step will be an array of records sets (i.e. - nested arrays), rather than an array of a single record set).
 
 The `end` method of a `SqlContext` instance takes a callback which receives a `sets` argument. The `sets` argument contains the dataset(s) from each step (using the step `alias` as the property name). The `error` method allows you to pass a callback that will receive an error notfication if anything fails. Note that calling `end` or `error` is what *starts* the unit of work handled by the context.
 
@@ -213,6 +213,30 @@ sql.getPlainContext( "example-1" )
 ```
 
 The above example shows both `step` approaches side-by-side.
+
+#### Inserting multiple rows from a value array with the `asTable` property
+
+Using the `asTable` property you can define a parameter as an array of values,
+and its name will refer to a table variable with a single column named `value`.
+The column will be of the parameter's specified type.
+
+```javascript
+.step( "insertChildren", {
+	query: "INSERT INTO ParentChild (ParentId, ChildId) " +
+				"SELECT @parentId, value FROM @childIds",
+	params: {
+		parentId: {
+			val: 123,
+			type: sql.INT
+		},
+		childIds: {
+			val: [ 10, 15, 24, 48 ],
+			type: sql.INT,
+			asTable: true
+		}
+	}
+} )
+```
 
 ### getTransactionContext( [connection] )
 The `getTransactionContext` method returns a `TransactionContext` instance - which for the most part is nearly identical to a `SqlContext` instance - however, a transaction is started as the context begins its work, and you have the option to commit or rollback in the `end` method's callback. For example:

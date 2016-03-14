@@ -1,14 +1,11 @@
 var when = require( "when" );
-var fs = require( "fs" );
 var _ = require( "lodash" );
 var Monologue = require( "monologue.js" ).prototype;
-var path = require( "path" );
-var callsite = require( "callsite" );
 var sql = require( "mssql" );
 var connections = require( "./connections" );
 var SqlContext = require( "./sqlContext" )();
 var TransactionContext = require( "./transactionContext" )( SqlContext );
-var fileCache = {};
+var utils = require( "./utils" );
 
 function promisify( context, queryOptions ) {
 	var name = queryOptions.name || queryOptions.procedure || "__result__";
@@ -19,10 +16,6 @@ function promisify( context, queryOptions ) {
 			.error( reject )
 			.on( "data", notify );
 	} );
-}
-
-function isAbsolutePath( p ) {
-	return path.resolve( p ) === path.normalize( p ).replace( /(.+)([\/|\\])$/, "$1" );
 }
 
 var seriate = {
@@ -71,28 +64,7 @@ var seriate = {
 			return rows[ 0 ];
 		} );
 	},
-	_getFilePath: function( p ) {
-		// If we're not dealing with an absolute path, then we
-		// need to get the *calling* code's directory, since
-		// the sql file is being referenced relative to that location
-		if ( !isAbsolutePath( p ) ) {
-			var stack = callsite();
-			var requester = stack[ 2 ].getFileName();
-			p = path.join( path.dirname( requester ), p );
-		}
-		return p;
-	},
-	fromFile: function( p ) {
-		p = this._getFilePath( p );
-		var ext = path.extname( p );
-		p = ( ext === "." ) ? ( p + "sql" ) : ( ext.length === 0 ) ? p + ".sql" : p;
-		var content = fileCache[ p ];
-		if ( _.isEmpty( content ) ) {
-			content = fs.readFileSync( p, { encoding: "utf8" } );
-			fileCache[ p ] = content;
-		}
-		return content;
-	},
+	fromFile: utils.fromFile,
 	addConnection: function( config ) {
 		connections.add( config );
 	},
