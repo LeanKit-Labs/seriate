@@ -1,5 +1,6 @@
 require( "../setup" );
 var mockConnectionFn = require( "../data/mockConnection" );
+var when = require( "when" );
 
 /***************************************************
 
@@ -476,6 +477,85 @@ describe( "SqlContext", function() {
 			it( "should capture the failing step name on the error", function() {
 				error.step.should.equal( "prepped" );
 			} );
+		} );
+	} );
+
+	describe( "when skipping execute call on a step", function() {
+		var ctx;
+		before( function() {
+			setup();
+
+			reqMock.expects( "query" )
+				.withArgs( "select * from sys.tables" )
+				.callsArgWith( 1, null, fakeRecords )
+				.once();
+
+			ctx = seriate.getPlainContext();
+			return ctx
+				.step( "skipped", function( execute ) {
+					return;
+				} )
+				.step( "read", {
+					query: "select * from sys.tables"
+				} );
+		} );
+
+		it( "should continue to next step", function() {
+			reqMock.verify();
+		} );
+	} );
+
+	describe( "when failing to return promise", function() {
+		var runaway;
+		before( function() {
+			setup();
+
+			reqMock.expects( "query" )
+				.withArgs( "select * from sys.tables" )
+				.never();
+
+			return seriate.getPlainContext()
+				.step( "badPromise", function( execute ) {
+					runaway = when( true )
+						.delay( 1 ) // Here to delay the call to execute but allow fsm to transition to success state
+						.then( function() {
+							execute( {
+								query: "select * from sys.tables"
+							} );
+						} );
+				} );
+		} );
+
+		it( "should throw error", function( done ) {
+			return runaway
+				.catch( function( err ) {
+					err.should.be.instanceof( Error );
+					done();
+				} );
+		} );
+
+		it( "should not invoke sql", function( ) {
+			reqMock.verify();
+		} );
+	} );
+
+	describe( "when a promise rejects", function() {
+		var error;
+		before( function() {
+			setup();
+
+			return seriate.getPlainContext()
+				.step( "brokenPromise", function( execute ) {
+					return when.reject( new Error( "NOPE!" ) );
+				} )
+				.then( null, function( err ) {
+					error = err;
+				} );
+		} );
+
+		it( "should throw error", function( ) {
+			error.should.be.instanceof( Error );
+			error.message.should.contain( "NOPE!" );
 		} );
 	} );
 
