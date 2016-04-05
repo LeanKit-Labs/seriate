@@ -2,7 +2,9 @@ var _ = require( "lodash" );
 var when = require( "when" );
 var lift = require( "when/node" ).lift;
 var sql = require( "mssql" );
+var declare = require( "mssql/lib/datatypes" ).declare;
 var util = require( "util" );
+var utils = require( "./utils" );
 var log = require( "./log" )( "seriate.sql" );
 var Monologue = require( "monologue.js" );
 var machina = require( "machina" );
@@ -12,18 +14,42 @@ function errorHandler( err ) {
 	this.transition( "error" );
 }
 
+function buildTableVariableSql( key, val ) {
+	return _.template( utils.fromFile( "./sql/buildTableVar" ) )( {
+		name: key,
+		type: declare( val.type, val )
+	} );
+}
+
+function toXml( values ) {
+	return "<result>" + values.map( function( value ) {
+		return "<row value=\"" + value.toString().replace( /"/g, "&quot;" ) + "\"/>";
+	} ) + "</result>";
+}
+
 function nonPreparedSql( state, name, options ) {
 	var req = new sql.Request( state.transaction || state.connection );
 	req.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
+
+	var tableVariables = "";
 	_.each( options.params, function( val, key ) {
 		if ( typeof val === "object" ) {
-			req.input( key, val.type, val.val );
+			if ( val.asTable ) {
+				tableVariables = tableVariables + buildTableVariableSql( key, val );
+				req.input( key + "Xml", sql.Xml(), toXml( val.val ) );
+			} else {
+				req.input( key, val.type, val.val );
+			}
 		} else {
 			req.input( key, val );
 		}
 	} );
 	var operation = options.query ? "query" : "execute";
-	var sqlCmd = options.query || options.procedure;
+	if ( tableVariables ) {
+		tableVariables += "\n";
+	}
+
+	var sqlCmd = tableVariables + ( options.query || options.procedure );
 	if ( state.metrics ) {
 		return state.metrics.instrument(
 			{
@@ -45,10 +71,19 @@ function preparedSql( state, name, options ) {
 	var cmd = new sql.PreparedStatement( state.transaction || state.connection );
 	cmd.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 	var paramKeyValues = {};
+	var tableVariables = "";
+
 	_.each( options.params, function( val, key ) {
 		if ( typeof val === "object" ) {
-			cmd.input( key, val.type );
-			paramKeyValues[ key ] = val.val;
+			if ( val.asTable ) {
+				tableVariables = tableVariables + buildTableVariableSql( key, val );
+				var xml = toXml( val.val );
+				cmd.input( key + "Xml", sql.Xml(), xml );
+				paramKeyValues[ key + "Xml" ] = xml;
+			} else {
+				cmd.input( key, val.type );
+				paramKeyValues[ key ] = val.val;
+			}
 		} else {
 			cmd.input( key );
 			paramKeyValues[ key ] = val;
@@ -57,8 +92,12 @@ function preparedSql( state, name, options ) {
 	var prepare = lift( cmd.prepare ).bind( cmd );
 	var execute = lift( cmd.execute ).bind( cmd );
 	var unprepare = lift( cmd.unprepare ).bind( cmd );
+	if ( tableVariables ) {
+		tableVariables += "\n";
+	}
+	var statement = tableVariables + options.preparedSql;
 	function op() {
-		return prepare( options.preparedSql )
+		return prepare( statement )
 			.then( function() {
 				return execute( paramKeyValues )
 					.then( function( result ) {

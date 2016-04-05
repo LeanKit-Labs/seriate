@@ -96,7 +96,7 @@ describe( "Seriate Integration Tests", function() {
 
 	describe( "when executing within a TransactionContext", function() {
 		describe( "and committing the transaction", function() {
-			var id, context, insError, insResult, resultsCheck, checkError, readCheck;
+			var id, insResult, resultsCheck, checkError, readCheck;
 
 			before( function( done ) {
 				id = getRowId();
@@ -117,8 +117,7 @@ describe( "Seriate Integration Tests", function() {
 							done();
 						} );
 				};
-				context = sql
-					.getTransactionContext( config )
+				sql.getTransactionContext( config )
 					.step( "insert", {
 						preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1); select SCOPE_IDENTITY() AS NewId;",
 						params: {
@@ -141,8 +140,7 @@ describe( "Seriate Integration Tests", function() {
 							} );
 					} )
 					.error( function( err ) {
-						insError = err;
-						done();
+						done( err );
 					} );
 			} );
 
@@ -162,12 +160,12 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		describe( "and rolling back the transaction", function() {
-			var id, context, insError, readCheck, resultsCheck, checkError;
+			var id, readCheck, resultsCheck, checkError;
 			before( function( done ) {
 				id = getRowId();
 				readCheck = function( done ) {
 					sql.execute( config, {
-						preparedSql: "select * from NodeTestTable where i1 = @i1",
+						preparedSql: "select * from NodeTestTable where i1 = @i1;",
 						params: {
 							i1: {
 								val: id,
@@ -182,10 +180,9 @@ describe( "Seriate Integration Tests", function() {
 							done();
 						} );
 				};
-				context = sql
-					.getTransactionContext( config )
+				sql.getTransactionContext( config )
 					.step( "insert", {
-						preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1)",
+						preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1);",
 						params: {
 							i1: {
 								val: id,
@@ -205,8 +202,7 @@ describe( "Seriate Integration Tests", function() {
 							} );
 					} )
 					.error( function( err ) {
-						insError = err;
-						done();
+						done( err );
 					} );
 			} );
 			after( function() {
@@ -500,6 +496,50 @@ describe( "Seriate Integration Tests", function() {
 		it( "should emit failed with an error", function() {
 			failed.name.should.equal( "lol" );
 			failed.should.have.property( "error" );
+		} );
+	} );
+
+	[ "query", "preparedSql" ].forEach( function( sqlKey ) {
+		describe( "when inserting a list of values with " + sqlKey, function() {
+			afterEach( function() {
+				return deleteTestRows( sql );
+			} );
+
+			it( "should insert a row for each item", function( done ) {
+				var step = {
+					params: {
+						v1s: {
+							val: [ "one", "two", "three", "four with \"quotes\"" ],
+							type: sql.NVARCHAR,
+							asTable: true
+						},
+						i1: {
+							val: 123,
+							type: sql.INT
+						}
+					}
+				};
+
+				step[ sqlKey ] = "INSERT INTO NodeTestTable (v1, i1) SELECT value, @i1 FROM @v1s;";
+
+				sql.getPlainContext( config )
+					.step( "insert", step )
+					.end( function( res ) {
+						sql.execute( config, {
+							query: "SELECT v1, i1 FROM NodeTestTable;"
+						} ).then( function( res ) {
+							res.should.eql( [
+								{ v1: "one", i1: 123 },
+								{ v1: "two", i1: 123 },
+								{ v1: "three", i1: 123 },
+								{ v1: "four with \"quotes\"", i1: 123 }
+							] );
+							done();
+						}, function( err ) {
+							done( err );
+						} );
+					} );
+			} );
 		} );
 	} );
 } );
