@@ -269,10 +269,16 @@ describe( "SqlContext", function() {
 
 	describe( "when executing a query throws an error", function() {
 		function reqSetup() {
+			var testError = new Error( "faux pas" );
+			testError.precedingErrors = [
+				{ message: "preceding one" },
+				{ message: "preceding two" }
+			];
+
 			setup();
 			reqMock.expects( "query" )
 				.withArgs( "select * from sys.tables" )
-				.callsArgWith( 1, new Error( "faux pas" ), undefined )
+				.callsArgWith( 1, testError, undefined )
 				.once();
 
 			return seriate.getPlainContext();
@@ -291,7 +297,7 @@ describe( "SqlContext", function() {
 			} );
 
 			it( "should report error correctly", function() {
-				error.message.should.equal( "SqlContext Error. Failed on step \"read\" with: \"faux pas\"" );
+				error.message.should.equal( "SqlContext Error. Failed on step \"read\" with: \"faux pas\"\n\tPreceding error: preceding one\n\tPreceding error: preceding two" );
 			} );
 
 			it( "should call query on request", function() {
@@ -316,7 +322,7 @@ describe( "SqlContext", function() {
 			} );
 
 			it( "should report error correctly", function() {
-				error.message.should.equal( "SqlContext Error. Failed on step \"read\" with: \"faux pas\"" );
+				error.message.should.equal( "SqlContext Error. Failed on step \"read\" with: \"faux pas\"\n\tPreceding error: preceding one\n\tPreceding error: preceding two" );
 			} );
 
 			it( "should call query on request", function() {

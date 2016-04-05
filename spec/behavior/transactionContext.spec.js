@@ -287,11 +287,17 @@ describe( "TransactionContext", function() {
 	describe( "when calling a query throws an error", function() {
 		var ctx, error;
 		before( function() {
+			var testError = new Error( "so much fail" );
+			testError.precedingErrors = [
+				{ message: "preceding one" },
+				{ message: "preceding two" }
+			];
+
 			setup();
 			reqMock.expects( "query" )
 				.withArgs( "select * from sys.tables" )
 				.once()
-				.callsArgWith( 1, new Error( "so much fail" ) );
+				.callsArgWith( 1, testError );
 
 			transMock.expects( "begin" )
 				.callsArgWith( 0, null )
@@ -331,7 +337,7 @@ describe( "TransactionContext", function() {
 		} );
 
 		it( "should report the error correctly", function() {
-			error.message.should.eql( "TransactionContext Error. Failed on step \"read\" with: \"so much fail\"" );
+			error.message.should.eql( "TransactionContext Error. Failed on step \"read\" with: \"so much fail\"\n\tPreceding error: preceding one\n\tPreceding error: preceding two" );
 		} );
 
 		it( "should capture the failing step name on the error", function() {
