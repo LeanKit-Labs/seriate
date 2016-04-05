@@ -243,7 +243,11 @@ module.exports = function() {
 
 			error: {
 				_onEnter: function() {
-					var message = util.format( "SqlContext Error. Failed on step \"%s\" with: \"%s\"", this.priorState, this.err.message );
+					var precedingErrorMessage = _.map( this.err && this.err.precedingErrors, function( error ) {
+						return "\n\tPreceding error: " + error.message;
+					} ).join( "" );
+
+					var message = util.format( "SqlContext Error. Failed on step \"%s\" with: \"%s\"%s", this.priorState, this.err.message, precedingErrorMessage );
 					log.error( message );
 					this.err.message = message;
 					this.err.step = this.priorState;

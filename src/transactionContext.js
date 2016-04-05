@@ -1,3 +1,4 @@
+var _ = require( "lodash" );
 var when = require( "when" );
 var util = require( "util" );
 var log = require( "./log" )( "seriate.transaction" );
@@ -79,7 +80,11 @@ module.exports = function( SqlContext ) {
 			},
 			error: {
 				_onEnter: function() {
-					var message = util.format( "TransactionContext Error. Failed on step \"%s\" with: \"%s\"", this.priorState, this.err.message );
+					var precedingErrorMessage = _.map( this.err && this.err.precedingErrors, function( error ) {
+						return "\n\tPreceding error: " + error.message;
+					} ).join( "" );
+
+					var message = util.format( "TransactionContext Error. Failed on step \"%s\" with: \"%s\"%s", this.priorState, this.err.message, precedingErrorMessage );
 					this.err.message = message;
 					this.err.step = this.priorState;
 
