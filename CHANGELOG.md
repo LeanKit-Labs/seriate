@@ -1,3 +1,11 @@
+## 0.6.*
+
+### 0.6.0
+* Added support for value arrays to insert multiple rows
+* Added ability to bypass execute callback.
+* Updated readme with named instance example
+* Returned additional SQL error information (preceding errors) in the error message
+
 ## 0.5.*
 
 ### 0.5.5
