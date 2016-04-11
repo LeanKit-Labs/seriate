@@ -1,5 +1,7 @@
 ## 0.6.*
 
+* Added support for object arrays to insert multiple rows with multiple columns
+
 ### 0.6.0
 * Added support for value arrays to insert multiple rows
 * Added ability to bypass execute callback.
