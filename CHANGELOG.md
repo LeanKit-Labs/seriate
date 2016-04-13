@@ -1,5 +1,7 @@
 ## 0.6.*
 
+### 0.6.1
+
 * Added support for object arrays to insert multiple rows with multiple columns
 
 ### 0.6.0
