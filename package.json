@@ -56,7 +56,8 @@
     "mssql": "~2.3.2",
     "postal": "^1.0.6",
     "when": "3.x",
-    "whistlepunk": "^0.3.1"
+    "whistlepunk": "^0.3.1",
+    "xmldom": "^0.1.22"
   },
   "devDependencies": {
     "biggulp": "~0.2.0",

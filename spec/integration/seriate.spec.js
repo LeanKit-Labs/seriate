@@ -36,7 +36,7 @@ function insertTestRows( sql ) {
 
 function deleteTestRows( sql ) {
 	return sql.execute( config, {
-		preparedSql: "DELETE FROM NodeTestTable"
+		preparedSql: "DELETE FROM NodeTestTable; DELETE FROM NodeTestTableNoIdent"
 	} );
 }
 
@@ -510,7 +510,7 @@ describe( "Seriate Integration Tests", function() {
 					params: {
 						v1s: {
 							val: [ "one", "two", "three", "four with \"quotes\"" ],
-							type: sql.NVARCHAR,
+							type: sql.NVARCHAR( 100 ),
 							asTable: true
 						},
 						i1: {
@@ -533,6 +533,48 @@ describe( "Seriate Integration Tests", function() {
 								{ v1: "two", i1: 123 },
 								{ v1: "three", i1: 123 },
 								{ v1: "four with \"quotes\"", i1: 123 }
+							] );
+							done();
+						}, function( err ) {
+							done( err );
+						} );
+					} );
+			} );
+		} );
+
+		describe( "when inserting a list of objects with " + sqlKey, function() {
+			afterEach( function() {
+				return deleteTestRows( sql );
+			} );
+
+			it( "should insert a row for each item", function( done ) {
+				var step = {
+					params: {
+						v1s: {
+							val: [ { id: 1, name: "Foo" }, { id: 2, name: "Bar" } ],
+							asTable: {
+								id: sql.BIGINT,
+								name: sql.NVARCHAR( 200 )
+							}
+						},
+						i1: {
+							val: 123,
+							type: sql.INT
+						}
+					}
+				};
+
+				step[ sqlKey ] = "INSERT INTO NodeTestTableNoIdent (bi1, v1, i1) SELECT id, name, @i1 FROM @v1s;";
+
+				sql.getPlainContext( config )
+					.step( "insert", step )
+					.end( function( res ) {
+						sql.execute( config, {
+							query: "SELECT bi1, v1, i1 FROM NodeTestTableNoIdent;"
+						} ).then( function( res ) {
+							res.should.eql( [
+								{ bi1: "1", v1: "Foo", i1: 123 },
+								{ bi1: "2", v1: "Bar", i1: 123 }
 							] );
 							done();
 						}, function( err ) {

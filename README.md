@@ -214,9 +214,43 @@ sql.getPlainContext( "example-1" )
 
 The above example shows both `step` approaches side-by-side.
 
-#### Inserting multiple rows from a value array with the `asTable` property
+#### Inserting multiple rows from an object array with the `asTable` property
 
-Using the `asTable` property you can define a parameter as an array of values,
+Using the `asTable` property you can define a parameter as an array of objects,
+and its name will refer to a table variable with a column for each declared
+attribute. The `asTable` property should be set to an object with a key for
+each property and its desired SQL type as its value.
+
+```javascript
+.step( "insertChildren", {
+	query: "INSERT INTO Children (Id, ParentId, FirstName, MiddleName) " +
+				"SELECT id, @parentId, firstName, middleName FROM @children",
+	params: {
+		parentId: {
+			val: 123,
+			type: sql.INT
+		},
+		children: {
+			val: [
+				{ id: 1, firstName: "James", middleName: "Paul"},
+				{ id: 2, firstName: "John", middleName: "Winston" },
+				{ id: 3, firstName: "George", middleName: "Harold" },
+				{ id: 4, firstName: "Richard", middleName: "Parkin" }
+			],
+			asTable: {
+				id: sql.INT,
+				firstName: sql.NVARCHAR(50),
+				middleName: sql.NVARCHAR(50)
+			}
+		}
+	}
+} )
+```
+
+#### Inserting multiple rows from a value array with `asTable: true`
+
+Providing the `asTable` property the Boolean value `true`,
+you can define a parameter as an array of scalar values,
 and its name will refer to a table variable with a single column named `value`.
 The column will be of the parameter's specified type.
 

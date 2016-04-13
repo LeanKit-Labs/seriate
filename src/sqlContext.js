@@ -8,48 +8,97 @@ var utils = require( "./utils" );
 var log = require( "./log" )( "seriate.sql" );
 var Monologue = require( "monologue.js" );
 var machina = require( "machina" );
+var xmldom = require( "xmldom" );
+var domImplementation = new xmldom.DOMImplementation();
+var xmlSerializer = new xmldom.XMLSerializer();
 
 function errorHandler( err ) {
 	this.err = err;
 	this.transition( "error" );
 }
 
-function buildTableVariableSql( key, val ) {
+function buildTableVariableSql( key, schema ) {
 	return _.template( utils.fromFile( "./sql/buildTableVar" ) )( {
 		name: key,
-		type: declare( val.type, val )
-	} );
+		schema: _.mapValues( schema, function( typeDef ) {
+			if ( _.isFunction( typeDef ) ) {
+				typeDef = typeDef();
+			}
+			return declare( typeDef.type, typeDef );
+		} )
+	} ) + "\n";
 }
 
-function toXml( values ) {
-	return "<result>" + values.map( function( value ) {
-		return "<row value=\"" + value.toString().replace( /"/g, "&quot;" ) + "\"/>";
-	} ) + "</result>";
+function toXml( values, schema ) {
+	var doc = domImplementation.createDocument();
+	var root = doc.createElement( "result" );
+	var keys = _.keys( schema );
+
+	values.map( function( value ) {
+		var row = doc.createElement( "row" );
+		keys.forEach( function( key ) {
+			if ( _.has( value, key ) ) {
+				row.setAttribute( key, value[ key ] );
+			}
+		} );
+		return row;
+	} )
+	.forEach( root.appendChild.bind( root ) );
+
+	return xmlSerializer.serializeToString( root );
+}
+
+function createParameter( val, key ) {
+	if ( typeof val !== "object" ) {
+		return {
+			key: key,
+			value: val
+		};
+	}
+
+	// for backward compatibility with boolean asTable
+	if ( val.asTable === true ) {
+		val.asTable = {
+			value: val.type
+		};
+		val.val = val.val.map( function( x ) {
+			return { value: x };
+		} );
+	}
+
+	if ( val.asTable ) {
+		return {
+			key: key + "Xml",
+			type: sql.Xml(),
+			value: toXml( val.val, val.asTable ),
+			sqlPrefix: buildTableVariableSql( key, val.asTable )
+		};
+	}
+	return {
+		key: key,
+		type: val.type,
+		value: val.val
+	};
 }
 
 function nonPreparedSql( state, name, options ) {
 	var req = new sql.Request( state.transaction || state.connection );
 	req.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 
-	var tableVariables = "";
-	_.each( options.params, function( val, key ) {
-		if ( typeof val === "object" ) {
-			if ( val.asTable ) {
-				tableVariables = tableVariables + buildTableVariableSql( key, val );
-				req.input( key + "Xml", sql.Xml(), toXml( val.val ) );
-			} else {
-				req.input( key, val.type, val.val );
-			}
-		} else {
-			req.input( key, val );
-		}
-	} );
-	var operation = options.query ? "query" : "execute";
-	if ( tableVariables ) {
-		tableVariables += "\n";
-	}
+	var params = _.map( options.params, createParameter );
 
-	var sqlCmd = tableVariables + ( options.query || options.procedure );
+	params.forEach( function( param ) {
+			if ( param.type ) {
+				req.input( param.key, param.type, param.value );
+			} else {
+				req.input( param.key, param.value );
+			}
+		} );
+
+	var operation = options.query ? "query" : "execute";
+	var prefix = _.pluck( params, "sqlPrefix" ).join( "" );
+	var sqlCmd = prefix + ( options.query || options.procedure );
+
 	if ( state.metrics ) {
 		return state.metrics.instrument(
 			{
@@ -70,32 +119,21 @@ function nonPreparedSql( state, name, options ) {
 function preparedSql( state, name, options ) {
 	var cmd = new sql.PreparedStatement( state.transaction || state.connection );
 	cmd.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
-	var paramKeyValues = {};
-	var tableVariables = "";
 
-	_.each( options.params, function( val, key ) {
-		if ( typeof val === "object" ) {
-			if ( val.asTable ) {
-				tableVariables = tableVariables + buildTableVariableSql( key, val );
-				var xml = toXml( val.val );
-				cmd.input( key + "Xml", sql.Xml(), xml );
-				paramKeyValues[ key + "Xml" ] = xml;
-			} else {
-				cmd.input( key, val.type );
-				paramKeyValues[ key ] = val.val;
-			}
-		} else {
-			cmd.input( key );
-			paramKeyValues[ key ] = val;
-		}
+	var params = _.map( options.params, createParameter );
+
+	var paramKeyValues = {};
+	params.forEach( function( param ) {
+		cmd.input( param.key, param.type );
+		paramKeyValues[ param.key ] = param.value;
 	} );
+
 	var prepare = lift( cmd.prepare ).bind( cmd );
 	var execute = lift( cmd.execute ).bind( cmd );
 	var unprepare = lift( cmd.unprepare ).bind( cmd );
-	if ( tableVariables ) {
-		tableVariables += "\n";
-	}
-	var statement = tableVariables + options.preparedSql;
+	var prefix = _.pluck( params, "sqlPrefix" ).join( "" );
+	var statement = prefix + options.preparedSql;
+
 	function op() {
 		return prepare( statement )
 			.then( function() {
