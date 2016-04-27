@@ -69,7 +69,7 @@ describe( "TransactionContext", function() {
 				.callsArgWith( 1, null, fakeRecords );
 
 			transMock.expects( "begin" )
-				.withArgs( "serializable" )
+				.withArgs( 0x04 )
 				.callsArgWith( 1, null )
 				.once();
 
