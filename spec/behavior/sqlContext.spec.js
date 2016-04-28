@@ -511,8 +511,76 @@ describe( "SqlContext", function() {
 		} );
 	} );
 
-	describe( "when failing to return promise", function() {
-		var runaway;
+	describe( "when failing to return execute promise", function() {
+		var result;
+		before( function() {
+			setup();
+
+			reqMock.expects( "query" )
+				.withArgs( "select * from sys.tables" )
+				.callsArgWith( 1, null, fakeRecords )
+				.once();
+
+			return seriate.getPlainContext()
+				.step( "badStep", function( execute ) {
+					execute( {
+						query: "select * from sys.tables"
+					} );
+				} )
+				.then( function( res ) {
+					result = res;
+				} );
+		} );
+
+		it( "should return correct result", function( ) {
+			result.should.eql( {
+				badStep: fakeRecords
+			} );
+		} );
+
+		it( "should still call execute", function( ) {
+			reqMock.verify();
+		} );
+	} );
+
+	describe( "when failing to return execute promise from inside promise", function() {
+		var result;
+		before( function() {
+			setup();
+
+			reqMock.expects( "query" )
+				.withArgs( "select * from sys.tables" )
+				.callsArgWith( 1, null, fakeRecords )
+				.once();
+
+			return seriate.getPlainContext()
+				.step( "badPromise", function( execute ) {
+					return when( true )
+						.delay( 10 ) // Here to delay the call to execute so we can see our assertion wait on the runaway promise.
+						.then( function() {
+							execute( {
+								query: "select * from sys.tables"
+							} );
+						} );
+				} )
+				.then( function( res ) {
+					result = res;
+				} );
+		} );
+
+		it( "should return correct result", function( ) {
+			result.should.eql( {
+				badPromise: fakeRecords
+			} );
+		} );
+
+		it( "should still call execute", function( ) {
+			reqMock.verify();
+		} );
+	} );
+
+	describe( "when returning early with a value ", function() {
+		var result;
 		before( function() {
 			setup();
 
@@ -521,27 +589,80 @@ describe( "SqlContext", function() {
 				.never();
 
 			return seriate.getPlainContext()
-				.step( "badPromise", function( execute ) {
-					runaway = when( true )
-						.delay( 1 ) // Here to delay the call to execute but allow fsm to transition to success state
+				.step( "early-return-value", function( execute ) {
+					return when( true )
 						.then( function() {
-							execute( {
-								query: "select * from sys.tables"
-							} );
+							return "hi!";
 						} );
+				} )
+				.then( function( res ) {
+					result = res;
 				} );
 		} );
 
-		it( "should throw error", function( done ) {
-			return runaway
-				.catch( function( err ) {
-					err.should.be.instanceof( Error );
-					done();
-				} );
+		it( "should return correct result", function( ) {
+			result.should.eql( {
+				"early-return-value": "hi!"
+			} );
 		} );
 
-		it( "should not invoke sql", function( ) {
+		it( "should never call execute", function( ) {
 			reqMock.verify();
+		} );
+	} );
+
+	describe( "when attaching transformation to execute promise", function() {
+		var result;
+		before( function() {
+			setup();
+
+			reqMock.expects( "query" )
+				.withArgs( "select * from sys.tables" )
+				.callsArgWith( 1, null, fakeRecords )
+				.once();
+
+			return seriate.getPlainContext()
+				.step( "transform", function( execute ) {
+					return execute( {
+							query: "select * from sys.tables"
+						} ).then( function() {
+							return "lol";
+						} );
+				} )
+				.then( function( res ) {
+					result = res;
+				} );
+		} );
+
+		it( "should return transformed result", function( ) {
+			result.should.eql( {
+				transform: "lol"
+			} );
+		} );
+
+		it( "should still call execute", function( ) {
+			reqMock.verify();
+		} );
+	} );
+
+	describe( "when rejecting the execute promise", function() {
+		before( function() {
+			setup();
+
+			reqMock.expects( "query" )
+				.withArgs( "select * from sys.tables" )
+				.callsArgWith( 1, null, fakeRecords );
+		} );
+
+		it( "should reject transaction promise", function( ) {
+			return seriate.getPlainContext()
+				.step( "fail", function( execute ) {
+					return execute( {
+							query: "select * from sys.tables"
+						} ).tap( function() {
+							throw new TypeError( "😭" );
+						} );
+				} ).should.be.rejectedWith( TypeError, "SqlContext Error. Failed on step \"fail\" with: \"😭\"" );
 		} );
 	} );
 

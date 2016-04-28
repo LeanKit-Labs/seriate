@@ -184,21 +184,10 @@ function addState( fsm, name, stepAction ) {
 	fsm.pipeline.push( name );
 	fsm.states[ name ] = {
 		_onEnter: function() {
-			var execCalled = false;
-			var skipped = false;
+			var promise;
 			var exec = function( options ) {
-				if ( skipped ) {
-					var err = new Error( "Step '" + name + "' has already been skipped. Did you forget to return a promise?" );
-					errorHandler.call( fsm, err ); // Attempt to reject promise for sql transaction
-					throw err; // Reject the runaway promise
-				}
-
-				execCalled = true;
-				executeSql( fsm, name, options )
-					.then(
-						fsm.handle.bind( fsm, "success" ),
-						fsm.handle.bind( fsm, "error" )
-					);
+				promise = executeSql( fsm, name, options );
+				return promise;
 			};
 
 			try {
@@ -209,12 +198,13 @@ function addState( fsm, name, stepAction ) {
 				);
 
 				when( stepReturnValue )
-				.then( function() {
-					if ( !execCalled ) {
-						skipped = true;
-						fsm.nextState();
-					}
-				}, fsm.handle.bind( fsm, "error" ) );
+					.then( function( result ) {
+						return when( promise ) // We'll not force the caller to return the execute promise
+							.then( function( promiseResult ) {
+								return result || promiseResult;
+							} );
+					} )
+					.then( fsm.handle.bind( fsm, "success" ), fsm.handle.bind( fsm, "error" ) ) ;
 			} catch ( err ) {
 				fsm.handle( "error", err );
 			}
