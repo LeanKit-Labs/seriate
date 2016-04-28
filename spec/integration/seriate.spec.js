@@ -584,4 +584,52 @@ describe( "Seriate Integration Tests", function() {
 			} );
 		} );
 	} );
+
+	describe( "when providing an isolation level", function() {
+		var levels = [ "READ_UNCOMMITTED", "READ_COMMITTED", "REPEATABLE_READ", "SERIALIZABLE", "SNAPSHOT" ];
+
+		levels.forEach( function( level ) {
+			it( "should allow isolation level " + level, function() {
+				var isolationConfig = _.extend( { isolationLevel: sql[ level ] }, config );
+				return sql.getTransactionContext( isolationConfig )
+					.step( "isolation", {
+						query: sql.fromFile( "./sql/isolation" )
+					} )
+					.then( function( result ) {
+						result.transaction
+							.commit()
+							.then( function() {
+								result.sets.isolation[0].level.should.equal( level );
+							} );
+					} );
+			} );
+
+			var stringyLevel = level.toLowerCase();
+			it( "should allow stringy isolation level '" + stringyLevel + "'", function() {
+				var isolationConfig = _.extend( { isolationLevel: stringyLevel }, config );
+				return sql.getTransactionContext( isolationConfig )
+					.step( "isolation", {
+						query: sql.fromFile( "./sql/isolation" )
+					} )
+					.then( function( result ) {
+						result.transaction
+							.commit()
+							.then( function() {
+								result.sets.isolation[0].level.should.equal( level );
+							} );
+					} );
+			} );
+		} );
+
+		it( "should throw error when provided a bad isolation level string", function() {
+			var isolationConfig = _.extend( { isolationLevel: "foo" }, config );
+			return sql.getTransactionContext( isolationConfig )
+					.step( "isolation", {
+						query: sql.fromFile( "./sql/isolation" )
+					} )
+					.then( null, function( err ) {
+						err.message.should.equal( "TransactionContext Error. Failed on step \"startingTransaction\" with: \"Unknown isolation level: \"foo\"\"" );
+					} );
+		} );
+	} );
 } );

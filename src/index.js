@@ -93,6 +93,10 @@ _.each( sql.TYPES, function( val, key ) {
 	seriate[ key.toUpperCase() ] = sql.TYPES[ key ];
 } );
 
+_.each( sql.ISOLATION_LEVEL, function( val, key ) {
+	seriate[ key ] = sql.ISOLATION_LEVEL[ key ];
+} );
+
 var api = _.assign( seriate, Monologue );
 
 connections.on( "connected", function( info ) {

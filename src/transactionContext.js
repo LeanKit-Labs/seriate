@@ -17,7 +17,6 @@ module.exports = function( SqlContext ) {
 			},
 			startingTransaction: {
 				_onEnter: function() {
-					this.transaction = this.transaction || new sql.Transaction( this.connection );
 					var args = [ function( err ) {
 						if ( err ) {
 							this.handle( "error", err );
@@ -25,9 +24,20 @@ module.exports = function( SqlContext ) {
 							this.handle( "success" );
 						}
 					}.bind( this ) ];
+
 					if ( this.isolationLevel ) {
-						args.unshift( this.isolationLevel );
+						var isolationLevel = this.isolationLevel;
+						if ( _.isString( this.isolationLevel ) ) {
+							isolationLevel = sql.ISOLATION_LEVEL[ this.isolationLevel.toUpperCase() ];
+							if ( isolationLevel === undefined ) {
+								var err = new Error( "Unknown isolation level: \"" + this.isolationLevel + "\"" );
+								this.handle( "error", err );
+							}
+						}
+						args.unshift( isolationLevel );
 					}
+
+					this.transaction = this.transaction || new sql.Transaction( this.connection );
 					this.transaction.begin.apply( this.transaction, args );
 				},
 				success: function() {
