@@ -201,19 +201,23 @@ function addState( fsm, name, stepAction ) {
 					);
 			};
 
-			var stepReturnValue = stepAction.call(
-				fsm,
-				exec,
-				fsm.results
-			);
+			try {
+				var stepReturnValue = stepAction.call(
+					fsm,
+					exec,
+					fsm.results
+				);
 
-			when( stepReturnValue )
+				when( stepReturnValue )
 				.then( function() {
 					if ( !execCalled ) {
 						skipped = true;
 						fsm.nextState();
 					}
 				}, fsm.handle.bind( fsm, "error" ) );
+			} catch ( err ) {
+				fsm.handle( "error", err );
+			}
 		},
 		success: function( result ) {
 			fsm.results[ name ] = result;

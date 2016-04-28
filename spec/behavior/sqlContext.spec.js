@@ -545,7 +545,7 @@ describe( "SqlContext", function() {
 		} );
 	} );
 
-	describe( "when a promise rejects", function() {
+	describe( "when a step return rejects a promise", function() {
 		var error;
 		before( function() {
 			setup();
@@ -559,7 +559,27 @@ describe( "SqlContext", function() {
 				} );
 		} );
 
-		it( "should throw error", function( ) {
+		it( "should reject the context", function( ) {
+			error.should.be.instanceof( Error );
+			error.message.should.contain( "NOPE!" );
+		} );
+	} );
+
+	describe( "when a step throws an error", function() {
+		var error;
+		before( function() {
+			setup();
+
+			return seriate.getPlainContext()
+				.step( "brokenPromise", function( execute ) {
+					throw new Error( "NOPE!" );
+				} )
+				.then( null, function( err ) {
+					error = err;
+				} );
+		} );
+
+		it( "should reject the context", function( ) {
 			error.should.be.instanceof( Error );
 			error.message.should.contain( "NOPE!" );
 		} );
