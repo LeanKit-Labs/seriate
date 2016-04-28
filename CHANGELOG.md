@@ -1,5 +1,9 @@
 ## 0.6.*
 
+### 0.6.3
+
+* Fix isolation level passed to mssql.
+
 ### 0.6.2
 
 * Reject promise when step action throws error.
