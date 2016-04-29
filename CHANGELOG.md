@@ -1,5 +1,9 @@
 ## 0.6.*
 
+### 0.7.0
+
+* Now returning execute promise so we can manipulate the data returned from a step.
+
 ### 0.6.3
 
 * Fix isolation level passed to mssql.
