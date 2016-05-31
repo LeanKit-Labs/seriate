@@ -1,4 +1,6 @@
-## 0.6.*
+## 0.7.*
+
+* Expose MAX from mssql for use in specifying length in data types.
 
 ### 0.7.0
 
