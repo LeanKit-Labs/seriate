@@ -97,6 +97,8 @@ _.each( sql.ISOLATION_LEVEL, function( val, key ) {
 	seriate[ key ] = sql.ISOLATION_LEVEL[ key ];
 } );
 
+seriate.MAX = sql.MAX;
+
 var api = _.assign( seriate, Monologue );
 
 connections.on( "connected", function( info ) {

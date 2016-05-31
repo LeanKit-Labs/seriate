@@ -86,6 +86,10 @@ describe( "Seriate Integration Tests", function() {
 		connected.should.equal.true;
 	} );
 
+	it( "should expose mssql.MAX", function() {
+		sql.MAX.should.equal( require( "mssql" ).MAX );
+	} );
+
 	after( function( done ) {
 		sql.once( "closed", function( connection ) {
 			done();
