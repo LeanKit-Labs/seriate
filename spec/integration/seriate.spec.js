@@ -555,7 +555,13 @@ describe( "Seriate Integration Tests", function() {
 				var step = {
 					params: {
 						v1s: {
-							val: [ { id: 1, name: "Foo" }, { id: 2, name: "Bar" } ],
+							val: [
+								{ id: 1, name: "Foo" },
+								{ id: 2, name: "Bar" },
+								{ id: 3, name: null },
+								{ id: 4, name: undefined },
+								{ id: 5, name: false }
+							],
 							asTable: {
 								id: sql.BIGINT,
 								name: sql.NVARCHAR( 200 )
@@ -578,7 +584,10 @@ describe( "Seriate Integration Tests", function() {
 						} ).then( function( res ) {
 							res.should.eql( [
 								{ bi1: "1", v1: "Foo", i1: 123 },
-								{ bi1: "2", v1: "Bar", i1: 123 }
+								{ bi1: "2", v1: "Bar", i1: 123 },
+								{ bi1: "3", v1: null, i1: 123 },
+								{ bi1: "4", v1: null, i1: 123 },
+								{ bi1: "5", v1: "false", i1: 123 }
 							] );
 							done();
 						}, function( err ) {
