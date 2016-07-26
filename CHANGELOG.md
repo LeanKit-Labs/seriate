@@ -1,5 +1,9 @@
 ## 0.7.*
 
+### 0.7.2
+
+* Fixed problem handling null and undefined values in asTable parameters.
+
 ### 0.7.1
 
 * Expose MAX from mssql for use in specifying length in data types.
