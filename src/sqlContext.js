@@ -37,7 +37,7 @@ function toXml( values, schema ) {
 	values.map( function( value ) {
 		var row = doc.createElement( "row" );
 		keys.forEach( function( key ) {
-			if ( _.has( value, key ) ) {
+			if ( _.has( value, key ) && value[ key ] !== null && value[ key ] !== undefined ) {
 				row.setAttribute( key, value[ key ] );
 			}
 		} );
