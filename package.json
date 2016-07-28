@@ -10,6 +10,9 @@
     "type": "git",
     "url": "git://github.com/LeanKit-Labs/seriate"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "contributors": [
     {
       "name": "Jim Cowart",
