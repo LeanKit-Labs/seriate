@@ -69,7 +69,7 @@ function createParameter( val, key ) {
 	if ( val.asTable ) {
 		return {
 			key: key + "Xml",
-			type: sql.Xml(),
+			type: sql.NVarChar,
 			value: toXml( val.val, val.asTable ),
 			sqlPrefix: buildTableVariableSql( key, val.asTable )
 		};

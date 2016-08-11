@@ -62,7 +62,7 @@ describe( "Seriate Integration Tests", function() {
 		function setupPrerequisites() {
 			return sql.getPlainContext( config )
 				.step( "CreateTable", {
-					query: "create table NodeTestTable (bi1 bigint not null identity(1,1) primary key, v1 varchar(255), i1 int null)"
+					query: "create table NodeTestTable (bi1 bigint not null identity(1,1) primary key, v1 nvarchar(255), i1 int null)"
 				} )
 				.step( "CreateSecondTable", {
 					query: "create table NodeTestTableNoIdent (bi1 bigint not null primary key, v1 varchar(255), i1 int null)"
@@ -148,7 +148,7 @@ describe( "Seriate Integration Tests", function() {
 					} );
 			} );
 
-			it( "should have return inserted row", function() {
+			it( "should have returned inserted row", function() {
 				resultsCheck.length.should.equal( 1 );
 				( typeof checkError ).should.equal( "undefined" );
 			} );
@@ -280,7 +280,7 @@ describe( "Seriate Integration Tests", function() {
 							type: sql.INT
 						},
 						v1: {
-							val: "updatey",
+							val: "updatey 💩",
 							type: sql.NVARCHAR
 						}
 					}
@@ -304,7 +304,7 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		it( "should have updated row", function() {
-			updResults[ 0 ].v1.should.equal( "updatey" );
+			updResults[ 0 ].v1.should.equal( "updatey 💩" );
 		} );
 
 		it( "should not have errored on insert", function() {
@@ -513,7 +513,7 @@ describe( "Seriate Integration Tests", function() {
 				var step = {
 					params: {
 						v1s: {
-							val: [ "one", "two", "three", "four with \"quotes\"" ],
+							val: [ "one", "two", "three", "four with \"quotes\"", "poo-emoji 💩" ],
 							type: sql.NVARCHAR( 100 ),
 							asTable: true
 						},
@@ -536,12 +536,12 @@ describe( "Seriate Integration Tests", function() {
 								{ v1: "one", i1: 123 },
 								{ v1: "two", i1: 123 },
 								{ v1: "three", i1: 123 },
-								{ v1: "four with \"quotes\"", i1: 123 }
+								{ v1: "four with \"quotes\"", i1: 123 },
+								{ v1: "poo-emoji 💩", i1: 123 }
 							] );
 							done();
-						}, function( err ) {
-							done( err );
-						} );
+						} )
+						.catch( done );
 					} );
 			} );
 		} );
