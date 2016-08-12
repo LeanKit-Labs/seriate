@@ -1,5 +1,10 @@
 ## 0.7.*
 
+### 0.7.3
+
+* Made asTable handle unicode.
+* Set a publish config to ensure publishing to public npm
+
 ### 0.7.2
 
 * Fixed problem handling null and undefined values in asTable parameters.
