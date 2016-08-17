@@ -1,5 +1,9 @@
 ## 0.7.*
 
+### 0.8.0
+
+* Added support for dates and reserved word property names in asTable.
+
 ### 0.7.3
 
 * Made asTable handle unicode.
