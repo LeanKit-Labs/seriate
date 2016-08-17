@@ -18,7 +18,7 @@ function errorHandler( err ) {
 }
 
 function buildTableVariableSql( key, schema ) {
-	return _.template( utils.fromFile( "./sql/buildTableVar" ) )( {
+	return _.template( utils.fromFile( "./sql/buildTableVar.sql.template" ) )( {
 		name: key,
 		schema: _.mapValues( schema, function( typeDef ) {
 			if ( _.isFunction( typeDef ) ) {
@@ -34,11 +34,12 @@ function toXml( values, schema ) {
 	var root = doc.createElement( "result" );
 	var keys = _.keys( schema );
 
-	values.map( function( value ) {
+	values.map( function( obj ) {
 		var row = doc.createElement( "row" );
 		keys.forEach( function( key ) {
-			if ( _.has( value, key ) && value[ key ] !== null && value[ key ] !== undefined ) {
-				row.setAttribute( key, value[ key ] );
+			var value = obj[ key ];
+			if ( value !== null && value !== undefined ) {
+				row.setAttribute( key, _.isDate( value ) ? value.toISOString() : value );
 			}
 		} );
 		return row;

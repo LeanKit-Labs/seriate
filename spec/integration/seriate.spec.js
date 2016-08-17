@@ -62,10 +62,10 @@ describe( "Seriate Integration Tests", function() {
 		function setupPrerequisites() {
 			return sql.getPlainContext( config )
 				.step( "CreateTable", {
-					query: "create table NodeTestTable (bi1 bigint not null identity(1,1) primary key, v1 nvarchar(255), i1 int null)"
+					query: "create table NodeTestTable (bi1 bigint not null identity(1,1) primary key, v1 nvarchar(255), i1 int null, d1 datetime null)"
 				} )
 				.step( "CreateSecondTable", {
-					query: "create table NodeTestTableNoIdent (bi1 bigint not null primary key, v1 varchar(255), i1 int null)"
+					query: "create table NodeTestTableNoIdent (bi1 bigint not null primary key, v1 varchar(255), i1 int null, d1 datetime null)"
 				} )
 				.step( "CreateProc", {
 					query: "CREATE PROC NodeTestMultipleProc ( @i1 int ) AS SELECT	bi1, v1, i1 FROM NodeTestTable WHERE i1 = @i1; SELECT totalRows = COUNT(*) FROM NodeTestTable;"
@@ -273,7 +273,7 @@ describe( "Seriate Integration Tests", function() {
 
 			function update() {
 				return sql.execute( config, {
-					preparedSql: "update NodeTestTable set v1 = @v1 where i1 = @i1",
+					preparedSql: "update NodeTestTable set v1 = @v1, d1 = @d1 where i1 = @i1",
 					params: {
 						i1: {
 							val: id,
@@ -282,6 +282,10 @@ describe( "Seriate Integration Tests", function() {
 						v1: {
 							val: "updatey 💩",
 							type: sql.NVARCHAR
+						},
+						d1: {
+							val: new Date( "2016/12/25" ),
+							type: sql.DATETIME
 						}
 					}
 				} ).then( undefined, function( err ) {
@@ -305,6 +309,7 @@ describe( "Seriate Integration Tests", function() {
 
 		it( "should have updated row", function() {
 			updResults[ 0 ].v1.should.equal( "updatey 💩" );
+			updResults[ 0 ].d1.should.eql( new Date( "2016/12/25" ) );
 		} );
 
 		it( "should not have errored on insert", function() {
@@ -556,7 +561,7 @@ describe( "Seriate Integration Tests", function() {
 					params: {
 						v1s: {
 							val: [
-								{ id: 1, name: "Foo" },
+								{ id: 1, name: "Foo", date: new Date( "2016/12/25" ) },
 								{ id: 2, name: "Bar" },
 								{ id: 3, name: null },
 								{ id: 4, name: undefined },
@@ -564,7 +569,8 @@ describe( "Seriate Integration Tests", function() {
 							],
 							asTable: {
 								id: sql.BIGINT,
-								name: sql.NVARCHAR( 200 )
+								name: sql.NVARCHAR( 200 ),
+								date: sql.DATETIME
 							}
 						},
 						i1: {
@@ -574,25 +580,24 @@ describe( "Seriate Integration Tests", function() {
 					}
 				};
 
-				step[ sqlKey ] = "INSERT INTO NodeTestTableNoIdent (bi1, v1, i1) SELECT id, name, @i1 FROM @v1s;";
+				step[ sqlKey ] = "INSERT INTO NodeTestTableNoIdent (bi1, v1, i1, d1) SELECT id, name, @i1, [date] FROM @v1s;";
 
 				sql.getPlainContext( config )
 					.step( "insert", step )
 					.end( function( res ) {
 						sql.execute( config, {
-							query: "SELECT bi1, v1, i1 FROM NodeTestTableNoIdent;"
+							query: "SELECT bi1, v1, i1, d1 FROM NodeTestTableNoIdent;"
 						} ).then( function( res ) {
 							res.should.eql( [
-								{ bi1: "1", v1: "Foo", i1: 123 },
-								{ bi1: "2", v1: "Bar", i1: 123 },
-								{ bi1: "3", v1: null, i1: 123 },
-								{ bi1: "4", v1: null, i1: 123 },
-								{ bi1: "5", v1: "false", i1: 123 }
+								{ bi1: "1", v1: "Foo", i1: 123, d1: new Date( "2016/12/25" ) },
+								{ bi1: "2", v1: "Bar", i1: 123, d1: null },
+								{ bi1: "3", v1: null, i1: 123, d1: null },
+								{ bi1: "4", v1: null, i1: 123, d1: null },
+								{ bi1: "5", v1: "false", i1: 123, d1: null }
 							] );
 							done();
-						}, function( err ) {
-							done( err );
-						} );
+						} )
+						.catch( done );
 					} );
 			} );
 		} );
