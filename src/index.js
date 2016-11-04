@@ -12,15 +12,18 @@ function promisify( context, queryOptions ) {
 	context.step( name, queryOptions );
 	return when.promise( function( resolve, reject, notify ) {
 		context
-			.end( resolve )
-			.error( reject )
-			.on( "data", notify );
+		.end( resolve )
+		.error( reject )
+		.on( "data", notify );
 	} );
 }
 
 var seriate = {
 	getTransactionContext: function( connection ) {
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace };
+		var options = {
+			metrics: this.metrics,
+			namespace: this.metricsNamespace
+		};
 		if ( connection && connection.isolationLevel ) {
 			options.isolationLevel = connection.isolationLevel;
 			delete connection.isolationLevel;
@@ -30,7 +33,11 @@ var seriate = {
 	},
 	getPlainContext: function( connection ) {
 		var conn = connections.get( connection );
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
+		var options = {
+			metrics: this.metrics,
+			namespace: this.metricsNamespace,
+			connection: conn
+		};
 		return new SqlContext( options );
 	},
 	executeTransaction: function( connection, queryOptions ) {
@@ -39,7 +46,11 @@ var seriate = {
 			connection = undefined;
 		}
 		var conn = connections.get( connection );
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
+		var options = {
+			metrics: this.metrics,
+			namespace: this.metricsNamespace,
+			connection: conn
+		};
 		return promisify( new TransactionContext( options ), queryOptions );
 	},
 	execute: function( connection, queryOptions ) {
@@ -48,20 +59,24 @@ var seriate = {
 			connection = undefined;
 		}
 		var conn = connections.get( connection );
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
+		var options = {
+			metrics: this.metrics,
+			namespace: this.metricsNamespace,
+			connection: conn
+		};
 		return promisify( new SqlContext( options ), queryOptions )
-			.then( function( data ) {
-				if ( data.__result__ ) {
-					return data.__result__;
-				} else {
-					return data[ queryOptions.procedure || queryOptions.name ];
-				}
-			} );
+            .then( function( data ) {
+	if ( data.__result__ ) {
+		return data.__result__;
+	} else {
+		return data[queryOptions.procedure || queryOptions.name];
+	}
+            } );
 	},
 	first: function() {
 		var args = Array.prototype.slice.call( arguments, 0 );
 		return this.execute.apply( this, args ).then( function( rows ) {
-			return rows[ 0 ];
+			return rows[0];
 		} );
 	},
 	fromFile: utils.fromFile,
@@ -85,16 +100,18 @@ var seriate = {
 	useMetrics: function( metrics, namespace ) {
 		this.metrics = metrics;
 		this.metricsNamespace = namespace;
-	}
+	},
+	SqlContext: SqlContext,
+	TransactionContext: TransactionContext
 };
 
 _.each( sql.TYPES, function( val, key ) {
-	seriate[ key ] = sql.TYPES[ key ];
-	seriate[ key.toUpperCase() ] = sql.TYPES[ key ];
+	seriate[key] = sql.TYPES[key];
+	seriate[key.toUpperCase()] = sql.TYPES[key];
 } );
 
 _.each( sql.ISOLATION_LEVEL, function( val, key ) {
-	seriate[ key ] = sql.ISOLATION_LEVEL[ key ];
+	seriate[key] = sql.ISOLATION_LEVEL[key];
 } );
 
 seriate.MAX = sql.MAX;
