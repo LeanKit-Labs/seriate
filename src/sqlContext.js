@@ -169,14 +169,6 @@ function preparedSql( state, name, options ) {
 	}
 }
 
-function executeSql( state, name, options ) {
-	if ( options.query || options.procedure ) {
-		return nonPreparedSql( state, name, options );
-	} else {
-		return preparedSql( state, name, options );
-	}
-}
-
 function addState( fsm, name, stepAction ) {
 	if ( fsm.states[ name ] ) {
 		throw new Error( "A step by that name already exists: " + fsm.instance );
@@ -187,7 +179,7 @@ function addState( fsm, name, stepAction ) {
 		_onEnter: function() {
 			var promise;
 			var exec = function( options ) {
-				promise = executeSql( fsm, name, options );
+				promise = fsm.executeSql( fsm, name, options );
 				return promise;
 			};
 
@@ -340,6 +332,14 @@ module.exports = function() {
 
 		abort: function() {
 			this.handle( "error", "Operation aborted" );
+		},
+
+		executeSql: function( state, name, options ) {
+			if ( options.query || options.procedure ) {
+				return nonPreparedSql( state, name, options );
+			} else {
+				return preparedSql( state, name, options );
+			}
 		}
 
 	} );

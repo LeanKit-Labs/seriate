@@ -3,8 +3,8 @@ var _ = require( "lodash" );
 var Monologue = require( "monologue.js" ).prototype;
 var sql = require( "mssql" );
 var connections = require( "./connections" );
-var SqlContext = require( "./sqlContext" )();
-var TransactionContext = require( "./transactionContext" )( SqlContext );
+var SqlContextG = require( "./sqlContext" )();
+var TransactionContextG = require( "./transactionContext" )( SqlContextG );
 var utils = require( "./utils" );
 
 function promisify( context, queryOptions ) {
@@ -29,7 +29,7 @@ var seriate = {
 			delete connection.isolationLevel;
 		}
 		options.connection = connections.get( connection );
-		return new TransactionContext( options );
+		return new this.TransactionContext( options );
 	},
 	getPlainContext: function( connection ) {
 		var conn = connections.get( connection );
@@ -38,7 +38,7 @@ var seriate = {
 			namespace: this.metricsNamespace,
 			connection: conn
 		};
-		return new SqlContext( options );
+		return new this.SqlContext( options );
 	},
 	executeTransaction: function( connection, queryOptions ) {
 		if ( arguments.length === 1 ) {
@@ -51,7 +51,7 @@ var seriate = {
 			namespace: this.metricsNamespace,
 			connection: conn
 		};
-		return promisify( new TransactionContext( options ), queryOptions );
+		return promisify( new this.TransactionContext( options ), queryOptions );
 	},
 	execute: function( connection, queryOptions ) {
 		if ( arguments.length === 1 ) {
@@ -64,7 +64,7 @@ var seriate = {
 			namespace: this.metricsNamespace,
 			connection: conn
 		};
-		return promisify( new SqlContext( options ), queryOptions )
+		return promisify( new this.SqlContext( options ), queryOptions )
             .then( function( data ) {
 	if ( data.__result__ ) {
 		return data.__result__;
@@ -79,6 +79,7 @@ var seriate = {
 			return rows[0];
 		} );
 	},
+	_getFilePath: utils._getFilePath,
 	fromFile: utils.fromFile,
 	addConnection: function( config ) {
 		connections.add( config );
@@ -101,8 +102,8 @@ var seriate = {
 		this.metrics = metrics;
 		this.metricsNamespace = namespace;
 	},
-	SqlContext: SqlContext,
-	TransactionContext: TransactionContext
+	SqlContext: SqlContextG,
+	TransactionContext: TransactionContextG
 };
 
 _.each( sql.TYPES, function( val, key ) {
