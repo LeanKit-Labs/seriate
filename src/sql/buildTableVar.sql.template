@@ -5,7 +5,9 @@ DECLARE @<%= name %> table (
 )
 DECLARE @<%= name %>Idoc int
 EXEC sp_xml_preparedocument @<%= name %>Idoc OUTPUT, @<%= name %>Xml
-INSERT @<%= name %> SELECT <%= Object.keys( schema ).join(", ") %>
+INSERT @<%= name %> SELECT <%= Object.keys( schema )
+  .map( function( column ) { return "[" + column + "]"; } )
+  .join(", ") %>
 FROM OPENXML(@<%= name %>Idoc, '//row', 1) WITH (
   <%= _.map( schema, function( sqlType, column ) {
       return "[" + column + "] " + sqlType;
