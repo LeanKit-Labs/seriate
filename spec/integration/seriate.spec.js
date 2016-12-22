@@ -561,14 +561,14 @@ describe( "Seriate Integration Tests", function() {
 					params: {
 						v1s: {
 							val: [
-								{ id: 1, name: "Foo", date: new Date( "2016/12/25" ) },
-								{ id: 2, name: "Bar" },
-								{ id: 3, name: null },
-								{ id: 4, name: undefined },
-								{ id: 5, name: false }
+								{ index: 1, name: "Foo", date: new Date( "2016/12/25" ) },
+								{ index: 2, name: "Bar" },
+								{ index: 3, name: null },
+								{ index: 4, name: undefined },
+								{ index: 5, name: false }
 							],
 							asTable: {
-								id: sql.BIGINT,
+								index: sql.BIGINT,
 								name: sql.NVARCHAR( 200 ),
 								date: sql.DATETIME
 							}
@@ -580,7 +580,7 @@ describe( "Seriate Integration Tests", function() {
 					}
 				};
 
-				step[ sqlKey ] = "INSERT INTO NodeTestTableNoIdent (bi1, v1, i1, d1) SELECT id, name, @i1, [date] FROM @v1s;";
+				step[ sqlKey ] = "INSERT INTO NodeTestTableNoIdent (bi1, v1, i1, d1) SELECT [index], name, @i1, [date] FROM @v1s;";
 
 				sql.getPlainContext( config )
 					.step( "insert", step )
