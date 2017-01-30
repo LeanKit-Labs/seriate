@@ -11,6 +11,32 @@ var machina = require( "machina" );
 var xmldom = require( "xmldom" );
 var domImplementation = new xmldom.DOMImplementation();
 var xmlSerializer = new xmldom.XMLSerializer();
+var Readable = require( "stream" ).Readable;
+
+util.inherits( DataResultStream, Readable );
+
+function DataResultStream( request, options ) {
+	var self = this;
+	Readable.call( this, _.extend( {}, options, { objectMode: true } ) );
+
+	request.on( "recordset", function( columns ) {
+		self.push( { recordset: columns } );
+	} );
+
+	request.on( "row", function( row ) {
+		self.push( { row: row } );
+	} );
+
+	request.on( "error", function( error ) {
+		self.emit( "error", error );
+	} );
+
+	request.on( "done", function() {
+		self.push( null );
+	} );
+}
+
+DataResultStream.prototype._read = _.noop;
 
 function errorHandler( err ) {
 	this.err = err;
@@ -100,21 +126,30 @@ function nonPreparedSql( state, name, options ) {
 	var prefix = _.pluck( params, "sqlPrefix" ).join( "" );
 	var sqlCmd = prefix + ( options.query || options.procedure );
 
-	if ( state.metrics ) {
-		return state.metrics.instrument(
-			{
-				key: [ "sql", name ],
-				namespace: state.metricsNamespace,
-				call: function( cb ) {
-					return req[ operation ]( sqlCmd, cb );
-				},
-				success: _.identity,
-				failure: _.identity
-			}
-		);
-	} else {
-		return lift( req[ operation ] ).bind( req )( sqlCmd );
+	function op() {
+		if ( !options.stream ) {
+			return lift( req[ operation ] ).bind( req )( sqlCmd );
+		}
+		var stream;
+		req.stream = true;
+		stream = new DataResultStream( req );
+		req[ operation ]( sqlCmd );
+		return when.resolve( stream );
 	}
+
+	if ( !state.metrics ) {
+		return op();
+	}
+
+	return state.metrics.instrument(
+		{
+			key: [ "sql", name ],
+			namespace: state.metricsNamespace,
+			call: op,
+			success: _.identity,
+			failure: _.identity
+		}
+	);
 }
 
 function preparedSql( state, name, options ) {
@@ -138,6 +173,17 @@ function preparedSql( state, name, options ) {
 	function op() {
 		return prepare( statement )
 			.then( function() {
+				if ( options.stream ) {
+					cmd.stream = true;
+
+					// Can't use the lifted execute here because we need the
+					// request returned by the original callback version, which the
+					// lift would replace with a promise.
+					var req = cmd.execute( paramKeyValues, _.noop );
+					var stream = new DataResultStream( req );
+					stream.on( "end", unprepare );
+					return when.resolve( stream );
+				}
 				return execute( paramKeyValues )
 					.then( function( result ) {
 						return unprepare()
@@ -152,21 +198,20 @@ function preparedSql( state, name, options ) {
 					} );
 			} );
 	}
-	if ( state.metrics ) {
-		return state.metrics.instrument(
-			{
-				key: [ "sql", name ],
-				namespace: state.metricsNamespace,
-				call: function() {
-					return op();
-				},
-				success: _.identity,
-				failure: _.identity
-			}
-		);
-	} else {
+
+	if ( !state.metrics ) {
 		return op();
 	}
+
+	return state.metrics.instrument(
+		{
+			key: [ "sql", name ],
+			namespace: state.metricsNamespace,
+			call: op,
+			success: _.identity,
+			failure: _.identity
+		}
+	);
 }
 
 function executeSql( state, name, options ) {

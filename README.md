@@ -113,7 +113,7 @@ Creates a connection pool with the name "default" for future use. If other API c
 
 ### getPlainContext( [connection] )
 
-This method returns a `TransactionContext` instance, and allows you to add 1 or more steps to the context, with each step representing a query/command that should be executed in the database. Steps are given an `alias` (which is used to identify the result set returned), and the query details can be provided as an object (which we"ll see below), or a callback that takes an `execute` continuation (which is used to process your query options argument). Let's take a look at the first approach:
+This method returns a `SqlContext` instance, and allows you to add 1 or more steps to the context, with each step representing a query/command that should be executed in the database. Steps are given an `alias` (which is used to identify the result set returned), and the query details can be provided as an object (which we"ll see below), or a callback that takes an `execute` continuation (which is used to process your query options argument). Let's take a look at the first approach:
 
 #### Specifying a step using just the query options object argument
 
@@ -271,6 +271,55 @@ The column will be of the parameter's specified type.
 	}
 } )
 ```
+
+#### Getting results in streams
+
+If you are expecting a particularly large result set, you might want to receive
+your results in a [readable stream](https://nodejs.org/api/stream.html#stream_readable_streams)
+instead of an array of objects. To get a step's result returned as a stream in
+[object mode](https://nodejs.org/api/stream.html#stream_object_mode),
+put `stream: true` on its `queryOptions` argument.
+The stream will emit two types of objects, `recordset` objects and `row` objects.
+
+At the beginning of each result set will come a single `recordset` object, recognizable by
+its single `recordset` property whose value describes the columns of the coming rows.
+This object is keyed by column names with object values describing each column.
+
+```
+{
+	recordset: {
+		column1: {
+			index: 0,
+			name: 'column1',
+			length: undefined,
+			type: [sql.Int],
+			scale: undefined,
+			precision: undefined,
+			nullable: false,
+			caseSensitive: false,
+			identity: false,
+			readOnly: true
+		},
+		...
+	}
+}
+```
+
+Following each `recordset` object will be zero or more `row` objects,
+each recognizable by its single `row` property whose value is simply an object
+of values keyed by column name.
+
+```
+{
+	row: {
+		column1: 123,
+		...
+	}
+}
+```
+
+Streamed results can be very useful for piping into transforms,
+writing directly to the response stream, writing to a file, etc.
 
 ### getTransactionContext( [connection] )
 The `getTransactionContext` method returns a `TransactionContext` instance - which for the most part is nearly identical to a `SqlContext` instance - however, a transaction is started as the context begins its work, and you have the option to commit or rollback in the `end` method's callback. For example:
