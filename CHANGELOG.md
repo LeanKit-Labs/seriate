@@ -1,5 +1,9 @@
 ## 0.7.*
 
+### 0.9.0
+
+* Added stream option
+
 ### 0.8.1
 
 * Fixed bug in asTable with reserved word properties
