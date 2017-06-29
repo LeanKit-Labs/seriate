@@ -43,7 +43,7 @@ function errorHandler( err ) {
 	this.transition( "error" );
 }
 
-function buildTableVariableSql( key, schema ) {
+function buildTableVariableSql( key, schema, hasData ) {
 	return _.template( utils.fromFile( "./sql/buildTableVar.sql.template" ) )( {
 		name: key,
 		schema: _.mapValues( schema, function( typeDef ) {
@@ -51,7 +51,8 @@ function buildTableVariableSql( key, schema ) {
 				typeDef = typeDef();
 			}
 			return declare( typeDef.type, typeDef );
-		} )
+		} ),
+		hasData: hasData
 	} ) + "\n";
 }
 
@@ -98,7 +99,7 @@ function createParameter( val, key ) {
 			key: key + "Xml",
 			type: sql.NVarChar,
 			value: toXml( val.val, val.asTable ),
-			sqlPrefix: buildTableVariableSql( key, val.asTable )
+			sqlPrefix: buildTableVariableSql( key, val.asTable, !!val.val.length )
 		};
 	}
 	return {
