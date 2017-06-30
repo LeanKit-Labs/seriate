@@ -2,9 +2,7 @@ var _ = require( "lodash" );
 var when = require( "when" );
 var lift = require( "when/node" ).lift;
 var sql = require( "mssql" );
-var declare = require( "mssql/lib/datatypes" ).declare;
 var util = require( "util" );
-var utils = require( "./utils" );
 var log = require( "./log" )( "seriate.sql" );
 var Monologue = require( "monologue.js" );
 var machina = require( "machina" );
@@ -12,6 +10,7 @@ var xmldom = require( "xmldom" );
 var domImplementation = new xmldom.DOMImplementation();
 var xmlSerializer = new xmldom.XMLSerializer();
 var Readable = require( "stream" ).Readable;
+var buildTableVariableSql = require( "./build-table-variable-sql" );
 
 util.inherits( DataResultStream, Readable );
 
@@ -41,18 +40,6 @@ DataResultStream.prototype._read = _.noop;
 function errorHandler( err ) {
 	this.err = err;
 	this.transition( "error" );
-}
-
-function buildTableVariableSql( key, schema ) {
-	return _.template( utils.fromFile( "./sql/buildTableVar.sql.template" ) )( {
-		name: key,
-		schema: _.mapValues( schema, function( typeDef ) {
-			if ( _.isFunction( typeDef ) ) {
-				typeDef = typeDef();
-			}
-			return declare( typeDef.type, typeDef );
-		} )
-	} ) + "\n";
 }
 
 function toXml( values, schema ) {
@@ -98,7 +85,7 @@ function createParameter( val, key ) {
 			key: key + "Xml",
 			type: sql.NVarChar,
 			value: toXml( val.val, val.asTable ),
-			sqlPrefix: buildTableVariableSql( key, val.asTable )
+			sqlPrefix: buildTableVariableSql( key, val.asTable, !!val.val.length )
 		};
 	}
 	return {

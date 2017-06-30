@@ -3,14 +3,16 @@ DECLARE @<%= name %> table (
       return "[" + column + "] " + sqlType;
   } ).join( ", " ) %>
 )
-DECLARE @<%= name %>Idoc int
-EXEC sp_xml_preparedocument @<%= name %>Idoc OUTPUT, @<%= name %>Xml
-INSERT @<%= name %> SELECT <%= Object.keys( schema )
-  .map( function( column ) { return "[" + column + "]"; } )
-  .join(", ") %>
-FROM OPENXML(@<%= name %>Idoc, '//row', 1) WITH (
-  <%= _.map( schema, function( sqlType, column ) {
-      return "[" + column + "] " + sqlType;
-  } ).join( ", " ) %>
-);
-EXEC sp_xml_removedocument @<%= name %>Idoc;
+<% if ( hasData ) { %>
+  DECLARE @<%= name %>Idoc int
+  EXEC sp_xml_preparedocument @<%= name %>Idoc OUTPUT, @<%= name %>Xml
+  INSERT @<%= name %> SELECT <%= Object.keys( schema )
+    .map( function( column ) { return "[" + column + "]"; } )
+    .join(", ") %>
+  FROM OPENXML(@<%= name %>Idoc, '//row', 1) WITH (
+    <%= _.map( schema, function( sqlType, column ) {
+        return "[" + column + "] " + sqlType;
+    } ).join( ", " ) %>
+  );
+  EXEC sp_xml_removedocument @<%= name %>Idoc;
+<% } %>
