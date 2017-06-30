@@ -1,5 +1,9 @@
 ## 0.7.*
 
+### 0.9.1
+
+* Only create xml when data is present
+
 ### 0.9.0
 
 * Added stream option
