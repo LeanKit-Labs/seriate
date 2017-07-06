@@ -3,8 +3,8 @@ var _ = require( "lodash" );
 var Monologue = require( "monologue.js" ).prototype;
 var sql = require( "mssql" );
 var connections = require( "./connections" );
-var SqlContext = require( "./sqlContext" )();
-var TransactionContext = require( "./transactionContext" )( SqlContext );
+var SqlContextG = require( "./sqlContext" )();
+var TransactionContextG = require( "./transactionContext" )( SqlContextG );
 var utils = require( "./utils" );
 
 function promisify( context, queryOptions ) {
@@ -12,26 +12,33 @@ function promisify( context, queryOptions ) {
 	context.step( name, queryOptions );
 	return when.promise( function( resolve, reject, notify ) {
 		context
-			.end( resolve )
-			.error( reject )
-			.on( "data", notify );
+		.end( resolve )
+		.error( reject )
+		.on( "data", notify );
 	} );
 }
 
 var seriate = {
 	getTransactionContext: function( connection ) {
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace };
+		var options = {
+			metrics: this.metrics,
+			namespace: this.metricsNamespace
+		};
 		if ( connection && connection.isolationLevel ) {
 			options.isolationLevel = connection.isolationLevel;
 			delete connection.isolationLevel;
 		}
 		options.connection = connections.get( connection );
-		return new TransactionContext( options );
+		return new this.TransactionContext( options );
 	},
 	getPlainContext: function( connection ) {
 		var conn = connections.get( connection );
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
-		return new SqlContext( options );
+		var options = {
+			metrics: this.metrics,
+			namespace: this.metricsNamespace,
+			connection: conn
+		};
+		return new this.SqlContext( options );
 	},
 	executeTransaction: function( connection, queryOptions ) {
 		if ( arguments.length === 1 ) {
@@ -39,8 +46,12 @@ var seriate = {
 			connection = undefined;
 		}
 		var conn = connections.get( connection );
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
-		return promisify( new TransactionContext( options ), queryOptions );
+		var options = {
+			metrics: this.metrics,
+			namespace: this.metricsNamespace,
+			connection: conn
+		};
+		return promisify( new this.TransactionContext( options ), queryOptions );
 	},
 	execute: function( connection, queryOptions ) {
 		if ( arguments.length === 1 ) {
@@ -48,23 +59,28 @@ var seriate = {
 			connection = undefined;
 		}
 		var conn = connections.get( connection );
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
-		return promisify( new SqlContext( options ), queryOptions )
-			.then( function( data ) {
-				if ( data.__result__ ) {
-					return data.__result__;
-				} else {
-					return data[ queryOptions.procedure || queryOptions.name ];
-				}
-			} );
+		var options = {
+			metrics: this.metrics,
+			namespace: this.metricsNamespace,
+			connection: conn
+		};
+		return promisify( new this.SqlContext( options ), queryOptions )
+            .then( function( data ) {
+	if ( data.__result__ ) {
+		return data.__result__;
+	} else {
+		return data[queryOptions.procedure || queryOptions.name];
+	}
+            } );
 	},
 	first: function() {
 		var args = Array.prototype.slice.call( arguments, 0 );
 		delete args[ args.length - 1 ].stream;
 		return this.execute.apply( this, args ).then( function( rows ) {
-			return rows[ 0 ];
+			return rows[0];
 		} );
 	},
+	_getFilePath: utils._getFilePath,
 	fromFile: utils.fromFile,
 	addConnection: function( config ) {
 		connections.add( config );
@@ -86,16 +102,18 @@ var seriate = {
 	useMetrics: function( metrics, namespace ) {
 		this.metrics = metrics;
 		this.metricsNamespace = namespace;
-	}
+	},
+	SqlContext: SqlContextG,
+	TransactionContext: TransactionContextG
 };
 
 _.each( sql.TYPES, function( val, key ) {
-	seriate[ key ] = sql.TYPES[ key ];
-	seriate[ key.toUpperCase() ] = sql.TYPES[ key ];
+	seriate[key] = sql.TYPES[key];
+	seriate[key.toUpperCase()] = sql.TYPES[key];
 } );
 
 _.each( sql.ISOLATION_LEVEL, function( val, key ) {
-	seriate[ key ] = sql.ISOLATION_LEVEL[ key ];
+	seriate[key] = sql.ISOLATION_LEVEL[key];
 } );
 
 seriate.MAX = sql.MAX;

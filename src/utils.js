@@ -32,5 +32,6 @@ module.exports = {
 			fileCache[ p ] = content;
 		}
 		return content;
-	}
+	},
+	_getFilePath: _getFilePath
 };
