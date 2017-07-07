@@ -36,7 +36,7 @@ function insertTestRows( sql ) {
 
 function deleteTestRows( sql ) {
 	return sql.execute( config, {
-		preparedSql: "DELETE FROM NodeTestTable; DELETE FROM NodeTestTableNoIdent"
+		query: "DELETE FROM NodeTestTable; DELETE FROM NodeTestTableNoIdent"
 	} );
 }
 
@@ -510,6 +510,15 @@ describe( "Seriate Integration Tests", function() {
 			} );
 		} );
 
+		describe( "when options argument has none of the valid keys provided", function() {
+			it( "should reject with error", function() {
+				return sql.execute( config, { no: "good" } )
+				.should.be.rejectedWith( Error,
+					"SqlContext Error. Failed on step \"__result__\" with: \"The options argument must have query, procedure, preparedSql, or bulkLoadTable.\""
+				);
+			} );
+		} );
+
 		[ "query", "preparedSql" ].forEach( function( sqlKey ) {
 			describe( "when inserting a list of values with " + sqlKey, function() {
 				afterEach( function() {
@@ -602,6 +611,127 @@ describe( "Seriate Integration Tests", function() {
 							.catch( done );
 						} );
 				} );
+			} );
+		} );
+
+		describe( "when bulk loading a temp table on transaction context", function() {
+			var sets;
+			beforeEach( function() {
+				return sql.getTransactionContext( config )
+				.step( "bulk-insert", {
+					bulkLoadTable: {
+						name: "#v1s",
+						columns: {
+							index: { type: sql.BIGINT },
+							name: { type: sql.NVARCHAR( 200 ) },
+							date: { type: sql.DATETIME }
+						},
+						rows: [
+							{ index: 1, name: "Foo", date: new Date( "2016/12/25" ) },
+							{ index: 2, name: "Bar" },
+							{ index: 3, name: null },
+							{ index: 4, name: undefined },
+							{ index: 5, name: false }
+						]
+					}
+				} )
+				.step( "insert", {
+					query: "INSERT INTO NodeTestTableNoIdent (bi1, v1, i1, d1) SELECT [index], name, @i1, [date] FROM #v1s;",
+					params: {
+						i1: {
+							val: 123,
+							type: sql.INT
+						}
+					}
+				} )
+				.then( function( res ) {
+					sets = res.sets;
+					return res.transaction.commit();
+				} );
+			} );
+
+			afterEach( function() {
+				return deleteTestRows( sql );
+			} );
+
+			it( "should insert a row for each item", function() {
+				return sql.execute( config, {
+					query: "SELECT bi1, v1, i1, d1 FROM NodeTestTableNoIdent;"
+				} )
+				.then( function( res ) {
+					res.should.eql( [
+						{ bi1: "1", v1: "Foo", i1: 123, d1: new Date( "2016/12/25" ) },
+						{ bi1: "2", v1: "Bar", i1: 123, d1: null },
+						{ bi1: "3", v1: null, i1: 123, d1: null },
+						{ bi1: "4", v1: null, i1: 123, d1: null },
+						{ bi1: "5", v1: "false", i1: 123, d1: null }
+					] );
+				} );
+			} );
+
+			it( "should drop temp table", function() {
+				return sql.execute( config, {
+					query: "SELECT OBJECT_ID('tempdb..#v1s') tempTableId;"
+				} )
+				.then( function( res ) {
+					res.should.eql( [ { tempTableId: null } ] );
+				} );
+			} );
+
+			it( "should return row count", function() {
+				sets[ "bulk-insert" ].should.equal( 5 );
+			} );
+		} );
+
+		describe( "when bulk loading a permanent table on plain context", function() {
+			it( "should insert rows", function() {
+				return sql.getPlainContext( config )
+				.step( "bulk-load", {
+					bulkLoadTable: {
+						name: "NodeTestTableNoIdent",
+						columns: {
+							bi1: { type: sql.BIGINT, nullable: false },
+							v1: { type: sql.VARCHAR( 255 ) },
+							i1: { type: sql.INT },
+							d1: { type: sql.DATETIME }
+						},
+						rows: [ {
+							bi1: "123",
+							v1: "Marvin",
+							i1: 234,
+							d1: new Date( 2017, 1, 2, 3, 4, 5 )
+						} ]
+					}
+				} )
+				.then( function() {
+					return sql.execute( config, { query: "SELECT * FROM NodeTestTableNoIdent" } )
+					.then( function( data ) {
+						data.should.eql( [ {
+							bi1: "123",
+							v1: "Marvin",
+							i1: 234,
+							d1: new Date( 2017, 1, 2, 3, 4, 5 )
+						} ] );
+					} );
+				} );
+			} );
+		} );
+
+		describe( "when bulking loading a temp table on plain context", function() {
+			it( "should reject with error", function() {
+				return sql.getPlainContext( config )
+				.step( "bulk-load", {
+					bulkLoadTable: {
+						name: "#foo",
+						columns: {
+							id: { type: sql.INT }
+						},
+						rows: [ { id: 1 } ]
+					}
+				} )
+				.should.be.rejectedWith( Error,
+					"SqlContext Error. Failed on step \"bulk-load\" with: \"You may not bulk load a temporary table on a plain context; use a transaction context.\""
+				);
 			} );
 		} );
 

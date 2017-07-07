@@ -162,11 +162,33 @@ Note that the `SqlContext` instance returns from `getPlainContext` has a `step` 
 		},
 		param3Name: "param3Value"
 	},
-	multiple: false
+	multiple: false,
+	bulkLoadTable: {
+		name: "TableToBulkLoad",
+		columns: {
+			id: {
+				type: sql.INT,
+				nullable: false
+			},
+			name: {
+				type: sql.NVARCHAR(100),
+				nullable: true
+			}
+		},
+		rows: [
+			{
+				id: 246,
+				name: "Teddy Pendergrass"
+			},
+			...
+		]
+	}
 }
 ```
 
-You can only use *one* of the three sql-related fields: `query`, `procedure` or `preparedSql`. The module infers from which one you use as to how it should execute (and it's checked in that order). If your query takes params, you can provide a `params` object, where each key represents a parameter name and the value can be an object that provides the `val` and `type` (types are pulled from the `mssql` module), or the value can be a primitive value which will be passed as the paramter value. If multiple recordsets are expected from a `query` or `preparedSql`, set the `multiple` field to `true`. Multiple recordsets are automatically supported when executing a stored procedure. (NOTE: if you use multiple recordsets, your result set for a step will be an array of records sets (i.e. - nested arrays), rather than an array of a single record set).
+You can only use *one* of the four sql-related fields: `query`, `procedure`, `preparedSql`, or `bulkLoadTable`. The module infers from which one you use as to how it should execute (and it's checked in that order). If your query takes params, you can provide a `params` object, where each key represents a parameter name and the value can be an object that provides the `val` and `type` (types are pulled from the `mssql` module), or the value can be a primitive value which will be passed as the parameter value. If multiple recordsets are expected from a `query` or `preparedSql`, set the `multiple` field to `true`. Multiple recordsets are automatically supported when executing a stored procedure. (NOTE: if you use multiple recordsets, your result set for a step will be an array of records sets (i.e. - nested arrays), rather than an array of a single record set).
+
+If you need to bulk load a table, you can do that with the `bulkLoadTable` option. Just specify the `name` of the table to load, definitions of `columns` keyed by name, and an array of `rows` as shown above. Each column must have a `type` and may optionally have a `nullable` boolean, which must match the nullability of the corresponding database column. If you omit `nullable` for a column, it is assumed to be `true`. If the table does not exist, it will be created. If you need to bulk load a temporary table, just specify a name with a `#` at the beginning of its name. In this case you must use a transaction context instead of a plain context. The temporary table will automatically be dropped at the end of the transaction. The result for a `bulkLoadTable` step is the number of rows inserted.
 
 The `end` method of a `SqlContext` instance takes a callback which receives a `sets` argument. The `sets` argument contains the dataset(s) from each step (using the step `alias` as the property name). The `error` method allows you to pass a callback that will receive an error notfication if anything fails. Note that calling `end` or `error` is what *starts* the unit of work handled by the context.
 
