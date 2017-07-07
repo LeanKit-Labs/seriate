@@ -1,6 +1,6 @@
 {
   "name": "seriate",
-  "version": "0.7.1",
+  "version": "0.9.1",
   "description": "A cross platform module for Microsoft SQL Server that wraps node-mssql",
   "main": "src/index.js",
   "author": "LeanKit",
@@ -9,6 +9,9 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/LeanKit-Labs/seriate"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
   },
   "contributors": [
     {

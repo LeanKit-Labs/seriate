@@ -1,5 +1,30 @@
 ## 0.7.*
 
+### 0.9.1
+
+* Only create xml when data is present
+
+### 0.9.0
+
+* Added stream option
+
+### 0.8.1
+
+* Fixed bug in asTable with reserved word properties
+
+### 0.8.0
+
+* Added support for dates and reserved word property names in asTable.
+
+### 0.7.3
+
+* Made asTable handle unicode.
+* Set a publish config to ensure publishing to public npm
+
+### 0.7.2
+
+* Fixed problem handling null and undefined values in asTable parameters.
+
 ### 0.7.1
 
 * Expose MAX from mssql for use in specifying length in data types.

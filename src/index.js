@@ -60,6 +60,7 @@ var seriate = {
 	},
 	first: function() {
 		var args = Array.prototype.slice.call( arguments, 0 );
+		delete args[ args.length - 1 ].stream;
 		return this.execute.apply( this, args ).then( function( rows ) {
 			return rows[ 0 ];
 		} );
