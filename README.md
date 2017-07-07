@@ -1,4 +1,4 @@
-# Seriate
+# Seriate.Zeusbase
 =========
 
 A cross platform node module for Microsoft SQL Server based on [node-mssql](https://www.npmjs.org/package/mssql)
