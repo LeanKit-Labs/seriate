@@ -37,7 +37,7 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 					name: "#oops",
 					columns: {
 						foo: {
-							type: sql.NVARCHAR(50),
+							type: sql.NVARCHAR( 50 ),
 							nullable: false
 						}
 					},
@@ -65,8 +65,9 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 	} );
 
 	describe( "when temp table to be loaded already exists", function() {
-		it( "should drop it and recreate it", function() {
+		function loadTwiceAndRead( useExisting ) {
 			var sets;
+
 			return sql.getTransactionContext( config )
 			.step( "bulk1", {
 				bulkLoadTable: {
@@ -82,21 +83,33 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 			.step( "bulk2", {
 				bulkLoadTable: {
 					name: "#exists",
-					columns: {
-						id: {
-							type: sql.INT
-						}
-					},
-					rows: [ { id: 2 } ]
+					columns: { id: { type: sql.INT } },
+					rows: [ { id: 2 } ],
+					useExisting: useExisting
 				}
 			} )
-			.step( "query", { query: "SELECT * FROM #exists" } )
+			.step( "query", { query: "SELECT * FROM #exists ORDER BY id" } )
 			.then( function( result ) {
 				sets = result.sets;
 				return result.transaction.commit();
 			} )
 			.then( function() {
-				sets.query.should.eql( [
+				return sets.query;
+			} );
+		}
+
+		describe( "and useExisting is not specified", function() {
+			it( "should drop it and recreate it", function() {
+				return loadTwiceAndRead( false ).should.eventually.eql( [
+					{ id: 2 }
+				] );
+			} );
+		} );
+
+		describe( "and useExisting is specified", function() {
+			it( "should add to it", function() {
+				return loadTwiceAndRead( true ).should.eventually.eql( [
+					{ id: 1 },
 					{ id: 2 }
 				] );
 			} );

@@ -131,7 +131,7 @@ function bulkLoadTable( state, name, options ) {
 
 	var req = new sql.Request( state.transaction || state.connection );
 
-	return Promise.resolve()
+	return when.resolve()
 	.then( function() {
 		var dropSql = "IF OBJECT_ID('tempdb.." + options.bulkLoadTable.name + "') IS NOT NULL DROP TABLE " + options.bulkLoadTable.name + ";";
 		if ( isTempTableName( options.bulkLoadTable.name ) ) {
@@ -139,8 +139,10 @@ function bulkLoadTable( state, name, options ) {
 			addState( state, name + "-drop", function( execute ) {
 				return execute( { query: dropSql } );
 			} );
-			// Make sure we're not adding to an existing temp table
-			return nonPreparedSql( state, name + "-pre-drop", { query: dropSql } );
+			if ( !options.bulkLoadTable.useExisting ) {
+				// Make sure we're not adding to an existing temp table
+				return nonPreparedSql( state, name + "-pre-drop", { query: dropSql } );
+			}
 		}
 	} )
 	.then( function() {

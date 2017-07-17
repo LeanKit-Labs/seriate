@@ -190,6 +190,8 @@ You can only use *one* of the four sql-related fields: `query`, `procedure`, `pr
 
 If you need to bulk load a table, you can do that with the `bulkLoadTable` option. Just specify the `name` of the table to load, definitions of `columns` keyed by name, and an array of `rows` as shown above. Each column must have a `type` and may optionally have a `nullable` boolean, which must match the nullability of the corresponding database column. If you omit `nullable` for a column, it is assumed to be `true`. If the table does not exist, it will be created. If you need to bulk load a temporary table, just specify a name with a `#` at the beginning of its name. In this case you must use a transaction context instead of a plain context. The temporary table will automatically be dropped at the end of the transaction. The result for a `bulkLoadTable` step is the number of rows inserted.
 
+When bulk loading a temporary table, by default seriate will assume it should be a new table, and it will first drop any temporary table found with that name. If you want to override this behavior and add rows to an existing temporary table, just add a `useExisting` of `true` to your `bulkLoadTable` object.
+
 The `end` method of a `SqlContext` instance takes a callback which receives a `sets` argument. The `sets` argument contains the dataset(s) from each step (using the step `alias` as the property name). The `error` method allows you to pass a callback that will receive an error notfication if anything fails. Note that calling `end` or `error` is what *starts* the unit of work handled by the context.
 
 #### Specifying a step using a callback that takes an `execute` continuation
