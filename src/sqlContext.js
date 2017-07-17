@@ -131,16 +131,22 @@ function bulkLoadTable( state, name, options ) {
 
 	var req = new sql.Request( state.transaction || state.connection );
 
-	if ( isTempTableName( options.bulkLoadTable.name ) ) {
-		addState( state, name + "-drop", function( execute ) {
-			return execute( {
-				query: "IF OBJECT_ID('tempdb.." + options.bulkLoadTable.name + "') IS NOT NULL DROP TABLE " + options.bulkLoadTable.name + ";"
+	return Promise.resolve()
+	.then( function() {
+		var dropSql = "IF OBJECT_ID('tempdb.." + options.bulkLoadTable.name + "') IS NOT NULL DROP TABLE " + options.bulkLoadTable.name + ";";
+		if ( isTempTableName( options.bulkLoadTable.name ) ) {
+			// Add step at end to drop temp table
+			addState( state, name + "-drop", function( execute ) {
+				return execute( { query: dropSql } );
 			} );
+			// Make sure we're not adding to an existing temp table
+			return nonPreparedSql( state, name + "-pre-drop", { query: dropSql } );
+		}
+	} )
+	.then( function() {
+		return instrument( state, name, function() {
+			return lift( req.bulk ).bind( req )( table );
 		} );
-	}
-
-	return instrument( state, name, function() {
-		return lift( req.bulk ).bind( req )( table );
 	} );
 }
 
@@ -151,12 +157,12 @@ function nonPreparedSql( state, name, options ) {
 	var params = _.map( options.params, createParameter );
 
 	params.forEach( function( param ) {
-			if ( param.type ) {
-				req.input( param.key, param.type, param.value );
-			} else {
-				req.input( param.key, param.value );
-			}
-		} );
+		if ( param.type ) {
+			req.input( param.key, param.type, param.value );
+		} else {
+			req.input( param.key, param.value );
+		}
+	} );
 
 	var operation = options.query ? "query" : "execute";
 	var prefix = _.pluck( params, "sqlPrefix" ).join( "" );
