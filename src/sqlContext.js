@@ -95,35 +95,7 @@ function createParameter( val, key ) {
 	};
 }
 
-function nonPreparedSql( state, name, options ) {
-	var req = new sql.Request( state.transaction || state.connection );
-	req.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
-
-	var params = _.map( options.params, createParameter );
-
-	params.forEach( function( param ) {
-			if ( param.type ) {
-				req.input( param.key, param.type, param.value );
-			} else {
-				req.input( param.key, param.value );
-			}
-		} );
-
-	var operation = options.query ? "query" : "execute";
-	var prefix = _.pluck( params, "sqlPrefix" ).join( "" );
-	var sqlCmd = prefix + ( options.query || options.procedure );
-
-	function op() {
-		if ( !options.stream ) {
-			return lift( req[ operation ] ).bind( req )( sqlCmd );
-		}
-		var stream;
-		req.stream = true;
-		stream = new DataResultStream( req );
-		req[ operation ]( sqlCmd );
-		return when.resolve( stream );
-	}
-
+function instrument( state, name, op ) {
 	if ( !state.metrics ) {
 		return op();
 	}
@@ -137,6 +109,77 @@ function nonPreparedSql( state, name, options ) {
 			failure: _.identity
 		}
 	);
+}
+
+function bulkLoadTable( state, name, options ) {
+	var table = new sql.Table( options.bulkLoadTable.name );
+	table.create = true;
+
+	_.forEach( options.bulkLoadTable.columns, function( column, columnName ) {
+		table.columns.add( columnName, column.type, { nullable: column.nullable === undefined ? true : column.nullable } );
+	} );
+
+	var columnNames = Object.keys( options.bulkLoadTable.columns );
+
+	options.bulkLoadTable.rows.forEach( function( row ) {
+		var values = columnNames.map( function( columnName ) {
+			return row[ columnName ];
+		} );
+
+		table.rows.add.apply( table.rows, values );
+	} );
+
+	var req = new sql.Request( state.transaction || state.connection );
+
+	return when.resolve()
+	.then( function() {
+		var dropSql = "IF OBJECT_ID('tempdb.." + options.bulkLoadTable.name + "') IS NOT NULL DROP TABLE " + options.bulkLoadTable.name + ";";
+		if ( isTempTableName( options.bulkLoadTable.name ) ) {
+			// Add step at end to drop temp table
+			addState( state, name + "-drop", function( execute ) {
+				return execute( { query: dropSql } );
+			} );
+			if ( !options.bulkLoadTable.useExisting ) {
+				// Make sure we're not adding to an existing temp table
+				return nonPreparedSql( state, name + "-pre-drop", { query: dropSql } );
+			}
+		}
+	} )
+	.then( function() {
+		return instrument( state, name, function() {
+			return lift( req.bulk ).bind( req )( table );
+		} );
+	} );
+}
+
+function nonPreparedSql( state, name, options ) {
+	var req = new sql.Request( state.transaction || state.connection );
+	req.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
+
+	var params = _.map( options.params, createParameter );
+
+	params.forEach( function( param ) {
+		if ( param.type ) {
+			req.input( param.key, param.type, param.value );
+		} else {
+			req.input( param.key, param.value );
+		}
+	} );
+
+	var operation = options.query ? "query" : "execute";
+	var prefix = _.pluck( params, "sqlPrefix" ).join( "" );
+	var sqlCmd = prefix + ( options.query || options.procedure );
+
+	return instrument( state, name, function() {
+		if ( !options.stream ) {
+			return lift( req[ operation ] ).bind( req )( sqlCmd );
+		}
+		var stream;
+		req.stream = true;
+		stream = new DataResultStream( req );
+		req[ operation ]( sqlCmd );
+		return when.resolve( stream );
+	} );
 }
 
 function preparedSql( state, name, options ) {
@@ -157,7 +200,7 @@ function preparedSql( state, name, options ) {
 	var prefix = _.pluck( params, "sqlPrefix" ).join( "" );
 	var statement = prefix + options.preparedSql;
 
-	function op() {
+	return instrument( state, name, function() {
 		return prepare( statement )
 			.then( function() {
 				if ( options.stream ) {
@@ -184,29 +227,27 @@ function preparedSql( state, name, options ) {
 							} );
 					} );
 			} );
-	}
+	} );
+}
 
-	if ( !state.metrics ) {
-		return op();
-	}
-
-	return state.metrics.instrument(
-		{
-			key: [ "sql", name ],
-			namespace: state.metricsNamespace,
-			call: op,
-			success: _.identity,
-			failure: _.identity
-		}
-	);
+function isTempTableName( name ) {
+	return name[ 0 ] === "#";
 }
 
 function executeSql( state, name, options ) {
 	if ( options.query || options.procedure ) {
 		return nonPreparedSql( state, name, options );
-	} else {
+	}
+	if ( options.preparedSql ) {
 		return preparedSql( state, name, options );
 	}
+	if ( options.bulkLoadTable ) {
+		if ( isTempTableName( options.bulkLoadTable.name ) && !state.transaction ) {
+			throw new Error( "You may not bulk load a temporary table on a plain context; use a transaction context." );
+		}
+		return bulkLoadTable( state, name, options );
+	}
+	throw new Error( "The options argument must have query, procedure, preparedSql, or bulkLoadTable." );
 }
 
 function addState( fsm, name, stepAction ) {
