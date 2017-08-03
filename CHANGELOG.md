@@ -1,5 +1,11 @@
 ## 0.7.*
 
+### 0.10.0
+
+* Add useExisting option
+* Add tests for connection reuse
+* Add bulkLoadTable option
+
 ### 0.9.1
 
 * Only create xml when data is present
