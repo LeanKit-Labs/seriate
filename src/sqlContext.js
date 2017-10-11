@@ -6,11 +6,12 @@ var util = require( "util" );
 var log = require( "./log" )( "seriate.sql" );
 var Monologue = require( "monologue.js" );
 var machina = require( "machina" );
-var xmldom = require( "xmldom" );
-var domImplementation = new xmldom.DOMImplementation();
-var xmlSerializer = new xmldom.XMLSerializer();
 var Readable = require( "stream" ).Readable;
-var buildTableVariableSql = require( "./build-table-variable-sql" );
+
+var specialParamOptions = [
+	require( "./asTable" ),
+	require( "./asList" )
+];
 
 util.inherits( DataResultStream, Readable );
 
@@ -40,59 +41,6 @@ DataResultStream.prototype._read = _.noop;
 function errorHandler( err ) {
 	this.err = err;
 	this.transition( "error" );
-}
-
-function toXml( values, schema ) {
-	var doc = domImplementation.createDocument();
-	var root = doc.createElement( "result" );
-	var keys = _.keys( schema );
-
-	values.map( function( obj ) {
-		var row = doc.createElement( "row" );
-		keys.forEach( function( key ) {
-			var value = obj[ key ];
-			if ( value !== null && value !== undefined ) {
-				row.setAttribute( key, _.isDate( value ) ? value.toISOString() : value );
-			}
-		} );
-		return row;
-	} )
-	.forEach( root.appendChild.bind( root ) );
-
-	return xmlSerializer.serializeToString( root );
-}
-
-function createParameter( val, key ) {
-	if ( typeof val !== "object" ) {
-		return {
-			key: key,
-			value: val
-		};
-	}
-
-	// for backward compatibility with boolean asTable
-	if ( val.asTable === true ) {
-		val.asTable = {
-			value: val.type
-		};
-		val.val = val.val.map( function( x ) {
-			return { value: x };
-		} );
-	}
-
-	if ( val.asTable ) {
-		return {
-			key: key + "Xml",
-			type: sql.NVarChar,
-			value: toXml( val.val, val.asTable ),
-			sqlPrefix: buildTableVariableSql( key, val.asTable, !!val.val.length )
-		};
-	}
-	return {
-		key: key,
-		type: val.type,
-		value: val.val
-	};
 }
 
 function instrument( state, name, op ) {
@@ -152,11 +100,43 @@ function bulkLoadTable( state, name, options ) {
 	} );
 }
 
+function createParameter( val, key ) {
+	if ( typeof val !== "object" ) {
+		return {
+			key: key,
+			value: val
+		};
+	}
+
+	var specialOption = _.find( specialParamOptions, function( option ) {
+		return option.matchesParam( val );
+	} );
+
+	return specialOption ? specialOption.createParameter( val, key ) : {
+		key: key,
+		type: val.type,
+		value: val.val
+	};
+}
+
+function createParameters( params ) {
+	return _( params )
+	.map( createParameter )
+	.flatten()
+	.value();
+}
+
+function transformQuery( params, query ) {
+	return specialParamOptions.reduce( function( acc, option ) {
+		return option.transformQuery( params, acc );
+	}, query );
+}
+
 function nonPreparedSql( state, name, options ) {
 	var req = new sql.Request( state.transaction || state.connection );
 	req.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 
-	var params = _.map( options.params, createParameter );
+	var params = createParameters( options.params );
 
 	params.forEach( function( param ) {
 		if ( param.type ) {
@@ -167,8 +147,7 @@ function nonPreparedSql( state, name, options ) {
 	} );
 
 	var operation = options.query ? "query" : "execute";
-	var prefix = _.pluck( params, "sqlPrefix" ).join( "" );
-	var sqlCmd = prefix + ( options.query || options.procedure );
+	var sqlCmd = transformQuery( options.params, options.query || options.procedure );
 
 	return instrument( state, name, function() {
 		if ( !options.stream ) {
@@ -186,9 +165,9 @@ function preparedSql( state, name, options ) {
 	var cmd = new sql.PreparedStatement( state.transaction || state.connection );
 	cmd.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 
-	var params = _.map( options.params, createParameter );
-
+	var params = createParameters( options.params );
 	var paramKeyValues = {};
+
 	params.forEach( function( param ) {
 		cmd.input( param.key, param.type );
 		paramKeyValues[ param.key ] = param.value;
@@ -197,8 +176,7 @@ function preparedSql( state, name, options ) {
 	var prepare = lift( cmd.prepare ).bind( cmd );
 	var execute = lift( cmd.execute ).bind( cmd );
 	var unprepare = lift( cmd.unprepare ).bind( cmd );
-	var prefix = _.pluck( params, "sqlPrefix" ).join( "" );
-	var statement = prefix + options.preparedSql;
+	var statement = transformQuery( options.params, options.preparedSql );
 
 	return instrument( state, name, function() {
 		return prepare( statement )

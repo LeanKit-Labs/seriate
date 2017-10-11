@@ -296,6 +296,26 @@ The column will be of the parameter's specified type.
 } )
 ```
 
+#### Passing a value list with `asList: true`
+
+Providing the `asList` property the Boolean value `true`,
+you can define a parameter list for use in an `IN` clause.
+The parameter name you provide will be transformed into a list of parameters, one for each provided value.
+These parameters will be of the parameter's specified type.
+
+```javascript
+.step( "selectChildren", {
+	query: "SELECT * FROM ParentChild WHERE ParentId IN @parentIds"
+	params: {
+		parentIds: {
+			val: [ 123, 456, 789 ],
+			type: sql.INT,
+			asList: true
+		}
+	}
+} )
+```
+
 #### Getting results in streams
 
 If you are expecting a particularly large result set, you might want to receive

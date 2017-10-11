@@ -520,12 +520,89 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		[ "query", "preparedSql" ].forEach( function( sqlKey ) {
-			describe( "when inserting a list of values with " + sqlKey, function() {
+			describe( "when querying with a parameter list of values with " + sqlKey, function() {
 				afterEach( function() {
 					return deleteTestRows( sql );
 				} );
 
-				it( "should insert a row for each item", function( done ) {
+				it( "should find a match for each item", function() {
+					var context = sql.getPlainContext( config )
+					.step( "insert", {
+						query: "INSERT NodeTestTable(v1, i1) VALUES('one', 1), ('two', 2), ('three', 3)"
+					} );
+
+					var step = {
+						params: {
+							v1s: {
+								val: [ "one", "two" ],
+								type: sql.NVARCHAR( 100 ),
+								asList: true
+							},
+							i1s: {
+								val: [ 2, 3 ],
+								type: sql.INT,
+								asList: true
+							}
+						}
+					};
+
+					step[ sqlKey ] = "SELECT v1, i1 FROM NodeTestTable WHERE v1 IN (@v1s) AND i1 IN @i1s AND i1 IN ( @i1s );";
+
+					return context
+					.step( "select", step )
+					.then( function( result ) {
+						result.select.should.eql( [
+							{
+								v1: "two",
+								i1: 2
+							}
+						] );
+					} );
+				} );
+			} );
+
+			describe( "when querying with an empty parameter list with " + sqlKey, function() {
+				afterEach( function() {
+					return deleteTestRows( sql );
+				} );
+
+				it( "should find a match for each item", function() {
+					var context = sql.getPlainContext( config )
+					.step( "insert", {
+						query: "INSERT NodeTestTable(v1, i1) VALUES('one', 1), ('two', 2), ('three', 3)"
+					} );
+
+					var step = {
+						params: {
+							v1s: {
+								val: [],
+								type: sql.NVARCHAR( 100 ),
+								asList: true
+							},
+							i1s: {
+								val: [],
+								type: sql.INT,
+								asList: true
+							}
+						}
+					};
+
+					step[ sqlKey ] = "SELECT v1, i1 FROM NodeTestTable WHERE v1 IN (@v1s) AND i1 IN @i1s AND i1 IN ( @i1s );";
+
+					return context
+					.step( "select", step )
+					.then( function( result ) {
+						result.select.should.eql( [] );
+					} );
+				} );
+			} );
+
+			describe( "when inserting a table list of values with " + sqlKey, function() {
+				afterEach( function() {
+					return deleteTestRows( sql );
+				} );
+
+				it( "should insert a row for each item", function() {
 					var step = {
 						params: {
 							v1s: {
@@ -542,7 +619,7 @@ describe( "Seriate Integration Tests", function() {
 
 					step[ sqlKey ] = "INSERT INTO NodeTestTable (v1, i1) SELECT value, @i1 FROM @v1s;";
 
-					sql.getPlainContext( config )
+					return sql.getPlainContext( config )
 						.step( "insert", step )
 						.end( function( res ) {
 							sql.execute( config, {
@@ -555,9 +632,7 @@ describe( "Seriate Integration Tests", function() {
 									{ v1: "four with \"quotes\"", i1: 123 },
 									{ v1: "poo-emoji 💩", i1: 123 }
 								] );
-								done();
-							} )
-							.catch( done );
+							} );
 						} );
 				} );
 			} );
