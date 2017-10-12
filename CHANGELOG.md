@@ -1,5 +1,11 @@
 ## 0.7.*
 
+### 0.12.0
+
+* Returned a promise from a test that showed errors from a timing issue
+* Added behavior tests for Tedious patch
+* Added a sad panda monkey patch to reset connections
+
 ### 0.11.0
 
 * Added asList parameter option
