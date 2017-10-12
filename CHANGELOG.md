@@ -1,5 +1,9 @@
 ## 0.7.*
 
+### 0.11.0
+
+* Added asList parameter option
+
 ### 0.10.0
 
 * Add useExisting option
