@@ -621,18 +621,19 @@ describe( "Seriate Integration Tests", function() {
 
 					return sql.getPlainContext( config )
 						.step( "insert", step )
-						.end( function( res ) {
-							sql.execute( config, {
+						.then( function( res ) {
+							return sql.execute( config, {
 								query: "SELECT v1, i1 FROM NodeTestTable;"
-							} ).then( function( res ) {
-								res.should.eql( [
-									{ v1: "one", i1: 123 },
-									{ v1: "two", i1: 123 },
-									{ v1: "three", i1: 123 },
-									{ v1: "four with \"quotes\"", i1: 123 },
-									{ v1: "poo-emoji 💩", i1: 123 }
-								] );
 							} );
+						} )
+						.then( function( res ) {
+							res.should.eql( [
+								{ v1: "one", i1: 123 },
+								{ v1: "two", i1: 123 },
+								{ v1: "three", i1: 123 },
+								{ v1: "four with \"quotes\"", i1: 123 },
+								{ v1: "poo-emoji 💩", i1: 123 }
+							] );
 						} );
 				} );
 			} );
