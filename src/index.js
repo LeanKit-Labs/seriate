@@ -23,7 +23,7 @@ var tedious = require( "tedious" );
 	The `inTransaction` and `resetConnectionOnNextRequest` values are internal to tedious,
 	and we added `isInPreparedSqlQuery` as part of the patch below.
 */
-const existing = tedious.Connection.prototype.makeRequest;
+var existing = tedious.Connection.prototype.makeRequest;
 tedious.Connection.prototype.makeRequest = function( request, packetType, payload ) {
 	if ( this.inTransaction || this.isInPreparedSqlQuery ||
 		this.isInBulkLoadOperation || this.resetConnectionOnNextRequest ) {
@@ -33,13 +33,13 @@ tedious.Connection.prototype.makeRequest = function( request, packetType, payloa
 		return existing.call( this, request, packetType, payload );
 	} else {
 		return this.reset( function() {
-			if( request.sqlTextOrProcedure === "sp_prepare" ) {
+			if ( request.sqlTextOrProcedure === "sp_prepare" ) {
 				this.isInPreparedSqlQuery = true;
 			}
 			return existing.call( this, request, packetType, payload );
 		}.bind( this ) );
 	}
-}
+};
 
 var origNewBulkLoad = tedious.Connection.prototype.newBulkLoad;
 tedious.Connection.prototype.newBulkLoad = function( table, callback ) {
