@@ -1,5 +1,9 @@
 ## 0.7.*
 
+### 0.13.0
+
+* Added integration tests for Tedious patch; Moved patch to a separate file; Prevented patch from being applied twice
+
 ### 0.12.0
 
 * Returned a promise from a test that showed errors from a timing issue
