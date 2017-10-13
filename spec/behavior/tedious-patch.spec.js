@@ -24,7 +24,7 @@ describe( "Tedious makeRequest patch", function() {
 		Connection.prototype.newBulkLoad = existingNewBulkLoad;
 		Connection.prototype.execBulkLoad = existingExecBulkLoad;
 
-		proxyquire( "../src/index", {
+		proxyquire( "../src/tedious-patch", {
 			tedious: {
 				Connection: Connection
 			}
@@ -280,6 +280,28 @@ describe( "Tedious makeRequest patch", function() {
 				.and.calledWith( "ARGS" );
 
 			result.should.equal( "EXECBULK" );
+		} );
+	} );
+
+	describe( "When getting executed twice", function() {
+		var currentMakeRequest, currentNewBulkLoad, currentExecBulkLoad;
+
+		beforeEach( function() {
+			currentMakeRequest = Connection.prototype.makeRequest;
+			currentNewBulkLoad = Connection.prototype.newBulkLoad;
+			currentExecBulkLoad = Connection.prototype.execBulkLoad;
+
+			proxyquire( "../src/tedious-patch", {
+				tedious: {
+					Connection: Connection
+				}
+			} );
+		} );
+
+		it( "should not re-apply the patches", function() {
+			Connection.prototype.makeRequest.should.equal( currentMakeRequest );
+			Connection.prototype.newBulkLoad.should.equal( currentNewBulkLoad );
+			Connection.prototype.execBulkLoad.should.equal( currentExecBulkLoad );
 		} );
 	} );
 } );
