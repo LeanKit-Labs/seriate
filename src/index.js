@@ -6,56 +6,7 @@ var connections = require( "./connections" );
 var SqlContext = require( "./sqlContext" )();
 var TransactionContext = require( "./transactionContext" )( SqlContext );
 var utils = require( "./utils" );
-var tedious = require( "tedious" );
-
-// I've seen things you people wouldn't believe
-// WHAT DO YOU MEAN BY 'YOU PEOPLE'?!
-/*
-	No really, what's the deal here?
-	Well - it seems that tedious + mssql do not reset connections for us.
-	So we made them. (really, mssql would ideally be doing this when verifying or
-	in an acquire hook before handing connection to a consumer.) Instead, we've
-	patched tedious (and we're not crazy about this) to:
-		* reset before transactions & prepared SQL (but it will wait until the transaction is done or until after
-		  the prepared SQL is unprepared.)
-		* reset before any batch that's not a transaction or prepared SQL
-
-	The `inTransaction` and `resetConnectionOnNextRequest` values are internal to tedious,
-	and we added `isInPreparedSqlQuery` as part of the patch below.
-*/
-var existing = tedious.Connection.prototype.makeRequest;
-tedious.Connection.prototype.makeRequest = function( request, packetType, payload ) {
-	if ( this.inTransaction || this.isInPreparedSqlQuery ||
-		this.isInBulkLoadOperation || this.resetConnectionOnNextRequest ) {
-		if ( request.sqlTextOrProcedure === "sp_unprepare" ) {
-			this.isInPreparedSqlQuery = false;
-		}
-		return existing.call( this, request, packetType, payload );
-	} else {
-		return this.reset( function() {
-			if ( request.sqlTextOrProcedure === "sp_prepare" ) {
-				this.isInPreparedSqlQuery = true;
-			}
-			return existing.call( this, request, packetType, payload );
-		}.bind( this ) );
-	}
-};
-
-var origNewBulkLoad = tedious.Connection.prototype.newBulkLoad;
-tedious.Connection.prototype.newBulkLoad = function( table, callback ) {
-	var thus = this;
-	var result = origNewBulkLoad.call( this, table, function() {
-		callback.apply( this, arguments );
-		thus.isInBulkLoadOperation = false;
-	} );
-	return result;
-};
-
-var origExecBulkLoad = tedious.Connection.prototype.execBulkLoad;
-tedious.Connection.prototype.execBulkLoad = function() {
-	this.isInBulkLoadOperation = true;
-	return origExecBulkLoad.apply( this, arguments );
-};
+require( "./tedious-patch" );
 
 function promisify( context, queryOptions ) {
 	var name = queryOptions.name || queryOptions.procedure || "__result__";
