@@ -81,16 +81,37 @@ function bulkLoadTable( state, name, options ) {
 
 	return when.resolve()
 	.then( function() {
+		if ( !isTempTableName( options.bulkLoadTable.name ) ) {
+			return;
+		}
+
 		var dropSql = "IF OBJECT_ID('tempdb.." + options.bulkLoadTable.name + "') IS NOT NULL DROP TABLE " + options.bulkLoadTable.name + ";";
-		if ( isTempTableName( options.bulkLoadTable.name ) ) {
-			// Add step at end to drop temp table
-			addState( state, name + "-drop", function( execute ) {
-				return execute( { query: dropSql } );
+
+		if ( !options.bulkLoadTable.useExisting ) {
+			// Make sure we're not adding to an existing temp table
+			nonPreparedSql( state, name + "-pre-drop", { query: dropSql } );
+		}
+
+		// Accumulate list of tables on state, which is the transaction object, to enforce appropriate scope
+		// Keep this list to avoid double-dropping tables when we bulk load the same temp table more than once using `useExisting`
+		state.droppedTempTables = state.droppedTempTables || {};
+
+		if ( state.droppedTempTables[ options.bulkLoadTable.name ] ) {
+			return;
+		}
+
+		state.droppedTempTables[ options.bulkLoadTable.name ] = true;
+
+		// Add to drop sql for each temp table, to be run in a single step at end of transaction
+		if ( state.tempTablesDropSql ) {
+			state.tempTablesDropSql += "\n" + dropSql;
+		} else {
+			state.tempTablesDropSql = dropSql;
+
+			// Add step at end to drop temp tables
+			addState( state, "__drop-temp-tables", function( execute ) {
+				return execute( { query: state.tempTablesDropSql } );
 			} );
-			if ( !options.bulkLoadTable.useExisting ) {
-				// Make sure we're not adding to an existing temp table
-				return nonPreparedSql( state, name + "-pre-drop", { query: dropSql } );
-			}
 		}
 	} )
 	.then( function() {

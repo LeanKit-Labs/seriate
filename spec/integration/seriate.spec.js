@@ -759,6 +759,51 @@ describe( "Seriate Integration Tests", function() {
 			} );
 		} );
 
+		describe( "when bulk loading two temp tables in a single step of a transaction context", function() {
+			before( function() {
+				return sql.getTransactionContext( config )
+				.step( "bulk-insert-two", function( execute ) {
+					return execute( {
+						bulkLoadTable: {
+							name: "#table1",
+							columns: {
+								index: { type: sql.BIGINT }
+							},
+							rows: []
+						}
+					} ).then( function() {
+						return execute( {
+							bulkLoadTable: {
+								name: "#table2",
+								columns: {
+									index: { type: sql.BIGINT }
+								},
+								rows: []
+							}
+						} );
+					} );
+				} );
+			} );
+
+			it( "should drop first table", function() {
+				return sql.execute( config, {
+					query: "SELECT OBJECT_ID('tempdb..#table1') tempTableId;"
+				} )
+				.then( function( res ) {
+					res.should.eql( [ { tempTableId: null } ] );
+				} );
+			} );
+
+			it( "should drop second table", function() {
+				return sql.execute( config, {
+					query: "SELECT OBJECT_ID('tempdb..#table2') tempTableId;"
+				} )
+				.then( function( res ) {
+					res.should.eql( [ { tempTableId: null } ] );
+				} );
+			} );
+		} );
+
 		describe( "when bulk loading a permanent table on plain context", function() {
 			it( "should insert rows", function() {
 				return sql.getPlainContext( config )
