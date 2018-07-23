@@ -20,13 +20,17 @@ function promisify( context, queryOptions ) {
 }
 
 var seriate = {
-	getTransactionContext: function( connection ) {
+	getTransactionContext: function( connectionConfig, dataForHooks ) {
 		var options = { metrics: this.metrics, namespace: this.metricsNamespace };
-		if ( connection && connection.isolationLevel ) {
-			options.isolationLevel = connection.isolationLevel;
-			delete connection.isolationLevel;
+		if ( connectionConfig && connectionConfig.isolationLevel ) {
+			options.isolationLevel = connectionConfig.isolationLevel;
+			delete connectionConfig.isolationLevel;
 		}
-		options.connection = connections.get( connection );
+		options.connection = connections.get( connectionConfig );
+		var hooks = connections.getHooks( connectionConfig );
+		options.atTransactionStart = hooks.atTransactionStart;
+		options.atTransactionEnd = hooks.atTransactionEnd;
+		options.dataForHooks = dataForHooks;
 		return new TransactionContext( options );
 	},
 	getPlainContext: function( connection ) {
@@ -34,13 +38,21 @@ var seriate = {
 		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
 		return new SqlContext( options );
 	},
-	executeTransaction: function( connection, queryOptions ) {
+	executeTransaction: function( connectionConfig, queryOptions, dataForHooks ) {
 		if ( arguments.length === 1 ) {
-			queryOptions = connection;
-			connection = undefined;
+			queryOptions = connectionConfig;
+			connectionConfig = undefined;
 		}
-		var conn = connections.get( connection );
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
+		var conn = connections.get( connectionConfig );
+		var hooks = connections.getHooks( connectionConfig );
+		var options = {
+			metrics: this.metrics,
+			namespace: this.metricsNamespace,
+			connection: conn,
+			atTransactionStart: hooks.atTransactionStart,
+			atTransactionEnd: hooks.atTransactionEnd,
+			dataForHooks
+		};
 		return promisify( new TransactionContext( options ), queryOptions );
 	},
 	execute: function( connection, queryOptions ) {
