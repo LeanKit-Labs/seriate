@@ -51,7 +51,7 @@ var seriate = {
 			connection: conn,
 			atTransactionStart: hooks.atTransactionStart,
 			atTransactionEnd: hooks.atTransactionEnd,
-			dataForHooks
+			dataForHooks: dataForHooks
 		};
 		return promisify( new TransactionContext( options ), queryOptions );
 	},

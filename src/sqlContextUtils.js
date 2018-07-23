@@ -293,5 +293,5 @@ function addState( fsm, name, stepAction ) {
 }
 
 module.exports = {
-	addState
+	addState: addState
 };

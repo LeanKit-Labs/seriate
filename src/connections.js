@@ -129,9 +129,9 @@ function getConfiguration( name ) {
 
 function getHooks( config ) {
 	var hooks = state.configurations[ getName( config ) ];
-	return  {
-		atTransactionStart: hooks.atTransactionStart,
-		atTransactionEnd: hooks.atTransactionEnd
+	return {
+		atTransactionStart: hooks && hooks.atTransactionStart,
+		atTransactionEnd: hooks && hooks.atTransactionEnd
 	};
 }
 

@@ -38,13 +38,13 @@ module.exports = function( SqlContext ) {
 					}
 
 					if ( this.options.atTransactionStart ) {
-						var stepAction = this.options.atTransactionStart( this.options.dataForHooks );
-						this.step( "__beforeHook__", stepAction );
+						var startStepAction = this.options.atTransactionStart( this.options.dataForHooks );
+						this.step( "__beforeHook__", startStepAction );
 					}
 
 					if ( this.options.atTransactionEnd ) {
-						var stepAction = this.options.atTransactionEnd( this.options.dataForHooks );
-						this.step( "__afterHook__", stepAction );
+						var endStepAction = this.options.atTransactionEnd( this.options.dataForHooks );
+						this.step( "__afterHook__", endStepAction );
 					}
 
 					this.transaction = this.transaction || new sql.Transaction( this.connection );

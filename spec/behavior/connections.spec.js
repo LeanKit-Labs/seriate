@@ -15,6 +15,62 @@ describe( "Connections", function() {
 		} );
 	} );
 
+	describe( "when calling getHooks", function() {
+		describe( "with a configuration that has hooks configured", function() {
+			before( function() {
+				connections.state.configurations.testConfiggy = {
+					atTransactionStart: "START",
+					atTransactionEnd: "END"
+				};
+			} );
+
+			after( function() {
+				connections.state.configurations = {};
+			} );
+
+			it( "should return expected hooks", function() {
+				connections.getHooks( "testConfiggy" ).should.eql( {
+					atTransactionStart: "START",
+					atTransactionEnd: "END"
+				} );
+			} );
+		} );
+
+		describe( "with the default configuration", function() {
+			before( function() {
+				connections.state.configurations.default = {
+					atTransactionStart: "START",
+					atTransactionEnd: "END"
+				};
+			} );
+
+			after( function() {
+				connections.state.configurations = {};
+			} );
+
+			it( "should return expected hooks when no connection name is passed", function() {
+				connections.getHooks().should.eql( {
+					atTransactionStart: "START",
+					atTransactionEnd: "END"
+				} );
+			} );
+
+			it( "should return expected hooks when an explicit null is passed", function() {
+				connections.getHooks( null ).should.eql( {
+					atTransactionStart: "START",
+					atTransactionEnd: "END"
+				} );
+			} );
+		} );
+
+		describe( "with a configuration that does not have hooks configured", function() {
+			it( "should not return any hooks", function() {
+				connections.getHooks( "NOPE NOPE NOPE" )
+					.should.eql( { atTransactionStart: undefined, atTransactionEnd: undefined } );
+			} );
+		} );
+	} );
+
 	describe( "when requesting non-existing connection", function() {
 		var byConfig, missingConfig;
 		before( function() {
