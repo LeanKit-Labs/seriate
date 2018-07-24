@@ -16,6 +16,7 @@ var api = _.assign( {
 	add: addConnection,
 	close: closeConnection,
 	get: getConnection,
+	getHooks: getHooks,
 	reset: resetState
 }, Monologue );
 
@@ -126,9 +127,17 @@ function getConfiguration( name ) {
 	return state.configurations[ name ];
 }
 
+function getHooks( config ) {
+	var hooks = state.configurations[ getName( config ) ];
+	return {
+		atTransactionStart: hooks && hooks.atTransactionStart,
+		atTransactionEnd: hooks && hooks.atTransactionEnd
+	};
+}
+
 function getName( config ) {
 	var name;
-	if ( config === undefined ) {
+	if ( config === undefined || config === null ) {
 		name = "default";
 	} else if ( _.isString( config ) ) {
 		name = config;

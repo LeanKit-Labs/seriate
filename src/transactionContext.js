@@ -37,6 +37,16 @@ module.exports = function( SqlContext ) {
 						args.unshift( isolationLevel );
 					}
 
+					if ( this.options.atTransactionStart ) {
+						var startStepAction = this.options.atTransactionStart( this.options.dataForHooks );
+						this.step( "__beforeHook__", startStepAction );
+					}
+
+					if ( this.options.atTransactionEnd ) {
+						var endStepAction = this.options.atTransactionEnd( this.options.dataForHooks );
+						this.step( "__afterHook__", endStepAction );
+					}
+
 					this.transaction = this.transaction || new sql.Transaction( this.connection );
 					this.transaction.begin.apply( this.transaction, args );
 				},

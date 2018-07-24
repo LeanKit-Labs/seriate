@@ -211,12 +211,206 @@ describe( "Seriate Integration Tests", function() {
 							done( err );
 						} );
 				} );
+
 				after( function() {
 					return deleteTestRows( sql );
 				} );
+
 				it( "should show that the row was not inserted", function() {
 					resultsCheck.length.should.equal( 0 );
 					( typeof checkError ).should.equal( "undefined" );
+				} );
+			} );
+		} );
+
+		describe( "when executing within a TransactionContext with start/end hooks", function() {
+			var configWithHooks, dataForHooks;
+
+			before( function() {
+				dataForHooks = {
+					startId: getRowId(),
+					startValue: "START",
+					endId: getRowId(),
+					endValue: "END"
+				};
+
+				configWithHooks = Object.assign( {}, config, {
+					name: "connectionWithHooks",
+					atTransactionStart: function( data ) {
+						return {
+							preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1);",
+							params: {
+								i1: {
+									val: data.startId,
+									type: sql.INT
+								},
+								v1: {
+									val: data.startValue,
+									type: sql.NVARCHAR
+								}
+							}
+						};
+					},
+					atTransactionEnd: function( data ) {
+						return {
+							preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1);",
+							params: {
+								i1: {
+									val: data.endId,
+									type: sql.INT
+								},
+								v1: {
+									val: data.endValue,
+									type: sql.NVARCHAR
+								}
+							}
+						};
+					}
+				} );
+			} );
+
+			describe( "when using getTransactionContext", function() {
+				var id, insResult, resultsCheck, checkError, readCheck;
+
+				before( function( done ) {
+					id = getRowId();
+					readCheck = function( done ) {
+						sql.execute( configWithHooks, {
+							preparedSql: "select i1, v1 from NodeTestTable"
+						} ).then( function( res ) {
+							resultsCheck = res;
+							done();
+						}, function( err ) {
+								checkError = err;
+								done();
+							} );
+					};
+					sql.getTransactionContext( configWithHooks, dataForHooks )
+						.step( "insert", {
+							preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1); select SCOPE_IDENTITY() AS NewId;",
+							params: {
+								i1: {
+									val: id,
+									type: sql.INT
+								},
+								v1: {
+									val: "testy",
+									type: sql.NVARCHAR
+								}
+							}
+						} )
+						.end( function( res ) {
+							insResult = res;
+							res.transaction
+								.commit()
+								.then( function() {
+									readCheck( done );
+								} );
+						} )
+						.error( function( err ) {
+							done( err );
+						} );
+				} );
+
+				it( "should return the start, during and end rows", function() {
+					resultsCheck.should.eql( [
+						{
+							i1: dataForHooks.startId,
+							v1: "START"
+						},
+						{
+							i1: id,
+							v1: "testy"
+						},
+						{
+							i1: dataForHooks.endId,
+							v1: "END"
+						}
+					] );
+
+					( typeof checkError ).should.equal( "undefined" );
+				} );
+
+				it( "should have returned the identity of inserted row", function() {
+					insResult.sets.insert[ 0 ].NewId.should.be.ok;
+					( typeof insResult.sets.insert[ 0 ].NewId ).should.equal( "number" );
+				} );
+
+				after( function() {
+					return deleteTestRows( sql );
+				} );
+			} );
+
+			describe( "when using executeTransaction", function() {
+				var id, insResult, resultsCheck, checkError, readCheck;
+
+				before( function( done ) {
+					id = getRowId();
+
+					readCheck = function( done ) {
+						sql.execute( configWithHooks, {
+							preparedSql: "select i1, v1 from NodeTestTable"
+						} ).then( function( res ) {
+							resultsCheck = res;
+							done();
+						}, function( err ) {
+								checkError = err;
+								done();
+							} );
+					};
+
+					var queryOptions = {
+						preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1); select SCOPE_IDENTITY() AS NewId;",
+						params: {
+							i1: {
+								val: id,
+								type: sql.INT
+							},
+							v1: {
+								val: "testy",
+								type: sql.NVARCHAR
+							}
+						}
+					};
+
+					sql.executeTransaction( configWithHooks, queryOptions, dataForHooks ).then( function( res ) {
+						insResult = res.sets.__result__;
+						res.transaction
+							.commit()
+							.then( function() {
+								readCheck( done );
+							} );
+					}, function( err ) {
+						done( err );
+					} );
+				} );
+
+				it( "should return the start, during and end rows", function() {
+					resultsCheck.should.eql( [
+						{
+							i1: dataForHooks.startId,
+							v1: "START"
+						},
+						{
+							i1: id,
+							v1: "testy"
+						},
+						{
+							i1: dataForHooks.endId,
+							v1: "END"
+						}
+					] );
+
+					( typeof checkError ).should.equal( "undefined" );
+				} );
+
+				it( "should have returned the identity of inserted row", function() {
+					insResult[ 0 ].NewId.should.be.ok;
+					( typeof insResult[ 0 ].NewId ).should.equal( "number" );
+				} );
+
+				after( function() {
+					return deleteTestRows( sql );
 				} );
 			} );
 		} );
