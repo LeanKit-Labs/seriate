@@ -365,7 +365,7 @@ of values keyed by column name.
 Streamed results can be very useful for piping into transforms,
 writing directly to the response stream, writing to a file, etc.
 
-### getTransactionContext( [connection] )
+### getTransactionContext( [connection], [dataForHooks] )
 The `getTransactionContext` method returns a `TransactionContext` instance - which for the most part is nearly identical to a `SqlContext` instance - however, a transaction is started as the context begins its work, and you have the option to commit or rollback in the `end` method's callback. For example:
 
 ```javascript
@@ -376,10 +376,28 @@ sql.addConnection( {
 	user: "username",
 	password: "pwd",
 	host: "127.0.0.1",
-	database: "master"
+	database: "master",
+	// optional code to run as the first step in a transaction
+	atTransactionStart( dataForHooks ) {
+		return {
+			procedure: "UpdateTracking",
+			params: {
+				userId: {
+					val: dataforHooks.userId,
+					type: sql.INT
+				}
+			}
+		};
+	},
+	// optional code to run as the last step in a transaction
+	atTransactionEnd( dataForHooks ) {
+		return {
+			procedure: "ClearTracking"
+		};
+	}
 })
 
-sql.getTransactionContext()
+sql.getTransactionContext( null, { userId: "1234" } )
 	.step( "readUsers", {
 		query: "select * From sys.sysusers"
 	} )
@@ -419,7 +437,7 @@ sql.getTransactionContext()
 
 You can see that the main difference between a `SqlContext` and `TransactionContext` is that the argument passed to the `end` callback contains more than just the `sets` (data sets) in the `TransactionContext`. A `TransactionContext` does not automatically call `commit` for you - that's in your hands (for now). However, if an error occurs, it will call `rollback`.
 
-### executeTransaction( [connection,] queryOptions )
+### executeTransaction( [connection,] queryOptions, [dataForHooks] )
 This is a shortcut method to getting a `TransactionContext` instance to execute one step. It returns a promise, and the `result` argument that's normally fed to the `end` method's callback is passed to the success handler of the promise, and any errors are passed to the error handler. For example:
 
 ```javascript
@@ -430,7 +448,25 @@ var connection = {
 	user: "username",
 	password: "pwd",
 	host: "127.0.0.1",
-	database: "master"
+	database: "master",
+	// optional code to run as the first step in a transaction
+	atTransactionStart( dataForHooks ) {
+		return {
+			procedure: "UpdateTracking",
+			params: {
+				userId: {
+					val: dataforHooks.userId,
+					type: sql.INT
+				}
+			}
+		};
+	},
+	// optional code to run as the last step in a transaction
+	atTransactionEnd( dataForHooks ) {
+		return {
+			procedure: "ClearTracking"
+		};
+	}
 };
 
 sql.executeTransaction( connection, {
