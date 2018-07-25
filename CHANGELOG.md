@@ -1,3 +1,12 @@
+## 1.x
+
+### 1.0.0
+
+* Update README with atTransactionStart and atTransactionEnd details
+* Added tests for start/end hooks
+* Added tests for connection module, fixed linting errors and committed package lock
+* Added hooks for running code at the start and/or end of a transaction
+
 ## 0.7.*
 
 ### 0.13.1
