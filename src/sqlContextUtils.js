@@ -261,7 +261,7 @@ function addState( fsm, name, stepAction ) {
 			var promise;
 			var exec = function( options ) {
 				// Capture call stack for call to execute from within a step.
-				// This provides call context that currently gets lost when we
+				// This provides call context that would otherwise get lost when we
 				// pass around an execute function and call it multiple times.
 				var callStack = new Error().stack;
 				promise = executeSql( fsm, name, options )
