@@ -242,6 +242,10 @@ describe( "Seriate Integration Tests", function() {
 				it( "should include exec call in stack trace", function() {
 					error.stack.should.contain( __filename );
 				} );
+
+				it( "should include original error in stack trace", function() {
+					error.stack.should.contain( "RequestError: Invalid object name 'NoSuchTable'" );
+				} );
 			} );
 		} );
 

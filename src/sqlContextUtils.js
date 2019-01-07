@@ -266,7 +266,10 @@ function addState( fsm, name, stepAction ) {
 				var callStack = new Error().stack;
 				promise = executeSql( fsm, name, options )
 					.catch( function( error ) {
-						error.stack += callStack;
+						// Remove the "Error" top line of captured stack and replace it with error message from actual error.
+						var capturedStackParts = callStack.split( "\n" ).slice( 1 );
+						capturedStackParts.unshift( error.toString() );
+						error.stack = capturedStackParts.join( "\n" );
 						throw error;
 					} );
 				return promise;
