@@ -260,7 +260,18 @@ function addState( fsm, name, stepAction ) {
 		_onEnter: function() {
 			var promise;
 			var exec = function( options ) {
-				promise = executeSql( fsm, name, options );
+				// Capture call stack for call to execute from within a step.
+				// This provides call context that would otherwise get lost when we
+				// pass around an execute function and call it multiple times.
+				var callStack = new Error().stack;
+				promise = executeSql( fsm, name, options )
+					.catch( function( error ) {
+						// Remove the "Error" top line of captured stack and replace it with error message from actual error.
+						var capturedStackParts = callStack.split( "\n" ).slice( 1 );
+						capturedStackParts.unshift( error.toString() );
+						error.stack = capturedStackParts.join( "\n" );
+						throw error;
+					} );
 				return promise;
 			};
 

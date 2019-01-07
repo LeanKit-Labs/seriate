@@ -221,6 +221,32 @@ describe( "Seriate Integration Tests", function() {
 					( typeof checkError ).should.equal( "undefined" );
 				} );
 			} );
+
+			describe( "and execute causes error", function() {
+				var error;
+
+				before( function( done ) {
+					sql.getTransactionContext( config )
+						.step( "boom", function( execute ) {
+							return execute( {
+								query: "SELECT * FROM NoSuchTable"
+							} );
+						} )
+						.end()
+						.error( function( e ) {
+							error = e;
+							done();
+						} );
+				} );
+
+				it( "should include exec call in stack trace", function() {
+					error.stack.should.contain( __filename );
+				} );
+
+				it( "should include original error in stack trace", function() {
+					error.stack.should.contain( "RequestError: Invalid object name 'NoSuchTable'" );
+				} );
+			} );
 		} );
 
 		describe( "when executing within a TransactionContext with start/end hooks", function() {
@@ -1032,7 +1058,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 		} );
 
-		describe( "when bulking loading a temp table on plain context", function() {
+		describe( "when bulk loading a temp table on plain context", function() {
 			it( "should reject with error", function() {
 				return sql.getPlainContext( config )
 				.step( "bulk-load", {
