@@ -1,3 +1,9 @@
+## 2.x
+
+### 2.0.0
+
+* Added execute call stack to error
+
 ## 1.x
 
 ### 1.0.0
