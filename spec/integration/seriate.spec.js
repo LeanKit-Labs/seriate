@@ -1216,13 +1216,16 @@ describe( "Seriate Integration Tests", function() {
 	} );
 
 	describe( "when using metrics", function() {
-		var adapter;
+		let metrics;
 
 		before( function() {
 			sql = proxyquire( "../src/index", {} );
-			var metrics = require( "metronic" )();
-			adapter = require( "../data/mockAdapter" )();
-			metrics.use( adapter );
+			metrics = {
+				instrument: sinon.spy( obj => {
+					const { call } = obj;
+					return call();
+				} )
+			};
 			sql.useMetrics( metrics );
 		} );
 
@@ -1260,15 +1263,7 @@ describe( "Seriate Integration Tests", function() {
 						} );
 
 						it( "should put stuff in metrics", function() {
-							adapter.metrics.length.should.be.above( 1 );
-							adapter.metrics[ 0 ].type.should.equal( "meter" );
-							adapter.metrics[ 0 ].should.contain.keys( [ "key", "value", "units", "timestamp" ] );
-						} );
-
-						it( "should put stuff in durations", function() {
-							adapter.durations.length.should.be.above( 0 );
-							adapter.durations[ 0 ].type.should.equal( "time" );
-							adapter.durations[ 0 ].should.contain.keys( [ "key", "value", "units", "timestamp" ] );
+							metrics.instrument.should.have.been.called();
 						} );
 					} );
 

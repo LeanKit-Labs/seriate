@@ -707,11 +707,14 @@ describe( "SqlContext", function() {
 
 	describe( "with metrics", function() {
 		describe( "when executing a query", function() {
-			var metrics, adapter;
+			let metrics;
 			before( function() {
-				metrics = require( "metronic" )();
-				adapter = require( "../data/mockAdapter" )();
-				metrics.use( adapter );
+				metrics = {
+					instrument: sinon.spy( obj => {
+						const { call } = obj;
+						return call();
+					} )
+				};
 				setup();
 
 				reqMock.expects( "query" )
@@ -729,38 +732,24 @@ describe( "SqlContext", function() {
 			} );
 
 			it( "should capture metrics for each step", function() {
-				return adapter.should.partiallyEql( {
-					durations: [
+				metrics.instrument.should.be.calledOnce()
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.read.duration",
-							type: "time",
-							units: "ms"
-						}
-					],
-					metrics: [
-						{
-							key: "seriate-tests.sql.read.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.read.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						}
-					]
-				} );
+							key: [ "sql", "read" ],
+							namespace: "seriate-tests"
+						} );
 			} );
 		} );
 
 		describe( "when executing a procedure", function() {
-			var metrics, adapter;
+			var metrics;
 			before( function() {
-				metrics = require( "metronic" )();
-				adapter = require( "../data/mockAdapter" )();
-				metrics.use( adapter );
+				metrics = {
+					instrument: sinon.spy( obj => {
+						const { call } = obj;
+						return call();
+					} )
+				};
 				setup();
 
 				reqMock.expects( "execute" )
@@ -778,38 +767,24 @@ describe( "SqlContext", function() {
 			} );
 
 			it( "should capture metrics for each step", function() {
-				return adapter.should.partiallyEql( {
-					durations: [
+				metrics.instrument.should.be.calledOnce()
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.myStoredProc.duration",
-							type: "time",
-							units: "ms"
-						}
-					],
-					metrics: [
-						{
-							key: "seriate-tests.sql.myStoredProc.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.myStoredProc.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						}
-					]
-				} );
+							key: [ "sql", "myStoredProc" ],
+							namespace: "seriate-tests"
+						} );
 			} );
 		} );
 
 		describe( "when executing multiple steps", function() {
-			var metrics, adapter;
+			var metrics;
 			before( function() {
-				metrics = require( "metronic" )();
-				adapter = require( "../data/mockAdapter" )();
-				metrics.use( adapter );
+				metrics = {
+					instrument: sinon.spy( obj => {
+						const { call } = obj;
+						return call();
+					} )
+				};
 				setup();
 
 				reqMock.expects( "query" )
@@ -849,63 +824,22 @@ describe( "SqlContext", function() {
 			} );
 
 			it( "should capture metrics for each step", function() {
-				return adapter.should.partiallyEql( {
-					durations: [
+				metrics.instrument.should.be.calledThrice()
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.read.duration",
-							type: "time",
-							units: "ms"
-						},
+							key: [ "sql", "read" ],
+							namespace: "seriate-tests"
+						} )
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.proc.duration",
-							type: "time",
-							units: "ms"
-						},
+							key: [ "sql", "proc" ],
+							namespace: "seriate-tests"
+						} )
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.prepared.duration",
-							type: "time",
-							units: "ms"
-						}
-					],
-					metrics: [
-						{
-							key: "seriate-tests.sql.read.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.read.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.proc.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.proc.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.prepared.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.prepared.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						}
-					]
-				} );
+							key: [ "sql", "prepared" ],
+							namespace: "seriate-tests"
+						} );
 			} );
 		} );
 	} );
