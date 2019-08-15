@@ -12,18 +12,18 @@ var state = {
 };
 
 var api = _.assign( {
-	state: state,
+	state,
 	add: addConnection,
 	close: closeConnection,
 	get: getConnection,
-	getHooks: getHooks,
+	getHooks,
 	reset: resetState
 }, Monologue );
 
 function addConnection( config ) {
-	var name = getName( config );
-	var original = getConfiguration( name );
-	var alias = getAlias( config );
+	const name = getName( config );
+	const original = getConfiguration( name );
+	const alias = getAlias( config );
 	if ( alias !== name && !state.aliases[ alias ] ) {
 		state.aliases[ alias ] = name;
 	}
@@ -39,8 +39,8 @@ function addConnection( config ) {
 }
 
 function closeConnection( config ) {
-	var name = getName( config );
-	var pool = state.pools[ name ];
+	const name = getName( config );
+	const pool = state.pools[ name ];
 
 	if ( pool ) {
 		pool.close();
@@ -48,7 +48,7 @@ function closeConnection( config ) {
 }
 
 function connect( name, config ) {
-	var pool = getPool( name );
+	let pool = getPool( name );
 	if ( pool ) {
 		log.warn( "Connection for \"%s\" that already exists - existing connection pool will be used.", name );
 		return state.connections[ name ];
@@ -56,18 +56,19 @@ function connect( name, config ) {
 	log.info( "Connecting to \"%s\" ( %s:%d - %s as %s )",
 		name,
 		config.host || config.server,
+		// eslint-disable-next-line no-magic-numbers
 		config.port || 1433,
 		config.database,
 		config.user );
 	pool = state.pools[ name ] = new sql.Connection( config );
 
 	pool.on( "connect", function() {
-		api.emit( "connected", { name: name } );
+		api.emit( "connected", { name } );
 		log.info( "Connected to \"%s\"", name );
 	} );
 
 	pool.on( "close", function() {
-		api.emit( "closed", { name: name } );
+		api.emit( "closed", { name } );
 		log.info( "Closed connection to \"%s\"", name );
 		pool.removeAllListeners();
 		delete state.connections[ name ];
@@ -75,7 +76,7 @@ function connect( name, config ) {
 	} );
 
 	function onConnectionError( err ) {
-		api.emit( "failed", { name: name, error: err } );
+		api.emit( "failed", { name, error: err } );
 		log.error( "Failed to connection to \"%s\" with: %s", name, err );
 		delete state.connections[ name ];
 		delete state.pools[ name ];
@@ -93,11 +94,11 @@ function connect( name, config ) {
 }
 
 function getConnection( config ) {
-	var name = getName( config );
-	var pool = state.pools[ name ];
-	var connection = state.connections[ name ];
-	var configuration = state.configurations[ name ];
-	var aliasedName = state.aliases[ name ];
+	let name = getName( config );
+	let pool = state.pools[ name ];
+	let connection = state.connections[ name ];
+	let configuration = state.configurations[ name ];
+	const aliasedName = state.aliases[ name ];
 	if ( !pool && !connection && aliasedName ) {
 		name = aliasedName;
 		pool = state.pools[ name ];
@@ -117,10 +118,9 @@ function getConnection( config ) {
 	} else if ( configuration ) {
 		return connect( name, configuration );
 	} else if ( config === undefined || _.isString( config ) ) {
-		return when.reject( new Error( "No connection named \"" + name + "\" exists" ) );
-	} else {
-		return addConnection( config );
+		return when.reject( new Error( `No connection named "${ name }" exists` ) );
 	}
+	return addConnection( config );
 }
 
 function getConfiguration( name ) {
@@ -128,7 +128,7 @@ function getConfiguration( name ) {
 }
 
 function getHooks( config ) {
-	var hooks = state.configurations[ getName( config ) ];
+	const hooks = state.configurations[ getName( config ) ];
 	return {
 		atTransactionStart: hooks && hooks.atTransactionStart,
 		atTransactionEnd: hooks && hooks.atTransactionEnd
@@ -136,19 +136,17 @@ function getHooks( config ) {
 }
 
 function getName( config ) {
-	var name;
+	let name;
 	if ( config === undefined || config === null ) {
 		name = "default";
 	} else if ( _.isString( config ) ) {
 		name = config;
 	} else if ( config.name ) {
 		name = config.name;
+	} else if ( getConfiguration( "default" ) ) {
+		name = getAlias( config );
 	} else {
-		if ( getConfiguration( "default" ) ) {
-			name = getAlias( config );
-		} else {
-			name = "default";
-		}
+		name = "default";
 	}
 	return name;
 }

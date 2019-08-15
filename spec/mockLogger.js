@@ -34,7 +34,6 @@ module.exports = function mockLogAdapter( config ) {
 		var ns = _.isArray( config ) ? config : [ config ];
 		ns.forEach( adapter.init.bind( adapter ) );
 		return adapter;
-	} else {
-		return namespaces;
 	}
+	return namespaces;
 };

@@ -1,8 +1,7 @@
 require( "../setup" );
 var mockConnectionFn = require( "../data/mockConnection" );
-var when = require( "when" );
 
-/***************************************************
+/** *************************************************
 
 	SqlContext *Successful* Execution Tests
 
@@ -51,7 +50,7 @@ describe( "SqlContext", function() {
 		} );
 
 		it( "should start in uninitialized", function() {
-			ctx.states.uninitialized.should.be.ok;
+			ctx.states.uninitialized.should.be.ok();
 		} );
 	} );
 
@@ -92,15 +91,15 @@ describe( "SqlContext", function() {
 		} );
 
 		it( "should create a \"read\" state", function() {
-			ctx.states.read.should.be.ok;
+			ctx.states.read.should.be.ok();
 		} );
 
 		it( "should create \"read\" state success handler", function() {
-			ctx.states.read.success.should.be.ok;
+			ctx.states.read.success.should.be.ok();
 		} );
 
 		it( "should create \"read\" state error handler", function() {
-			ctx.states.read.error.should.be.ok;
+			ctx.states.read.error.should.be.ok();
 		} );
 
 		it( "should call query on request", function() {
@@ -132,15 +131,15 @@ describe( "SqlContext", function() {
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call execute on request", function() {
@@ -184,15 +183,15 @@ describe( "SqlContext", function() {
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call execute and input for each parameter", function() {
@@ -245,15 +244,15 @@ describe( "SqlContext", function() {
 		} );
 
 		it( "should create a \"prepped\" state", function() {
-			ctx.states.prepped.should.be.ok;
+			ctx.states.prepped.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state success handler", function() {
-			ctx.states.prepped.success.should.be.ok;
+			ctx.states.prepped.success.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state error handler", function() {
-			ctx.states.prepped.error.should.be.ok;
+			ctx.states.prepped.error.should.be.ok();
 		} );
 
 		it( "should call prepare, execute, unprepare on prepared statement and input for each parameter", function() {
@@ -498,7 +497,7 @@ describe( "SqlContext", function() {
 
 			ctx = seriate.getPlainContext();
 			return ctx
-				.step( "skipped", function( execute ) {
+				.step( "skipped", function( _execute ) {
 					return;
 				} )
 				.step( "read", {
@@ -589,7 +588,7 @@ describe( "SqlContext", function() {
 				.never();
 
 			return seriate.getPlainContext()
-				.step( "early-return-value", function( execute ) {
+				.step( "early-return-value", function( _execute ) {
 					return when( true )
 						.then( function() {
 							return "hi!";
@@ -624,10 +623,10 @@ describe( "SqlContext", function() {
 			return seriate.getPlainContext()
 				.step( "transform", function( execute ) {
 					return execute( {
-							query: "select * from sys.tables"
-						} ).then( function() {
-							return "lol";
-						} );
+						query: "select * from sys.tables"
+					} ).then( function() {
+						return "lol";
+					} );
 				} )
 				.then( function( res ) {
 					result = res;
@@ -658,10 +657,10 @@ describe( "SqlContext", function() {
 			return seriate.getPlainContext()
 				.step( "fail", function( execute ) {
 					return execute( {
-							query: "select * from sys.tables"
-						} ).tap( function() {
-							throw new TypeError( "😭" );
-						} );
+						query: "select * from sys.tables"
+					} ).tap( function() {
+						throw new TypeError( "😭" );
+					} );
 				} ).should.be.rejectedWith( TypeError, "SqlContext Error. Failed on step \"fail\" with: \"😭\"" );
 		} );
 	} );
@@ -672,7 +671,7 @@ describe( "SqlContext", function() {
 			setup();
 
 			return seriate.getPlainContext()
-				.step( "brokenPromise", function( execute ) {
+				.step( "brokenPromise", function( _execute ) {
 					return when.reject( new Error( "NOPE!" ) );
 				} )
 				.then( null, function( err ) {
@@ -692,7 +691,7 @@ describe( "SqlContext", function() {
 			setup();
 
 			return seriate.getPlainContext()
-				.step( "brokenPromise", function( execute ) {
+				.step( "brokenPromise", function( _execute ) {
 					throw new Error( "NOPE!" );
 				} )
 				.then( null, function( err ) {

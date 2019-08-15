@@ -45,7 +45,7 @@ describe( "Logging", function() {
 		} );
 
 		it( "should not send log entries to other adapters", function() {
-			expect( mockLog.test ).to.be.undefined;
+			expect( mockLog.test ).to.be.undefined();
 		} );
 
 		after( function() {

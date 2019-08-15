@@ -55,7 +55,7 @@ describe( "TransactionContext", function() {
 		} );
 
 		it( "should start in uninitialized", function() {
-			ctx.states.uninitialized.should.be.ok;
+			ctx.states.uninitialized.should.be.ok();
 		} );
 	} );
 
@@ -77,21 +77,21 @@ describe( "TransactionContext", function() {
 			return ctx.step( "read", {
 				query: "select * from sys.tables"
 			} )
-			.then( function( res ) {
-				result = res.sets.read;
-			} );
+				.then( function( res ) {
+					result = res.sets.read;
+				} );
 		} );
 
 		it( "should create a \"read\" state", function() {
-			ctx.states.read.should.be.ok;
+			ctx.states.read.should.be.ok();
 		} );
 
 		it( "should create \"read\" state success handler", function() {
-			ctx.states.read.success.should.be.ok;
+			ctx.states.read.success.should.be.ok();
 		} );
 
 		it( "should create \"read\" state error handler", function() {
-			ctx.states.read.error.should.be.ok;
+			ctx.states.read.error.should.be.ok();
 		} );
 
 		it( "should call transaction.begin with an explicit isolation level", function() {
@@ -125,21 +125,21 @@ describe( "TransactionContext", function() {
 			ctx.step( "proc", {
 				procedure: "sp_who2"
 			} )
-			.then( function( res ) {
-				result = res;
-			} );
+				.then( function( res ) {
+					result = res;
+				} );
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -170,7 +170,7 @@ describe( "TransactionContext", function() {
 				.once();
 
 			reqMock.expects( "input" )
-					.withArgs( "param1", sql.INT, 9 ).once();
+				.withArgs( "param1", sql.INT, 9 ).once();
 
 			reqMock.expects( "input" )
 				.withArgs( "param2", "Hai Mom" ).once();
@@ -186,21 +186,21 @@ describe( "TransactionContext", function() {
 					param2: "Hai Mom"
 				}
 			} )
-			.then( function( res ) {
-				result = res;
-			} );
+				.then( function( res ) {
+					result = res;
+				} );
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -241,8 +241,8 @@ describe( "TransactionContext", function() {
 				.once();
 
 			transMock.expects( "begin" )
-					.callsArgWith( 0, null )
-					.once();
+				.callsArgWith( 0, null )
+				.once();
 
 			ctx = seriate.getTransactionContext();
 			ctx.step( "prepped", {
@@ -254,21 +254,21 @@ describe( "TransactionContext", function() {
 					}
 				}
 			} )
-			.then( function( res ) {
-				result = res;
-			} );
+				.then( function( res ) {
+					result = res;
+				} );
 		} );
 
 		it( "should create a \"prepped\" state", function() {
-			ctx.states.prepped.should.be.ok;
+			ctx.states.prepped.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state success handler", function() {
-			ctx.states.prepped.success.should.be.ok;
+			ctx.states.prepped.success.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state error handler", function() {
-			ctx.states.prepped.error.should.be.ok;
+			ctx.states.prepped.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -311,21 +311,21 @@ describe( "TransactionContext", function() {
 			ctx.step( "read", {
 				query: "select * from sys.tables"
 			} )
-			.then( undefined, function( err ) {
-				error = err;
-			} );
+				.then( undefined, function( err ) {
+					error = err;
+				} );
 		} );
 
 		it( "should create a \"read\" state", function() {
-			ctx.states.read.should.be.ok;
+			ctx.states.read.should.be.ok();
 		} );
 
 		it( "should create \"read\" state success handler", function() {
-			ctx.states.read.success.should.be.ok;
+			ctx.states.read.success.should.be.ok();
 		} );
 
 		it( "should create \"read\" state error handler", function() {
-			ctx.states.read.error.should.be.ok;
+			ctx.states.read.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -366,21 +366,21 @@ describe( "TransactionContext", function() {
 			ctx.step( "proc", {
 				procedure: "sp_who2"
 			} )
-			.then( undefined, function( err ) {
-				error = err;
-			} );
+				.then( undefined, function( err ) {
+					error = err;
+				} );
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -434,9 +434,9 @@ describe( "TransactionContext", function() {
 					param2: "Hai Mom"
 				}
 			} )
-			.then( undefined, function( err ) {
-				error = err;
-			} );
+				.then( undefined, function( err ) {
+					error = err;
+				} );
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -499,21 +499,21 @@ describe( "TransactionContext", function() {
 					}
 				}
 			} )
-			.then( undefined, function( err ) {
-				error = err;
-			} );
+				.then( undefined, function( err ) {
+					error = err;
+				} );
 		} );
 
 		it( "should create a \"prepped\" state", function() {
-			ctx.states.prepped.should.be.ok;
+			ctx.states.prepped.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state success handler", function() {
-			ctx.states.prepped.success.should.be.ok;
+			ctx.states.prepped.success.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state error handler", function() {
-			ctx.states.prepped.error.should.be.ok;
+			ctx.states.prepped.error.should.be.ok();
 		} );
 
 		it( "should call begin and rollback on the transaction", function() {

@@ -9,7 +9,7 @@ var utils = require( "./utils" );
 require( "./tedious-patch" );
 
 function promisify( context, queryOptions ) {
-	var name = queryOptions.name || queryOptions.procedure || "__result__";
+	const name = queryOptions.name || queryOptions.procedure || "__result__";
 	context.step( name, queryOptions );
 	return when.promise( function( resolve, reject, notify ) {
 		context
@@ -20,83 +20,81 @@ function promisify( context, queryOptions ) {
 }
 
 var seriate = {
-	getTransactionContext: function( connectionConfig, dataForHooks ) {
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace };
+	getTransactionContext( connectionConfig, dataForHooks ) {
+		const options = { metrics: this.metrics, namespace: this.metricsNamespace };
 		if ( connectionConfig && connectionConfig.isolationLevel ) {
 			options.isolationLevel = connectionConfig.isolationLevel;
 			delete connectionConfig.isolationLevel;
 		}
 		options.connection = connections.get( connectionConfig );
-		var hooks = connections.getHooks( connectionConfig );
+		const hooks = connections.getHooks( connectionConfig );
 		options.atTransactionStart = hooks.atTransactionStart;
 		options.atTransactionEnd = hooks.atTransactionEnd;
 		options.dataForHooks = dataForHooks;
 		return new TransactionContext( options );
 	},
-	getPlainContext: function( connection ) {
-		var conn = connections.get( connection );
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
+	getPlainContext( connection ) {
+		const conn = connections.get( connection );
+		const options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
 		return new SqlContext( options );
 	},
-	executeTransaction: function( connectionConfig, queryOptions, dataForHooks ) {
+	executeTransaction( connectionConfig, queryOptions, dataForHooks ) {
 		if ( arguments.length === 1 ) {
 			queryOptions = connectionConfig;
 			connectionConfig = undefined;
 		}
-		var conn = connections.get( connectionConfig );
-		var hooks = connections.getHooks( connectionConfig );
-		var options = {
+		const conn = connections.get( connectionConfig );
+		const hooks = connections.getHooks( connectionConfig );
+		const options = {
 			metrics: this.metrics,
 			namespace: this.metricsNamespace,
 			connection: conn,
 			atTransactionStart: hooks.atTransactionStart,
 			atTransactionEnd: hooks.atTransactionEnd,
-			dataForHooks: dataForHooks
+			dataForHooks
 		};
 		return promisify( new TransactionContext( options ), queryOptions );
 	},
-	execute: function( connection, queryOptions ) {
+	execute( connection, queryOptions ) {
 		if ( arguments.length === 1 ) {
 			queryOptions = connection;
 			connection = undefined;
 		}
-		var conn = connections.get( connection );
-		var options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
+		const conn = connections.get( connection );
+		const options = { metrics: this.metrics, namespace: this.metricsNamespace, connection: conn };
 		return promisify( new SqlContext( options ), queryOptions )
 			.then( function( data ) {
 				if ( data.__result__ ) {
 					return data.__result__;
-				} else {
-					return data[ queryOptions.procedure || queryOptions.name ];
 				}
+				return data[ queryOptions.procedure || queryOptions.name ];
 			} );
 	},
-	first: function() {
-		var args = Array.prototype.slice.call( arguments, 0 );
+	first( ...args ) {
 		delete args[ args.length - 1 ].stream;
-		return this.execute.apply( this, args ).then( function( rows ) {
+		return this.execute( ...args ).then( function( rows ) {
 			return rows[ 0 ];
 		} );
 	},
 	fromFile: utils.fromFile,
-	addConnection: function( config ) {
+	addConnection( config ) {
 		connections.add( config );
 	},
-	setDefaultConfig: function( config ) {
+	setDefaultConfig( config ) {
 		config.name = "default";
 		connections.add( config );
 	},
-	setDefault: function( config ) {
+	setDefault( config ) {
 		config.name = "default";
 		connections.add( config );
 	},
-	closeConnection: function( config ) {
+	closeConnection( config ) {
 		connections.close( config );
 	},
-	resetConnections: function() {
+	resetConnections() {
 		connections.reset();
 	},
-	useMetrics: function( metrics, namespace ) {
+	useMetrics( metrics, namespace ) {
 		this.metrics = metrics;
 		this.metricsNamespace = namespace;
 	}

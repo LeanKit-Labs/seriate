@@ -7,19 +7,19 @@ var log = require( "./log" )( "seriate.sql" );
 var addState = require( "./sqlContextUtils" ).addState;
 
 module.exports = function() {
-	var SqlContext = machina.Fsm.extend( {
-		_connected: function( connection ) {
+	const SqlContext = machina.Fsm.extend( {
+		_connected( connection ) {
 			this.connection = connection;
 			this.handle( "success" );
 		},
 
-		_connectionError: function( err ) {
+		_connectionError( err ) {
 			this.handle( "error", err );
 		},
 
 		initialState: "uninitialized",
 
-		initialize: function( options ) {
+		initialize( options ) {
 			this.results = {};
 			this.pipeline = [];
 			this.pipePos = -1;
@@ -33,42 +33,42 @@ module.exports = function() {
 				);
 		},
 
-		nextState: function() {
+		nextState() {
 			this.pipePos += 1;
-			var nextState = this.pipeline[ this.pipePos ] || "done";
+			const nextState = this.pipeline[ this.pipePos ] || "done";
 			this.transition( nextState );
 		},
 
 		states: {
 			uninitialized: {
 				start: "connecting",
-				"*": function() {
+				"*"() {
 					this.deferUntilTransition( "connecting" );
 				}
 			},
 			connecting: {
-				success: function() {
+				success() {
 					this.nextState();
 				},
-				error: function( err ) {
+				error( err ) {
 					this.err = err;
 					this.transition( "error" );
 				}
 			},
 
 			done: {
-				_onEnter: function() {
+				_onEnter() {
 					this.emit( "end", this.results );
 				}
 			},
 
 			error: {
-				_onEnter: function() {
-					var precedingErrorMessage = _.map( this.err && this.err.precedingErrors, function( error ) {
-						return "\n\tPreceding error: " + error.message;
+				_onEnter() {
+					const precedingErrorMessage = _.map( this.err && this.err.precedingErrors, function( error ) {
+						return `\n\tPreceding error: ${ error.message }`;
 					} ).join( "" );
 
-					var message = util.format( "SqlContext Error. Failed on step \"%s\" with: \"%s\"%s", this.priorState, this.err.message, precedingErrorMessage );
+					const message = util.format( "SqlContext Error. Failed on step \"%s\" with: \"%s\"%s", this.priorState, this.err.message, precedingErrorMessage );
 					log.error( message );
 					this.err.message = message;
 					this.err.step = this.priorState;
@@ -77,8 +77,8 @@ module.exports = function() {
 			}
 		},
 
-		step: function( alias, stepAction ) {
-			var opt;
+		step( alias, stepAction ) {
+			let opt;
 			if ( typeof stepAction === "object" ) {
 				opt = stepAction;
 				stepAction = function( execute ) {
@@ -89,7 +89,7 @@ module.exports = function() {
 			return this;
 		},
 
-		deferredStart: function() {
+		deferredStart() {
 			if ( !this._started ) {
 				process.nextTick( function() {
 					this.handle( "start" );
@@ -98,20 +98,20 @@ module.exports = function() {
 			}
 		},
 
-		end: function( fn ) {
+		end( fn ) {
 			this.on( "end", fn );
 			this.deferredStart();
 			return this;
 		},
 
-		error: function( fn ) {
+		error( fn ) {
 			this.on( "error", fn );
 			this.deferredStart();
 			return this;
 		},
 
-		then: function( success, failure ) {
-			var deferred = when.defer();
+		then( success, failure ) {
+			const deferred = when.defer();
 			function onSuccess( result ) {
 				deferred.resolve( result );
 			}
@@ -126,7 +126,7 @@ module.exports = function() {
 				.then( success, failure );
 		},
 
-		abort: function() {
+		abort() {
 			this.handle( "error", "Operation aborted" );
 		}
 

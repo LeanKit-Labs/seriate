@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 var sql = require( "../src/index.js" );
 var mod = {};
 
@@ -42,11 +43,11 @@ sql.getTransactionContext( {
 			}
 		} );
 	} ).error( function( err ) {
-	console.log( "O NOES! \n %s", err );
-} ).end( function( ctx ) {
-	console.log( "All Steps Complete" );
-	console.log( Object.keys( ctx ) );
-	console.log( "We are done here. Control+C gets you out." );
-} );
+		console.log( "O NOES! \n %s", err );
+	} ).end( function( ctx ) {
+		console.log( "All Steps Complete" );
+		console.log( Object.keys( ctx ) );
+		console.log( "We are done here. Control+C gets you out." );
+	} );
 
 module.exports = mod;

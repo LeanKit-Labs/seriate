@@ -1,3 +1,4 @@
+/* eslint-disable prefer-rest-params */
 var tedious = require( "tedious" );
 
 // I've seen things you people wouldn't believe
@@ -24,14 +25,13 @@ if ( !tedious.Connection.prototype.makeRequest.__seriatePatched ) {
 				this.isInPreparedSqlQuery = false;
 			}
 			return existing.call( this, request, packetType, payload );
-		} else {
-			return this.reset( function() {
-				if ( request.sqlTextOrProcedure === "sp_prepare" ) {
-					this.isInPreparedSqlQuery = true;
-				}
-				return existing.call( this, request, packetType, payload );
-			}.bind( this ) );
 		}
+		return this.reset( function() {
+			if ( request.sqlTextOrProcedure === "sp_prepare" ) {
+				this.isInPreparedSqlQuery = true;
+			}
+			return existing.call( this, request, packetType, payload );
+		}.bind( this ) );
 	};
 	tedious.Connection.prototype.makeRequest.__seriatePatched = true;
 }
@@ -39,8 +39,9 @@ if ( !tedious.Connection.prototype.makeRequest.__seriatePatched ) {
 if ( !tedious.Connection.prototype.newBulkLoad.__seriatePatched ) {
 	var origNewBulkLoad = tedious.Connection.prototype.newBulkLoad;
 	tedious.Connection.prototype.newBulkLoad = function( table, callback ) {
-		var thus = this;
-		var result = origNewBulkLoad.call( this, table, function() {
+		// eslint-disable-next-line consistent-this
+		const thus = this;
+		const result = origNewBulkLoad.call( this, table, function() {
 			callback.apply( this, arguments );
 			thus.isInBulkLoadOperation = false;
 		} );

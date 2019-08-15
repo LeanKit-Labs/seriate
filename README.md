@@ -555,7 +555,7 @@ The `TransactionContext` is mostly identical to the SqlContext, except that it h
 
 * You"ll need to run `npm install` at the root of this project once you clone it to install the dependencies.
 * To run unit tests: `npm test`
-* To run integration tests: `npm run intspec`
+* To run integration tests: `npm run test:int`
 * To run the example module: `npm run example`
 
 *Please* note that in order to run the integration tests, you will need to create a `local-config.json` file in the `spec/integration` directory, matching something similar to this:

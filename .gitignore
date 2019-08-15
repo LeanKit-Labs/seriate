@@ -26,3 +26,4 @@ node_modules
 local-config.json
 
 .DS_Store
+.nyc_output/

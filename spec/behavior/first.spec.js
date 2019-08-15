@@ -3,7 +3,7 @@ var records = require( "../data/fakeRecordSet.json" );
 var mockConnectionFn = require( "../data/mockConnection" );
 
 describe( "First", function() {
-	var result, reqMock, transMock, seriate, sql;
+	var result, reqMock, seriate, sql;
 	function setup() {
 		var request = { query: _.noop, execute: _.noop, input: _.noop };
 		var transaction = {
@@ -12,7 +12,7 @@ describe( "First", function() {
 			rollback: _.noop
 		};
 		reqMock = sinon.mock( request );
-		transMock = sinon.mock( transaction );
+		sinon.mock( transaction );
 
 		var connection = mockConnectionFn( true );
 		var mssql = require( "mssql" );

@@ -1,5 +1,3 @@
-var when = require( "when" );
-
 function mockConnectionFn( valid, rejection ) {
 	var connection = {
 		handles: {},
@@ -7,11 +5,10 @@ function mockConnectionFn( valid, rejection ) {
 			if ( valid ) {
 				this.raise( "connect" );
 				return when.resolve();
-			} else {
-				var error = new Error( rejection );
-				this.raise( "error", error );
-				return when.reject( error );
 			}
+			var error = new Error( rejection );
+			this.raise( "error", error );
+			return when.reject( error );
 		},
 		raise: function( event, args ) {
 			this.handles[ event ].apply( undefined, args );

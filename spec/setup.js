@@ -1,10 +1,10 @@
 global.proxyquire = require( "proxyquire" ).noPreserveCache().noCallThru();
-var when = global.when = require( "when" );
+global.when = require( "when" );
 global.sinon = require( "sinon" );
 var chai = require( "chai" );
-require( "sinon-as-promised" )( global.when.Promise );
 chai.use( require( "sinon-chai" ) );
 chai.use( require( "chai-as-promised" ) );
+chai.use( require( "dirty-chai" ) );
 global.should = chai.should();
 global.expect = chai.expect;
 global.Monologue = require( "monologue.js" );
@@ -15,31 +15,32 @@ global._ = require( "lodash" );
 require( "../src/log" )( {} );
 
 function deepCompare( a, b, k ) {
-	var diffs = [];
+	let diffs = [];
 	if ( b === undefined ) {
-		diffs.push( "expected " + k + " to equal " + a + " but was undefined " );
+		diffs.push( `expected ${ k } to equal ${ a } but was undefined ` );
 	} else if ( _.isObject( a ) || _.isArray( a ) ) {
 		_.each( a, function( v, c ) {
-			var key = k ? [ k, c ].join( "." ) : c;
+			const key = k ? [ k, c ].join( "." ) : c;
 			diffs = diffs.concat( deepCompare( a[ c ], b[ c ], key ) );
 		} );
 	} else {
-		var equal = a == b; // jshint ignore:line
+		// eslint-disable-next-line eqeqeq
+		const equal = a == b;
 		if ( !equal ) {
-			diffs.push( "expected " + k + " to equal " + a + " but got " + b );
+			diffs.push( `expected ${ k } to equal ${ a } but got ${ b }` );
 		}
 	}
 	return diffs;
 }
 
 chai.Assertion.addMethod( "partiallyEql", function( partial ) {
-	var obj = this._obj;
+	let obj = this._obj;
 	if ( !obj.then ) {
 		obj = when.resolve( obj );
 	}
-	var self = this;
+	const self = this;
 	return obj.then( function( actual ) {
-		var diffs = deepCompare( partial, actual );
+		const diffs = deepCompare( partial, actual );
 		return self.assert(
 			diffs.length === 0,
 			diffs.join( "\n\t" )

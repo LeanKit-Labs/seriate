@@ -18,12 +18,13 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 	describe( "when plain context has two steps on it", function() {
 		it( "should use same connection on both", function() {
 			return sql.getPlainContext( config )
-			.step( "spid1", { query: "SELECT @@SPID spid" } )
-			.step( "spid2", { query: "SELECT @@SPID spid" } )
-			.then( function( data ) {
-				data.spid2[ 0 ].spid.should.equal( data.spid1[ 0 ].spid );
-			} )
-			.catch( console.log );
+				.step( "spid1", { query: "SELECT @@SPID spid" } )
+				.step( "spid2", { query: "SELECT @@SPID spid" } )
+				.then( function( data ) {
+					data.spid2[ 0 ].spid.should.equal( data.spid1[ 0 ].spid );
+				} )
+				// eslint-disable-next-line no-console
+				.catch( console.log );
 		} );
 	} );
 
@@ -32,23 +33,23 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 
 		before( function() {
 			return sql.getTransactionContext( config )
-			.step( "bulk", {
-				bulkLoadTable: {
-					name: "#oops",
-					columns: {
-						foo: {
-							type: sql.NVARCHAR( 50 ),
-							nullable: false
-						}
-					},
-					rows: [ { foo: "bar" } ]
-				}
-			} )
-			.step( "err", { query: "SELECT * FROM NoSuchTable;" } )
-			.then( function() {} )
-			.catch( function( e ) {
-				error = e;
-			} );
+				.step( "bulk", {
+					bulkLoadTable: {
+						name: "#oops",
+						columns: {
+							foo: {
+								type: sql.NVARCHAR( 50 ),
+								nullable: false
+							}
+						},
+						rows: [ { foo: "bar" } ]
+					}
+				} )
+				.step( "err", { query: "SELECT * FROM NoSuchTable;" } )
+				.then( function() {} )
+				.catch( function( e ) {
+					error = e;
+				} );
 		} );
 
 		it( "should throw RequestError", function() {
@@ -58,9 +59,9 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 
 		it( "should drop temp table from connection", function() {
 			return sql.first( config, { query: "SELECT OBJECT_ID('tempdb..#oops') id;" } )
-			.then( function( row ) {
-				should.equal( row.id, null );
-			} );
+				.then( function( row ) {
+					should.equal( row.id, null );
+				} );
 		} );
 	} );
 
@@ -69,33 +70,33 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 			var sets;
 
 			return sql.getTransactionContext( config )
-			.step( "bulk1", {
-				bulkLoadTable: {
-					name: "#exists",
-					columns: {
-						id: {
-							type: sql.INT
-						}
-					},
-					rows: [ { id: 1 } ]
-				}
-			} )
-			.step( "bulk2", {
-				bulkLoadTable: {
-					name: "#exists",
-					columns: { id: { type: sql.INT } },
-					rows: [ { id: 2 } ],
-					useExisting: useExisting
-				}
-			} )
-			.step( "query", { query: "SELECT * FROM #exists ORDER BY id" } )
-			.then( function( result ) {
-				sets = result.sets;
-				return result.transaction.commit();
-			} )
-			.then( function() {
-				return sets.query;
-			} );
+				.step( "bulk1", {
+					bulkLoadTable: {
+						name: "#exists",
+						columns: {
+							id: {
+								type: sql.INT
+							}
+						},
+						rows: [ { id: 1 } ]
+					}
+				} )
+				.step( "bulk2", {
+					bulkLoadTable: {
+						name: "#exists",
+						columns: { id: { type: sql.INT } },
+						rows: [ { id: 2 } ],
+						useExisting: useExisting
+					}
+				} )
+				.step( "query", { query: "SELECT * FROM #exists ORDER BY id" } )
+				.then( function( result ) {
+					sets = result.sets;
+					return result.transaction.commit();
+				} )
+				.then( function() {
+					return sets.query;
+				} );
 		}
 
 		describe( "and useExisting is not specified", function() {

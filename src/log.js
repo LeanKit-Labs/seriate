@@ -6,7 +6,7 @@ var logs = {};
 var topics = [];
 
 function configure( config ) {
-	var envDebug = !!process.env.DEBUG;
+	const envDebug = !!process.env.DEBUG;
 	if ( envDebug ) {
 		logger = logFn( postal, { adapters: { debug: { level: 5 } } } );
 	} else {
@@ -22,16 +22,15 @@ function configure( config ) {
 
 function createLog( topic ) {
 	if ( !_.contains( topics, topic ) && !logs[ topic ] ) {
-		var log = logger( topic );
+		const log = logger( topic );
 		if ( logs[ topic ] ) {
 			logs[ topic ].reset();
 		}
 		topics.push( log );
 		logs[ topic ] = log;
 		return log;
-	} else {
-		return logs[ topic ];
 	}
+	return logs[ topic ];
 }
 
 module.exports = function( config, ns ) {

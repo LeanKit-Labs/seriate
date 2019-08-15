@@ -1,7 +1,7 @@
 require( "../setup" );
 
 describe( "Tedious makeRequest patch", function() {
-	var existingMakeRequest, existingNewBulkLoad, existingExecBulkLoad, makeRequest, Connection;
+	var existingMakeRequest, existingNewBulkLoad, existingExecBulkLoad, Connection;
 
 	beforeEach( function() {
 		existingMakeRequest = sinon.stub();
@@ -29,8 +29,6 @@ describe( "Tedious makeRequest patch", function() {
 				Connection: Connection
 			}
 		} );
-
-		makeRequest = Connection.prototype.makeRequest;
 	} );
 
 	describe( "when executing normal queries", function() {
