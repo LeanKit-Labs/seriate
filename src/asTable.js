@@ -48,7 +48,7 @@ module.exports = {
 	},
 	transformQuery( params, query ) {
 		return _( params )
-			.pairs()
+			.toPairs()
 			.filter( function( pair ) {
 				return pair[ 1 ].asTable;
 			} )

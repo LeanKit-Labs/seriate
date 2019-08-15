@@ -53,7 +53,7 @@
   "dependencies": {
     "callsite": "^1.0.0",
     "debug": "^4.1.1",
-    "lodash": "3.x",
+    "lodash": "^4.17.15",
     "machina": "1.x",
     "monologue.js": "~0.3.3",
     "mssql": "~2.3.2",
