@@ -1,7 +1,8 @@
 var _ = require( "lodash" );
 var when = require( "when" );
 var sql = require( "mssql" );
-var Monologue = require( "monologue.js" ).prototype;
+const EventEmitter = require( "events" );
+
 var log = require( "debug" )( "seriate:connection" );
 
 var state = {
@@ -18,7 +19,7 @@ var api = _.assign( {
 	get: getConnection,
 	getHooks,
 	reset: resetState
-}, Monologue );
+}, EventEmitter.prototype );
 
 function addConnection( config ) {
 	const name = getName( config );

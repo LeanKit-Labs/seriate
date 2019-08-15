@@ -232,7 +232,7 @@ describe( "Seriate Integration Tests", function() {
 								query: "SELECT * FROM NoSuchTable"
 							} );
 						} )
-						.end()
+						.end( () => {} )
 						.error( function( e ) {
 							error = e;
 							done();

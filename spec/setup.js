@@ -7,7 +7,6 @@ chai.use( require( "chai-as-promised" ) );
 chai.use( require( "dirty-chai" ) );
 global.should = chai.should();
 global.expect = chai.expect;
-global.Monologue = require( "monologue.js" );
 global.machina = require( "machina" );
 global.fakeRecords = require( "./data/fakeRecordSet.json" );
 global._ = require( "lodash" );

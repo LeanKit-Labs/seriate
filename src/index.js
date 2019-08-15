@@ -1,6 +1,7 @@
 var when = require( "when" );
 var _ = require( "lodash" );
-var Monologue = require( "monologue.js" ).prototype;
+const EventEmitter = require( "events" );
+
 var sql = require( "mssql" );
 var connections = require( "./connections" );
 var SqlContext = require( "./sqlContext" )();
@@ -111,7 +112,7 @@ _.each( sql.ISOLATION_LEVEL, function( val, key ) {
 
 seriate.MAX = sql.MAX;
 
-var api = _.assign( seriate, Monologue );
+var api = _.assign( seriate, EventEmitter.prototype );
 
 connections.on( "connected", function( info ) {
 	api.emit( "connected", info );

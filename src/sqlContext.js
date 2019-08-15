@@ -1,7 +1,8 @@
 var _ = require( "lodash" );
 var when = require( "when" );
 var util = require( "util" );
-var Monologue = require( "monologue.js" );
+var EventEmitter = require( "events" );
+
 var machina = require( "machina" );
 var log = require( "debug" )( "seriate:sql" );
 var addState = require( "./sqlContextUtils" ).addState;
@@ -128,11 +129,9 @@ module.exports = function() {
 
 		abort() {
 			this.handle( "error", "Operation aborted" );
-		}
-
+		},
+		...EventEmitter.prototype
 	} );
-
-	Monologue.mixInto( SqlContext );
 
 	return SqlContext;
 };

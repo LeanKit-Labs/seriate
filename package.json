@@ -55,7 +55,6 @@
     "debug": "^4.1.1",
     "lodash": "^4.17.15",
     "machina": "^4.0.2",
-    "monologue.js": "~0.3.3",
     "mssql": "~2.3.2",
     "when": "3.x",
     "xmldom": "^0.1.22"
