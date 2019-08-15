@@ -52,7 +52,6 @@
   ],
   "dependencies": {
     "callsite": "^1.0.0",
-    "configya": "~0.2.1",
     "lodash": "3.x",
     "machina": "1.x",
     "monologue.js": "~0.3.3",
