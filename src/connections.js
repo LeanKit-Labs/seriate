@@ -2,7 +2,7 @@ var _ = require( "lodash" );
 var when = require( "when" );
 var sql = require( "mssql" );
 var Monologue = require( "monologue.js" ).prototype;
-var log = require( "./log" )( "seriate.connection" );
+var log = require( "debug" )( "seriate:connection" );
 
 var state = {
 	pools: {},
@@ -50,10 +50,10 @@ function closeConnection( config ) {
 function connect( name, config ) {
 	let pool = getPool( name );
 	if ( pool ) {
-		log.warn( "Connection for \"%s\" that already exists - existing connection pool will be used.", name );
+		log( "Connection for \"%s\" that already exists - existing connection pool will be used.", name );
 		return state.connections[ name ];
 	}
-	log.info( "Connecting to \"%s\" ( %s:%d - %s as %s )",
+	log( "Connecting to \"%s\" ( %s:%d - %s as %s )",
 		name,
 		config.host || config.server,
 		// eslint-disable-next-line no-magic-numbers
@@ -64,12 +64,12 @@ function connect( name, config ) {
 
 	pool.on( "connect", function() {
 		api.emit( "connected", { name } );
-		log.info( "Connected to \"%s\"", name );
+		log( "Connected to \"%s\"", name );
 	} );
 
 	pool.on( "close", function() {
 		api.emit( "closed", { name } );
-		log.info( "Closed connection to \"%s\"", name );
+		log( "Closed connection to \"%s\"", name );
 		pool.removeAllListeners();
 		delete state.connections[ name ];
 		delete state.pools[ name ];
@@ -77,7 +77,7 @@ function connect( name, config ) {
 
 	function onConnectionError( err ) {
 		api.emit( "failed", { name, error: err } );
-		log.error( "Failed to connection to \"%s\" with: %s", name, err );
+		log( "Failed to connection to \"%s\" with: %s", name, err );
 		delete state.connections[ name ];
 		delete state.pools[ name ];
 		pool.removeAllListeners();

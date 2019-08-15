@@ -3,7 +3,7 @@ var when = require( "when" );
 var util = require( "util" );
 var Monologue = require( "monologue.js" );
 var machina = require( "machina" );
-var log = require( "./log" )( "seriate.sql" );
+var log = require( "debug" )( "seriate:sql" );
 var addState = require( "./sqlContextUtils" ).addState;
 
 module.exports = function() {
@@ -69,7 +69,7 @@ module.exports = function() {
 					} ).join( "" );
 
 					const message = util.format( "SqlContext Error. Failed on step \"%s\" with: \"%s\"%s", this.priorState, this.err.message, precedingErrorMessage );
-					log.error( message );
+					log( message );
 					this.err.message = message;
 					this.err.step = this.priorState;
 					this.emit( "error", this.err );

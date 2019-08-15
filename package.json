@@ -52,13 +52,13 @@
   ],
   "dependencies": {
     "callsite": "^1.0.0",
+    "debug": "^4.1.1",
     "lodash": "3.x",
     "machina": "1.x",
     "monologue.js": "~0.3.3",
     "mssql": "~2.3.2",
     "postal": "^1.0.6",
     "when": "3.x",
-    "whistlepunk": "^0.3.1",
     "xmldom": "^0.1.22"
   },
   "devDependencies": {

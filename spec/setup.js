@@ -12,8 +12,6 @@ global.machina = require( "machina" );
 global.fakeRecords = require( "./data/fakeRecordSet.json" );
 global._ = require( "lodash" );
 
-require( "../src/log" )( {} );
-
 function deepCompare( a, b, k ) {
 	let diffs = [];
 	if ( b === undefined ) {

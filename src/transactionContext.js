@@ -1,7 +1,7 @@
 var _ = require( "lodash" );
 var when = require( "when" );
 var util = require( "util" );
-var log = require( "./log" )( "seriate.transaction" );
+var log = require( "debug" )( "seriate:transaction" );
 var sql = require( "mssql" );
 
 function errorHandler( err ) {
@@ -70,7 +70,7 @@ module.exports = function( SqlContext ) {
 													const message = util.format( "Error occurred during automatic roll back after a commit error.\n\tCommit error: %s\n\tRollback error: %s\n",
 														commitError,
 														rollbackErr );
-													log.error( message );
+													log( message );
 													reject( new Error( message ) );
 												} else {
 													reject( commitError );
@@ -86,7 +86,7 @@ module.exports = function( SqlContext ) {
 								return when.promise( function( resolve, reject ) {
 									self.transaction.rollback( function( err ) {
 										if ( err ) {
-											log.error( "Error occurred while rolling back: %s", err.message );
+											log( "Error occurred while rolling back: %s", err.message );
 											reject( err );
 										} else {
 											resolve();
@@ -117,11 +117,11 @@ module.exports = function( SqlContext ) {
 									rollbackErr );
 								this.err.message = message;
 							}
-							log.error( message );
+							log( message );
 							this.emit( "error", this.err );
 						}.bind( this ) );
 					} else {
-						log.error( message );
+						log( message );
 						this.emit( "error", this.err );
 					}
 				}
