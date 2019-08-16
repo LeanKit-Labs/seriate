@@ -575,7 +575,7 @@ describe( "TransactionContext", function() {
 		} );
 
 		describe( "when executing a procedure", function() {
-			var metrics, adapter;
+			var metrics;
 			before( function() {
 				metrics = {
 					instrument: sinon.spy( obj => {
@@ -615,7 +615,7 @@ describe( "TransactionContext", function() {
 		} );
 
 		describe( "when executing a multiple steps", function() {
-			var metrics, adapter;
+			var metrics;
 			before( function() {
 				metrics = {
 					instrument: sinon.spy( obj => {
