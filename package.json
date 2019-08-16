@@ -56,7 +56,6 @@
     "lodash": "^4.17.15",
     "machina": "^4.0.2",
     "mssql": "~2.3.2",
-    "when": "3.x",
     "xmldom": "^0.1.22"
   },
   "devDependencies": {

@@ -1,5 +1,4 @@
 var _ = require( "lodash" );
-var when = require( "when" );
 var util = require( "util" );
 var log = require( "debug" )( "seriate:transaction" );
 var sql = require( "mssql" );
@@ -62,7 +61,7 @@ module.exports = function( SqlContext ) {
 						sets: self.results,
 						transaction: {
 							commit() {
-								return when.promise( function( resolve, reject ) {
+								return new Promise( function( resolve, reject ) {
 									self.transaction.commit( function( commitError ) {
 										if ( commitError ) {
 											self.transaction.rollback( function( rollbackErr ) {
@@ -83,7 +82,7 @@ module.exports = function( SqlContext ) {
 								} );
 							},
 							rollback() {
-								return when.promise( function( resolve, reject ) {
+								return new Promise( function( resolve, reject ) {
 									self.transaction.rollback( function( err ) {
 										if ( err ) {
 											log( "Error occurred while rolling back: %s", err.message );

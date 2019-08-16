@@ -4,11 +4,11 @@ function mockConnectionFn( valid, rejection ) {
 		connect: function() {
 			if ( valid ) {
 				this.raise( "connect" );
-				return when.resolve();
+				return Promise.resolve();
 			}
 			var error = new Error( rejection );
 			this.raise( "error", error );
-			return when.reject( error );
+			return Promise.reject( error );
 		},
 		raise: function( event, args ) {
 			this.handles[ event ].apply( undefined, args );

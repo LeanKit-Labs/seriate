@@ -1,9 +1,7 @@
 /* eslint-disable max-nested-callbacks */
-var lift = require( "when/node" ).lift;
 var sql = require( "mssql" );
 var util = require( "util" );
 var _ = require( "lodash" );
-var when = require( "when" );
 var Readable = require( "stream" ).Readable;
 
 var specialParamOptions = [
@@ -77,7 +75,7 @@ function bulkLoadTable( state, name, options ) {
 
 	const req = new sql.Request( state.transaction || state.connection );
 
-	return when.resolve()
+	return Promise.resolve()
 		.then( function() {
 			if ( !isTempTableName( options.bulkLoadTable.name ) ) {
 				return;
@@ -114,7 +112,7 @@ function bulkLoadTable( state, name, options ) {
 		} )
 		.then( function() {
 			return instrument( state, name, function() {
-				return lift( req.bulk ).bind( req )( table );
+				return util.promisify( req.bulk ).bind( req )( table );
 			} );
 		} );
 }
@@ -170,12 +168,24 @@ function nonPreparedSql( state, name, options ) {
 
 	return instrument( state, name, function() {
 		if ( !options.stream ) {
-			return lift( req[ operation ] ).bind( req )( sqlCmd );
+			return new Promise( ( resolve, reject ) => {
+				req[ operation ]( sqlCmd, ( err, data, returnValue ) => {
+					if ( err ) { return reject( err ); }
+
+					if ( returnValue !== undefined ) {
+						// stored procedures are returned with data and return value
+						// this is weird, but was a result of using when.lift functionality
+						// we've removed when.lift, but kept original api
+						return resolve( [ data, returnValue ] );
+					}
+					return resolve( data );
+				} );
+			} );
 		}
 		req.stream = true;
 		const stream = new DataResultStream( req );
 		req[ operation ]( sqlCmd );
-		return when.resolve( stream );
+		return Promise.resolve( stream );
 	} );
 }
 
@@ -191,9 +201,9 @@ function preparedSql( state, name, options ) {
 		paramKeyValues[ param.key ] = param.value;
 	} );
 
-	const prepare = lift( cmd.prepare ).bind( cmd );
-	const execute = lift( cmd.execute ).bind( cmd );
-	const unprepare = lift( cmd.unprepare ).bind( cmd );
+	const prepare = util.promisify( cmd.prepare ).bind( cmd );
+	const execute = util.promisify( cmd.execute ).bind( cmd );
+	const unprepare = util.promisify( cmd.unprepare ).bind( cmd );
 	const statement = transformQuery( options.params, options.preparedSql );
 
 	return instrument( state, name, function() {
@@ -202,13 +212,13 @@ function preparedSql( state, name, options ) {
 				if ( options.stream ) {
 					cmd.stream = true;
 
-					// Can't use the lifted execute here because we need the
+					// Can't use the promisified execute here because we need the
 					// request returned by the original callback version, which the
-					// lift would replace with a promise.
+					// promisify would replace with a promise.
 					const req = cmd.execute( paramKeyValues, _.noop );
 					const stream = new DataResultStream( req );
 					stream.on( "end", unprepare );
-					return when.resolve( stream );
+					return Promise.resolve( stream );
 				}
 				return execute( paramKeyValues )
 					.then( function( result ) {
@@ -282,9 +292,9 @@ function addState( fsm, name, stepAction ) {
 					fsm.results
 				);
 
-				when( stepReturnValue )
+				Promise.resolve( stepReturnValue )
 					.then( function( result ) {
-						return when( promise ) // We'll not force the caller to return the execute promise
+						return Promise.resolve( promise ) // We'll not force the caller to return the execute promise
 							.then( function( promiseResult ) {
 								return result || promiseResult;
 							} );

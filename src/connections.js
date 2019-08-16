@@ -1,5 +1,4 @@
 var _ = require( "lodash" );
-var when = require( "when" );
 var sql = require( "mssql" );
 const EventEmitter = require( "events" );
 
@@ -119,7 +118,7 @@ function getConnection( config ) {
 	} else if ( configuration ) {
 		return connect( name, configuration );
 	} else if ( config === undefined || _.isString( config ) ) {
-		return when.reject( new Error( `No connection named "${ name }" exists` ) );
+		return Promise.reject( new Error( `No connection named "${ name }" exists` ) );
 	}
 	return addConnection( config );
 }

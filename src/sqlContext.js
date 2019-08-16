@@ -1,5 +1,4 @@
 var _ = require( "lodash" );
-var when = require( "when" );
 var util = require( "util" );
 var EventEmitter = require( "events" );
 
@@ -112,19 +111,10 @@ module.exports = function() {
 		},
 
 		then( success, failure ) {
-			const deferred = when.defer();
-			function onSuccess( result ) {
-				deferred.resolve( result );
-			}
-			function onFailure( error ) {
-				deferred.reject( error );
-			}
-
-			this.end( onSuccess );
-			this.error( onFailure );
-
-			return deferred.promise
-				.then( success, failure );
+			return new Promise( ( resolve, reject ) => {
+				this.end( resolve );
+				this.error( reject );
+			} ).then( success, failure );
 		},
 
 		abort() {

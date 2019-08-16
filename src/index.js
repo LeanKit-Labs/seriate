@@ -1,4 +1,3 @@
-var when = require( "when" );
 var _ = require( "lodash" );
 const EventEmitter = require( "events" );
 
@@ -12,11 +11,10 @@ require( "./tedious-patch" );
 function promisify( context, queryOptions ) {
 	const name = queryOptions.name || queryOptions.procedure || "__result__";
 	context.step( name, queryOptions );
-	return when.promise( function( resolve, reject, notify ) {
+	return new Promise( function( resolve, reject ) {
 		context
 			.end( resolve )
-			.error( reject )
-			.on( "data", notify );
+			.error( reject );
 	} );
 }
 

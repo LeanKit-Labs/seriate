@@ -10,7 +10,6 @@ module.exports = {
 
 	globals: {
 		proxyquire: true,
-		when: true,
 		sinon: true,
 		should: true,
 		expect: true,

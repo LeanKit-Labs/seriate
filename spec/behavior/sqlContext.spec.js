@@ -554,8 +554,7 @@ describe( "SqlContext", function() {
 
 			return seriate.getPlainContext()
 				.step( "badPromise", function( execute ) {
-					return when( true )
-						.delay( 10 ) // Here to delay the call to execute so we can see our assertion wait on the runaway promise.
+					return new Promise( resolve => setTimeout( resolve( true ), 10 ) ) // Here to delay the call to execute so we can see our assertion wait on the runaway promise.
 						.then( function() {
 							execute( {
 								query: "select * from sys.tables"
@@ -589,7 +588,7 @@ describe( "SqlContext", function() {
 
 			return seriate.getPlainContext()
 				.step( "early-return-value", function( _execute ) {
-					return when( true )
+					return Promise.resolve( true )
 						.then( function() {
 							return "hi!";
 						} );
@@ -658,7 +657,7 @@ describe( "SqlContext", function() {
 				.step( "fail", function( execute ) {
 					return execute( {
 						query: "select * from sys.tables"
-					} ).tap( function() {
+					} ).then( function() {
 						throw new TypeError( "😭" );
 					} );
 				} ).should.be.rejectedWith( TypeError, "SqlContext Error. Failed on step \"fail\" with: \"😭\"" );
@@ -672,7 +671,7 @@ describe( "SqlContext", function() {
 
 			return seriate.getPlainContext()
 				.step( "brokenPromise", function( _execute ) {
-					return when.reject( new Error( "NOPE!" ) );
+					return Promise.reject( new Error( "NOPE!" ) );
 				} )
 				.then( null, function( err ) {
 					error = err;

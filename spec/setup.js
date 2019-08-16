@@ -1,5 +1,4 @@
 global.proxyquire = require( "proxyquire" ).noPreserveCache().noCallThru();
-global.when = require( "when" );
 global.sinon = require( "sinon" );
 var chai = require( "chai" );
 chai.use( require( "sinon-chai" ) );
@@ -33,7 +32,7 @@ function deepCompare( a, b, k ) {
 chai.Assertion.addMethod( "partiallyEql", function( partial ) {
 	let obj = this._obj;
 	if ( !obj.then ) {
-		obj = when.resolve( obj );
+		obj = Promise.resolve( obj );
 	}
 	const self = this;
 	return obj.then( function( actual ) {
