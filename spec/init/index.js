@@ -1,14 +1,27 @@
-global.proxyquire = require( "proxyquire" ).noPreserveCache().noCallThru();
-global.sinon = require( "sinon" );
+const path = require( "path" );
+const proxy = require( "proxyquire" ).noPreserveCache().noCallThru();
 const chai = require( "chai" );
+
+const ROOT_PATH = path.join( __dirname, "../../" );
+
 chai.use( require( "sinon-chai" ) );
 chai.use( require( "chai-as-promised" ) );
 chai.use( require( "dirty-chai" ) );
+
+global.sinon = require( "sinon" );
 global.should = chai.should();
 global.expect = chai.expect;
 global.machina = require( "machina" );
-global.fakeRecords = require( "./data/fakeRecordSet.json" );
+global.fakeRecords = require( "../data/fakeRecordSet.json" );
 global._ = require( "lodash" );
+
+global.proxyquire = ( module, ...args ) => {
+	// Add some sugar to allow us to proxyquire from the root of the app
+	if ( module.startsWith( "~" ) ) {
+		module = path.join( ROOT_PATH, module.substr( 1 ) );
+	}
+	return proxy( module, ...args );
+};
 
 function deepCompare( a, b, k ) {
 	let diffs = [];

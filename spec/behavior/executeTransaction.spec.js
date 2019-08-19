@@ -1,4 +1,3 @@
-require( "../setup" );
 const mockConnectionFn = require( "../data/mockConnection" );
 
 describe( "ExecuteTransaction", function() {
@@ -28,7 +27,7 @@ describe( "ExecuteTransaction", function() {
 			"@global": true
 		} );
 
-		seriate = proxyquire( "../src/index", {
+		seriate = proxyquire( "~/src/index", {
 			mssql: sql
 		} );
 		seriate.addConnection( {} );

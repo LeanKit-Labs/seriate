@@ -3,7 +3,6 @@
 	    Loading External SQL From File
 
 ****************************************************/
-require( "../setup" );
 
 describe( "FromFile", function() {
 	let seriate;

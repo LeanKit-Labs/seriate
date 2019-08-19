@@ -1,4 +1,3 @@
-require( "../setup" );
 const mockConnectionFn = require( "../data/mockConnection" );
 
 /** *************************************************
@@ -36,7 +35,7 @@ describe( "SqlContext", function() {
 			"@global": true
 		} );
 
-		seriate = proxyquire( "../src/index", {
+		seriate = proxyquire( "~/src/index", {
 			mssql: sql
 		} );
 		seriate.addConnection( {} );

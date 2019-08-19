@@ -1,4 +1,3 @@
-require( "../setup" );
 const localConfig = require( "./local-config.json" );
 
 describe( "Seriate Integration Tests - one-connection pool", function() {
@@ -12,7 +11,7 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 			}
 		} );
 
-		sql = proxyquire( "../src/index", {} );
+		sql = proxyquire( "~/src/index", {} );
 	} );
 
 	describe( "when plain context has two steps on it", function() {

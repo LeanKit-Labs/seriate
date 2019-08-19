@@ -1,4 +1,3 @@
-require( "../setup" );
 const records = require( "../data/fakeRecordSet.json" );
 const mockConnectionFn = require( "../data/mockConnection" );
 
@@ -29,7 +28,7 @@ describe( "First", function() {
 			"@global": true
 		} );
 
-		seriate = proxyquire( "../src/index", {
+		seriate = proxyquire( "~/src/index", {
 			mssql: sql
 		} );
 		seriate.addConnection( {} );

@@ -1,4 +1,3 @@
-require( "../setup" );
 const config = require( "./local-config.json" );
 const getRowId = ( function() {
 	let _id = 0;
@@ -45,7 +44,7 @@ describe( "Seriate Integration Tests", function() {
 
 	before( function() {
 		this.timeout( 20000 );
-		sql = proxyquire( "../src/index", {} );
+		sql = proxyquire( "~/src/index", {} );
 		const masterCfg = _.extend( {}, config, { name: "master", database: "master", options: { database: "master" } } );
 
 		function dropDatabase() {
@@ -1219,7 +1218,7 @@ describe( "Seriate Integration Tests", function() {
 		let metrics;
 
 		before( function() {
-			sql = proxyquire( "../src/index", {} );
+			sql = proxyquire( "~/src/index", {} );
 			metrics = {
 				instrument: sinon.spy( obj => {
 					const { call } = obj;

@@ -1,5 +1,3 @@
-require( "../setup" );
-
 describe( "Tedious makeRequest patch", function() {
 	let existingMakeRequest, existingNewBulkLoad, existingExecBulkLoad, Connection;
 
@@ -24,7 +22,7 @@ describe( "Tedious makeRequest patch", function() {
 		Connection.prototype.newBulkLoad = existingNewBulkLoad;
 		Connection.prototype.execBulkLoad = existingExecBulkLoad;
 
-		proxyquire( "../src/tedious-patch", {
+		proxyquire( "~/src/tedious-patch", {
 			tedious: {
 				Connection: Connection
 			}
@@ -289,7 +287,7 @@ describe( "Tedious makeRequest patch", function() {
 			currentNewBulkLoad = Connection.prototype.newBulkLoad;
 			currentExecBulkLoad = Connection.prototype.execBulkLoad;
 
-			proxyquire( "../src/tedious-patch", {
+			proxyquire( "~/src/tedious-patch", {
 				tedious: {
 					Connection: Connection
 				}

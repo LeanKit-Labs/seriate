@@ -1,4 +1,3 @@
-require( "../setup" );
 const mockConnectionFn = require( "../data/mockConnection" );
 
 describe( "Connections", function() {
@@ -10,7 +9,7 @@ describe( "Connections", function() {
 				return mockConnection;
 			}
 		};
-		connections = proxyquire( "../src/connections", {
+		connections = proxyquire( "~/src/connections", {
 			mssql: sql
 		} );
 	} );

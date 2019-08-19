@@ -1,4 +1,3 @@
-require( "../setup" );
 const localConfig = require( "./local-config.json" );
 
 describe( "Seriate Integration Tests - Tedious connection reset patch", function() {
@@ -12,7 +11,7 @@ describe( "Seriate Integration Tests - Tedious connection reset patch", function
 			}
 		} );
 
-		sql = proxyquire( "../src/index", {} );
+		sql = proxyquire( "~/src/index", {} );
 	} );
 
 	afterEach( function() {
