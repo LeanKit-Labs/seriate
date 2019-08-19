@@ -1,17 +1,17 @@
-var _ = require( "lodash" );
-var sql = require( "mssql" );
+const _ = require( "lodash" );
+const sql = require( "mssql" );
 const EventEmitter = require( "events" );
 
-var log = require( "debug" )( "seriate:connection" );
+const log = require( "debug" )( "seriate:connection" );
 
-var state = {
+let state = {
 	pools: {},
 	connections: {},
 	configurations: {},
 	aliases: {}
 };
 
-var api = _.assign( {
+const api = _.assign( {
 	state,
 	add: addConnection,
 	close: closeConnection,

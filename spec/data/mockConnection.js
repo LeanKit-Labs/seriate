@@ -1,12 +1,12 @@
 function mockConnectionFn( valid, rejection ) {
-	var connection = {
+	const connection = {
 		handles: {},
 		connect: function() {
 			if ( valid ) {
 				this.raise( "connect" );
 				return Promise.resolve();
 			}
-			var error = new Error( rejection );
+			const error = new Error( rejection );
 			this.raise( "error", error );
 			return Promise.reject( error );
 		},

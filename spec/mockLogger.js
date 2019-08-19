@@ -1,5 +1,5 @@
-var namespaces = {};
-var adapter = {
+const namespaces = {};
+const adapter = {
 	namespaces: namespaces,
 	init: function( ns ) {
 		if ( !namespaces[ ns ] ) {
@@ -17,7 +17,7 @@ var adapter = {
 		this.init( ns );
 	},
 	onLog: function( data ) {
-		var ns = namespaces[ data.namespace ];
+		let ns = namespaces[ data.namespace ];
 		if ( !ns ) {
 			ns = this.init( data.namespace );
 		}
@@ -31,7 +31,7 @@ module.exports = function mockLogAdapter( config ) {
 	if ( _.isObject( config ) ) {
 		return adapter;
 	} else if ( config ) {
-		var ns = _.isArray( config ) ? config : [ config ];
+		const ns = _.isArray( config ) ? config : [ config ];
 		ns.forEach( adapter.init.bind( adapter ) );
 		return adapter;
 	}

@@ -1,9 +1,9 @@
-var _ = require( "lodash" );
-var sql = require( "mssql" );
-var xmldom = require( "xmldom" );
-var domImplementation = new xmldom.DOMImplementation();
-var xmlSerializer = new xmldom.XMLSerializer();
-var buildTableVariableSql = require( "./build-table-variable-sql" );
+const _ = require( "lodash" );
+const sql = require( "mssql" );
+const xmldom = require( "xmldom" );
+const domImplementation = new xmldom.DOMImplementation();
+const xmlSerializer = new xmldom.XMLSerializer();
+const buildTableVariableSql = require( "./build-table-variable-sql" );
 
 function toXml( values, schema ) {
 	const doc = domImplementation.createDocument();

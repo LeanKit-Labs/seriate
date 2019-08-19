@@ -6,8 +6,8 @@
 require( "../setup" );
 
 describe( "FromFile", function() {
-	var seriate;
-	var expected = "SELECT\t [Id]\n\t\t,[Title]\n\t\t,[Description]\n\t\t,[ClassOfServiceEnabled]\n\t\t,[OrganizationId]\nFROM\t[dbo].[Board]\nWHERE\tid = @id\n";
+	let seriate;
+	const expected = "SELECT\t [Id]\n\t\t,[Title]\n\t\t,[Description]\n\t\t,[ClassOfServiceEnabled]\n\t\t,[OrganizationId]\nFROM\t[dbo].[Board]\nWHERE\tid = @id\n";
 	before( function() {
 		seriate = require( "../../src/index.js" );
 	} );

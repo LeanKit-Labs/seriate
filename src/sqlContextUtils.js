@@ -1,10 +1,10 @@
 /* eslint-disable max-nested-callbacks */
-var sql = require( "mssql" );
-var util = require( "util" );
-var _ = require( "lodash" );
-var Readable = require( "stream" ).Readable;
+const sql = require( "mssql" );
+const util = require( "util" );
+const _ = require( "lodash" );
+const Readable = require( "stream" ).Readable;
 
-var specialParamOptions = [
+const specialParamOptions = [
 	require( "./asTable" ),
 	require( "./asList" )
 ];

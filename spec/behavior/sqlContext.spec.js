@@ -1,5 +1,5 @@
 require( "../setup" );
-var mockConnectionFn = require( "../data/mockConnection" );
+const mockConnectionFn = require( "../data/mockConnection" );
 
 /** *************************************************
 
@@ -7,10 +7,10 @@ var mockConnectionFn = require( "../data/mockConnection" );
 
 ****************************************************/
 describe( "SqlContext", function() {
-	var sql, seriate, reqMock, prepMock;
+	let sql, seriate, reqMock, prepMock;
 	function setup() {
-		var request = { query: _.noop, execute: _.noop, input: _.noop };
-		var preparedStatement = {
+		const request = { query: _.noop, execute: _.noop, input: _.noop };
+		const preparedStatement = {
 			prepare: _.noop,
 			execute: _.noop,
 			unprepare: _.noop,
@@ -21,8 +21,8 @@ describe( "SqlContext", function() {
 		reqMock = sinon.mock( request );
 		prepMock = sinon.mock( preparedStatement );
 
-		var connection = mockConnectionFn( true );
-		var mssql = require( "mssql" );
+		const connection = mockConnectionFn( true );
+		const mssql = require( "mssql" );
 		sql = _.merge( mssql, {
 			Connection: function() {
 				return connection;
@@ -43,7 +43,7 @@ describe( "SqlContext", function() {
 	}
 
 	describe( "when getting a SqlContext instance", function() {
-		var ctx;
+		let ctx;
 		before( function() {
 			setup();
 			ctx = seriate.getPlainContext();
@@ -55,7 +55,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when adding a duplicate step to a context", function() {
-		var ctx;
+		let ctx;
 		before( function() {
 			setup();
 			ctx = seriate.getPlainContext();
@@ -74,7 +74,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when calling a query without parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "query" )
@@ -114,7 +114,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when calling a stored procedure without parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -154,7 +154,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when executing a stored procedure with parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -206,7 +206,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when calling prepared sql with parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			prepMock.expects( "prepare" )
@@ -268,7 +268,7 @@ describe( "SqlContext", function() {
 
 	describe( "when executing a query throws an error", function() {
 		function reqSetup() {
-			var testError = new Error( "faux pas" );
+			const testError = new Error( "faux pas" );
 			testError.precedingErrors = [
 				{ message: "preceding one" },
 				{ message: "preceding two" }
@@ -284,9 +284,9 @@ describe( "SqlContext", function() {
 		}
 
 		describe( "when passing an error handler", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = reqSetup();
+				const ctx = reqSetup();
 
 				return ctx.step( "read", {
 					query: "select * from sys.tables"
@@ -309,9 +309,9 @@ describe( "SqlContext", function() {
 		} );
 
 		describe( "when handling the error from the returned promise", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = reqSetup();
+				const ctx = reqSetup();
 
 				return ctx.step( "read", {
 					query: "select * from sys.tables"
@@ -346,9 +346,9 @@ describe( "SqlContext", function() {
 		}
 
 		describe( "when passing an error handler", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = reqSetup();
+				const ctx = reqSetup();
 
 				return ctx.step( "proc", {
 					procedure: "sp_who2"
@@ -371,9 +371,9 @@ describe( "SqlContext", function() {
 		} );
 
 		describe( "when handling the error from the returned promise", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = reqSetup();
+				const ctx = reqSetup();
 
 				return ctx.step( "proc", {
 					procedure: "sp_who2"
@@ -423,9 +423,9 @@ describe( "SqlContext", function() {
 		}
 
 		describe( "when passing an error handler", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = prepSetup();
+				const ctx = prepSetup();
 
 				return ctx.step( "prepped", {
 					preparedSql: "select * from sys.tables where type_desc = @usertable",
@@ -454,9 +454,9 @@ describe( "SqlContext", function() {
 		} );
 
 		describe( "when handling the error from the returned promise", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = prepSetup();
+				const ctx = prepSetup();
 
 				return ctx.step( "prepped", {
 					preparedSql: "select * from sys.tables where type_desc = @usertable",
@@ -486,7 +486,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when skipping execute call on a step", function() {
-		var ctx;
+		let ctx;
 		before( function() {
 			setup();
 
@@ -511,7 +511,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when failing to return execute promise", function() {
-		var result;
+		let result;
 		before( function() {
 			setup();
 
@@ -543,7 +543,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when failing to return execute promise from inside promise", function() {
-		var result;
+		let result;
 		before( function() {
 			setup();
 
@@ -578,7 +578,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when returning early with a value ", function() {
-		var result;
+		let result;
 		before( function() {
 			setup();
 
@@ -610,7 +610,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when attaching transformation to execute promise", function() {
-		var result;
+		let result;
 		before( function() {
 			setup();
 
@@ -665,7 +665,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when a step return rejects a promise", function() {
-		var error;
+		let error;
 		before( function() {
 			setup();
 
@@ -685,7 +685,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when a step throws an error", function() {
-		var error;
+		let error;
 		before( function() {
 			setup();
 
@@ -741,7 +741,7 @@ describe( "SqlContext", function() {
 		} );
 
 		describe( "when executing a procedure", function() {
-			var metrics;
+			let metrics;
 			before( function() {
 				metrics = {
 					instrument: sinon.spy( obj => {
@@ -776,7 +776,7 @@ describe( "SqlContext", function() {
 		} );
 
 		describe( "when executing multiple steps", function() {
-			var metrics;
+			let metrics;
 			before( function() {
 				metrics = {
 					instrument: sinon.spy( obj => {

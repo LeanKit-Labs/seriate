@@ -1,7 +1,7 @@
-var _ = require( "lodash" );
-var util = require( "util" );
-var log = require( "debug" )( "seriate:transaction" );
-var sql = require( "mssql" );
+const _ = require( "lodash" );
+const util = require( "util" );
+const log = require( "debug" )( "seriate:transaction" );
+const sql = require( "mssql" );
 
 function errorHandler( err ) {
 	this.err = err;

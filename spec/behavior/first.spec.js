@@ -1,12 +1,12 @@
 require( "../setup" );
-var records = require( "../data/fakeRecordSet.json" );
-var mockConnectionFn = require( "../data/mockConnection" );
+const records = require( "../data/fakeRecordSet.json" );
+const mockConnectionFn = require( "../data/mockConnection" );
 
 describe( "First", function() {
-	var result, reqMock, seriate, sql;
+	let result, reqMock, seriate, sql;
 	function setup() {
-		var request = { query: _.noop, execute: _.noop, input: _.noop };
-		var transaction = {
+		const request = { query: _.noop, execute: _.noop, input: _.noop };
+		const transaction = {
 			begin: _.noop,
 			commit: _.noop,
 			rollback: _.noop
@@ -14,8 +14,8 @@ describe( "First", function() {
 		reqMock = sinon.mock( request );
 		sinon.mock( transaction );
 
-		var connection = mockConnectionFn( true );
-		var mssql = require( "mssql" );
+		const connection = mockConnectionFn( true );
+		const mssql = require( "mssql" );
 		sql = _.merge( mssql, {
 			Connection: function() {
 				return connection;

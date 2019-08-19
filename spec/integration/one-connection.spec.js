@@ -1,8 +1,8 @@
 require( "../setup" );
-var localConfig = require( "./local-config.json" );
+const localConfig = require( "./local-config.json" );
 
 describe( "Seriate Integration Tests - one-connection pool", function() {
-	var config, sql;
+	let config, sql;
 
 	before( function() {
 		config = Object.assign( {}, localConfig, {
@@ -29,7 +29,7 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 	} );
 
 	describe( "when temp table is loaded and transaction errs", function() {
-		var error;
+		let error;
 
 		before( function() {
 			return sql.getTransactionContext( config )
@@ -67,7 +67,7 @@ describe( "Seriate Integration Tests - one-connection pool", function() {
 
 	describe( "when temp table to be loaded already exists", function() {
 		function loadTwiceAndRead( useExisting ) {
-			var sets;
+			let sets;
 
 			return sql.getTransactionContext( config )
 				.step( "bulk1", {

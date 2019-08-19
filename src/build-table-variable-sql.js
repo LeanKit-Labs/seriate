@@ -1,6 +1,6 @@
-var _ = require( "lodash" );
-var declare = require( "mssql/lib/datatypes" ).declare;
-var utils = require( "./utils" );
+const _ = require( "lodash" );
+const declare = require( "mssql/lib/datatypes" ).declare;
+const utils = require( "./utils" );
 
 module.exports = function buildTableVariableSql( key, schema, hasData ) {
 	return `${ _.template( utils.fromFile( "./sql/buildTableVar.sql.template" ) )( {

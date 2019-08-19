@@ -1,12 +1,12 @@
 require( "../setup" );
-var config = require( "./local-config.json" );
-var getRowId = ( function() {
-	var _id = 0;
+const config = require( "./local-config.json" );
+const getRowId = ( function() {
+	let _id = 0;
 	return function() {
 		return _id++;
 	};
 }() );
-var id1, id2;
+let id1, id2;
 
 function insertTestRows( sql ) {
 	id1 = getRowId();
@@ -41,12 +41,12 @@ function deleteTestRows( sql ) {
 }
 
 describe( "Seriate Integration Tests", function() {
-	var sql, connected;
+	let sql, connected;
 
 	before( function() {
 		this.timeout( 20000 );
 		sql = proxyquire( "../src/index", {} );
-		var masterCfg = _.extend( {}, config, { name: "master", database: "master", options: { database: "master" } } );
+		const masterCfg = _.extend( {}, config, { name: "master", database: "master", options: { database: "master" } } );
 
 		function dropDatabase() {
 			return sql.execute( masterCfg, {
@@ -102,7 +102,7 @@ describe( "Seriate Integration Tests", function() {
 
 		describe( "when executing within a TransactionContext", function() {
 			describe( "and committing the transaction", function() {
-				var id, insResult, resultsCheck, checkError, readCheck;
+				let id, insResult, resultsCheck, checkError, readCheck;
 
 				before( function( done ) {
 					id = getRowId();
@@ -166,7 +166,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 
 			describe( "and rolling back the transaction", function() {
-				var id, readCheck, resultsCheck, checkError;
+				let id, readCheck, resultsCheck, checkError;
 				before( function( done ) {
 					id = getRowId();
 					readCheck = function( done2 ) {
@@ -223,7 +223,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 
 			describe( "and execute causes error", function() {
-				var error;
+				let error;
 
 				before( function( done ) {
 					sql.getTransactionContext( config )
@@ -250,7 +250,7 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		describe( "when executing within a TransactionContext with start/end hooks", function() {
-			var configWithHooks, dataForHooks;
+			let configWithHooks, dataForHooks;
 
 			before( function() {
 				dataForHooks = {
@@ -296,7 +296,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 
 			describe( "when using getTransactionContext", function() {
-				var id, insResult, resultsCheck, checkError, readCheck;
+				let id, insResult, resultsCheck, checkError, readCheck;
 
 				before( function( done ) {
 					id = getRowId();
@@ -368,7 +368,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 
 			describe( "when using executeTransaction", function() {
-				var id, insResult, resultsCheck, checkError, readCheck;
+				let id, insResult, resultsCheck, checkError, readCheck;
 
 				before( function( done ) {
 					id = getRowId();
@@ -385,7 +385,7 @@ describe( "Seriate Integration Tests", function() {
 						} );
 					};
 
-					var queryOptions = {
+					const queryOptions = {
 						preparedSql: "insert into NodeTestTable (v1, i1) values (@v1, @i1); select SCOPE_IDENTITY() AS NewId;",
 						params: {
 							i1: {
@@ -442,7 +442,7 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		describe( "when updating a row", function() {
-			var id, insResults, insertErr, updateErr, updResults;
+			let id, insResults, insertErr, updateErr, updResults;
 
 			before( function() {
 				id = getRowId();
@@ -544,7 +544,7 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		describe( "when using default connection configuration option", function() {
-			var result;
+			let result;
 
 			before( function() {
 				return insertTestRows( sql )
@@ -574,7 +574,7 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		describe( "when executing a stored procedure", function() {
-			var procResults;
+			let procResults;
 
 			before( function() {
 				return insertTestRows( sql )
@@ -617,7 +617,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 
 			describe( "with plain SQL", function() {
-				var multipleRSPlainResults;
+				let multipleRSPlainResults;
 				before( function() {
 					return sql.execute( "default", {
 						query: "select * from NodeTestTable where i1 = @i1; select * from NodeTestTable where i1 = @i2;",
@@ -648,7 +648,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 
 			describe( "with prepared SQL", function() {
-				var multipleResults;
+				let multipleResults;
 
 				before( function() {
 					return sql.execute( config, {
@@ -680,7 +680,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 
 			describe( "with stored procedures", function() {
-				var multipleRSProcResults;
+				let multipleRSProcResults;
 
 				before( function() {
 					return sql.execute( {
@@ -708,7 +708,7 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		describe( "when failing to connect", function() {
-			var failed;
+			let failed;
 			before( function( done ) {
 				sql.once( "failed", function( connection ) {
 					failed = connection;
@@ -746,12 +746,12 @@ describe( "Seriate Integration Tests", function() {
 				} );
 
 				it( "should find a match for each item", function() {
-					var context = sql.getPlainContext( config )
+					const context = sql.getPlainContext( config )
 						.step( "insert", {
 							query: "INSERT NodeTestTable(v1, i1) VALUES('one', 1), ('two', 2), ('three', 3)"
 						} );
 
-					var step = {
+					const step = {
 						params: {
 							v1s: {
 								val: [ "one", "two" ],
@@ -787,12 +787,12 @@ describe( "Seriate Integration Tests", function() {
 				} );
 
 				it( "should find a match for each item", function() {
-					var context = sql.getPlainContext( config )
+					const context = sql.getPlainContext( config )
 						.step( "insert", {
 							query: "INSERT NodeTestTable(v1, i1) VALUES('one', 1), ('two', 2), ('three', 3)"
 						} );
 
-					var step = {
+					const step = {
 						params: {
 							v1s: {
 								val: [],
@@ -823,7 +823,7 @@ describe( "Seriate Integration Tests", function() {
 				} );
 
 				it( "should insert a row for each item", function() {
-					var step = {
+					const step = {
 						params: {
 							v1s: {
 								val: [ "one", "two", "three", "four with \"quotes\"", "poo-emoji 💩" ],
@@ -864,7 +864,7 @@ describe( "Seriate Integration Tests", function() {
 				} );
 
 				it( "should insert a row for each item", function( done ) {
-					var step = {
+					const step = {
 						params: {
 							v1s: {
 								val: [
@@ -911,7 +911,7 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		describe( "when bulk loading a temp table on transaction context", function() {
-			var sets;
+			let sets;
 			beforeEach( function() {
 				return sql.getTransactionContext( config )
 					.step( "bulk-insert", {
@@ -1079,10 +1079,10 @@ describe( "Seriate Integration Tests", function() {
 		describe( "when streaming", function() {
 			[ "query", "preparedSql" ].forEach( function( operation ) {
 				describe( `with ${ operation }`, function() {
-					var columns, row;
+					let columns, row;
 
 					before( function( done ) {
-						var options = {
+						const options = {
 							stream: true
 						};
 						options[ operation ] = "SELECT 1 one";
@@ -1113,7 +1113,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 
 			describe( "when executing a stored procedure", function() {
-				var columns, row, resultSetCount, rowCount;
+				let columns, row, resultSetCount, rowCount;
 
 				before( function( done ) {
 					resultSetCount = 0;
@@ -1167,11 +1167,11 @@ describe( "Seriate Integration Tests", function() {
 		} );
 
 		describe( "when providing an isolation level", function() {
-			var levels = [ "READ_UNCOMMITTED", "READ_COMMITTED", "REPEATABLE_READ", "SERIALIZABLE", "SNAPSHOT" ];
+			const levels = [ "READ_UNCOMMITTED", "READ_COMMITTED", "REPEATABLE_READ", "SERIALIZABLE", "SNAPSHOT" ];
 
 			levels.forEach( function( level ) {
 				it( `should allow isolation level ${ level }`, function() {
-					var isolationConfig = _.extend( { isolationLevel: sql[ level ] }, config );
+					const isolationConfig = _.extend( { isolationLevel: sql[ level ] }, config );
 					return sql.getTransactionContext( isolationConfig )
 						.step( "isolation", {
 							query: sql.fromFile( "./sql/isolation" )
@@ -1185,9 +1185,9 @@ describe( "Seriate Integration Tests", function() {
 						} );
 				} );
 
-				var stringyLevel = level.toLowerCase();
+				const stringyLevel = level.toLowerCase();
 				it( `should allow stringy isolation level '${ stringyLevel }'`, function() {
-					var isolationConfig = _.extend( { isolationLevel: stringyLevel }, config );
+					const isolationConfig = _.extend( { isolationLevel: stringyLevel }, config );
 					return sql.getTransactionContext( isolationConfig )
 						.step( "isolation", {
 							query: sql.fromFile( "./sql/isolation" )
@@ -1203,7 +1203,7 @@ describe( "Seriate Integration Tests", function() {
 			} );
 
 			it( "should throw error when provided a bad isolation level string", function() {
-				var isolationConfig = _.extend( { isolationLevel: "foo" }, config );
+				const isolationConfig = _.extend( { isolationLevel: "foo" }, config );
 				return sql.getTransactionContext( isolationConfig )
 					.step( "isolation", {
 						query: sql.fromFile( "./sql/isolation" )
@@ -1233,10 +1233,10 @@ describe( "Seriate Integration Tests", function() {
 			[ "query", "preparedSql" ].forEach( function( operation ) {
 				describe( `with ${ operation }`, function() {
 					describe( "when query succeeds", function() {
-						var columns, row;
+						let columns, row;
 
 						before( function( done ) {
-							var options = {
+							const options = {
 								stream: true
 							};
 							options[ operation ] = "SELECT 1 one";
@@ -1268,10 +1268,10 @@ describe( "Seriate Integration Tests", function() {
 					} );
 
 					describe( "when query throws an error", function() {
-						var thrownError;
+						let thrownError;
 
 						before( function( done ) {
-							var options = {
+							const options = {
 								stream: true
 							};
 							options[ operation ] = "SELECT 1 / 0 undefined";

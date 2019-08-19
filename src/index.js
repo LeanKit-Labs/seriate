@@ -1,11 +1,11 @@
-var _ = require( "lodash" );
+const _ = require( "lodash" );
 const EventEmitter = require( "events" );
 
-var sql = require( "mssql" );
-var connections = require( "./connections" );
-var SqlContext = require( "./sqlContext" )();
-var TransactionContext = require( "./transactionContext" )( SqlContext );
-var utils = require( "./utils" );
+const sql = require( "mssql" );
+const connections = require( "./connections" );
+const SqlContext = require( "./sqlContext" )();
+const TransactionContext = require( "./transactionContext" )( SqlContext );
+const utils = require( "./utils" );
 require( "./tedious-patch" );
 
 function promisify( context, queryOptions ) {
@@ -18,7 +18,7 @@ function promisify( context, queryOptions ) {
 	} );
 }
 
-var seriate = {
+const seriate = {
 	getTransactionContext( connectionConfig, dataForHooks ) {
 		const options = { metrics: this.metrics, namespace: this.metricsNamespace };
 		if ( connectionConfig && connectionConfig.isolationLevel ) {
@@ -110,7 +110,7 @@ _.each( sql.ISOLATION_LEVEL, function( val, key ) {
 
 seriate.MAX = sql.MAX;
 
-var api = _.assign( seriate, EventEmitter.prototype );
+const api = _.assign( seriate, EventEmitter.prototype );
 
 connections.on( "connected", function( info ) {
 	api.emit( "connected", info );

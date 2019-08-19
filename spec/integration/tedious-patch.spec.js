@@ -1,8 +1,8 @@
 require( "../setup" );
-var localConfig = require( "./local-config.json" );
+const localConfig = require( "./local-config.json" );
 
 describe( "Seriate Integration Tests - Tedious connection reset patch", function() {
-	var config, sql;
+	let config, sql;
 
 	beforeEach( function() {
 		config = Object.assign( {}, localConfig, {
@@ -18,19 +18,19 @@ describe( "Seriate Integration Tests - Tedious connection reset patch", function
 	afterEach( function() {
 	} );
 
-	var deleteStep = {
+	const deleteStep = {
 		query: "DELETE FROM NodeTestTable;"
 	};
 
-	var insertStep = {
+	const insertStep = {
 		query: "INSERT INTO NodeTestTable (v1, i1) VALUES ('a', 1);"
 	};
 
-	var selectStep = {
+	const selectStep = {
 		query: "SELECT * FROM NodeTestTable"
 	};
 
-	var variableStep = {
+	const variableStep = {
 		query: "SELECT @@ROWCOUNT as rows, @@IDENTITY as id"
 	};
 
@@ -64,8 +64,8 @@ describe( "Seriate Integration Tests - Tedious connection reset patch", function
 						.step( "variables-after", variableStep )
 						.then( function( result ) {
 							return result.transaction.commit().then( function() {
-								var recordLength = result.sets.select.length;
-								var lastInsertedId = +result.sets.select[ recordLength - 1 ].bi1;
+								const recordLength = result.sets.select.length;
+								const lastInsertedId = +result.sets.select[ recordLength - 1 ].bi1;
 
 								// ensure that it was cleared before the transaction
 								result.sets[ "variables-before" ][ 0 ].should.eql( {
@@ -85,7 +85,7 @@ describe( "Seriate Integration Tests - Tedious connection reset patch", function
 	} );
 
 	describe( "when using prepared SQL", function() {
-		var result;
+		let result;
 
 		beforeEach( function() {
 			return sql.getPlainContext( config )
@@ -115,7 +115,7 @@ describe( "Seriate Integration Tests - Tedious connection reset patch", function
 	} );
 
 	describe( "when using stored procedure", function() {
-		var result;
+		let result;
 
 		beforeEach( function() {
 			return sql.getPlainContext( config )
@@ -137,7 +137,7 @@ describe( "Seriate Integration Tests - Tedious connection reset patch", function
 		} );
 
 		it( "should execute the stored procedure correctly", function() {
-			var procResult = result.sp[ 0 ];
+			const procResult = result.sp[ 0 ];
 			procResult[ 0 ].should.have.lengthOf( 1 );
 			procResult[ 0 ][ 0 ].i1.should.equal( 1 );
 			procResult[ 1 ][ 0 ].totalRows.should.equal( 1 );
@@ -152,7 +152,7 @@ describe( "Seriate Integration Tests - Tedious connection reset patch", function
 	} );
 
 	describe( "when bulk loading", function() {
-		var result;
+		let result;
 
 		beforeEach( function() {
 			return sql.getPlainContext( config )

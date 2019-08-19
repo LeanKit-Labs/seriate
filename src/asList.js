@@ -1,4 +1,4 @@
-var _ = require( "lodash" );
+const _ = require( "lodash" );
 
 function replaceParamWithList( key, values ) {
 	if ( !values || !values.length ) {

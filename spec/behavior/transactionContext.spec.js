@@ -1,11 +1,11 @@
 require( "../setup" );
-var mockConnectionFn = require( "../data/mockConnection" );
+const mockConnectionFn = require( "../data/mockConnection" );
 
 describe( "TransactionContext", function() {
-	var sql, seriate, reqMock, prepMock, transMock;
+	let sql, seriate, reqMock, prepMock, transMock;
 	function setup() {
-		var request = { query: _.noop, execute: _.noop, input: _.noop };
-		var preparedStatement = {
+		const request = { query: _.noop, execute: _.noop, input: _.noop };
+		const preparedStatement = {
 			prepare: _.noop,
 			execute: _.noop,
 			unprepare: _.noop,
@@ -13,7 +13,7 @@ describe( "TransactionContext", function() {
 			procedure: undefined,
 			params: undefined
 		};
-		var transaction = {
+		const transaction = {
 			begin: _.noop,
 			commit: _.noop,
 			rollback: _.noop
@@ -22,8 +22,8 @@ describe( "TransactionContext", function() {
 		prepMock = sinon.mock( preparedStatement );
 		transMock = sinon.mock( transaction );
 
-		var connection = mockConnectionFn( true );
-		var mssql = require( "mssql" );
+		const connection = mockConnectionFn( true );
+		const mssql = require( "mssql" );
 		sql = _.merge( mssql, {
 			Connection: function() {
 				return connection;
@@ -47,7 +47,7 @@ describe( "TransactionContext", function() {
 	}
 
 	describe( "when getting a TransactionContext instance", function() {
-		var ctx;
+		let ctx;
 
 		before( function() {
 			setup();
@@ -60,7 +60,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a query with explicit isolation and no params", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "query" )
@@ -108,7 +108,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a proc without parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -156,7 +156,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a proc with parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -217,7 +217,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling prepared sql with parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			prepMock.expects( "prepare" )
@@ -285,9 +285,9 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a query throws an error", function() {
-		var ctx, error;
+		let ctx, error;
 		before( function() {
-			var testError = new Error( "so much fail" );
+			const testError = new Error( "so much fail" );
 			testError.precedingErrors = [
 				{ message: "preceding one" },
 				{ message: "preceding two" }
@@ -346,7 +346,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a stored procedure without parameters throws an error", function() {
-		var ctx, error;
+		let ctx, error;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -400,7 +400,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a stored procedure with parameters throws an error", function() {
-		var ctx, error;
+		let ctx, error;
 
 		before( function() {
 			setup();
@@ -457,7 +457,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling prepared sql with parameters throws an error", function() {
-		var ctx, error;
+		let ctx, error;
 		before( function() {
 			setup();
 
@@ -535,7 +535,7 @@ describe( "TransactionContext", function() {
 
 	describe( "with metrics", function() {
 		describe( "when executing a query", function() {
-			var metrics;
+			let metrics;
 			before( function() {
 				metrics = {
 					instrument: sinon.spy( obj => {
@@ -575,7 +575,7 @@ describe( "TransactionContext", function() {
 		} );
 
 		describe( "when executing a procedure", function() {
-			var metrics;
+			let metrics;
 			before( function() {
 				metrics = {
 					instrument: sinon.spy( obj => {
@@ -615,7 +615,7 @@ describe( "TransactionContext", function() {
 		} );
 
 		describe( "when executing a multiple steps", function() {
-			var metrics;
+			let metrics;
 			before( function() {
 				metrics = {
 					instrument: sinon.spy( obj => {

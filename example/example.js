@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-var sql = require( "../src/index.js" );
-var mod = {};
+const sql = require( "../src/index.js" );
+const mod = {};
 
 sql.getTransactionContext( {
 	user: "nodejs",

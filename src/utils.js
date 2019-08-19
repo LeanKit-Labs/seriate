@@ -1,9 +1,9 @@
-var _ = require( "lodash" );
-var fs = require( "fs" );
-var path = require( "path" );
-var callsite = require( "callsite" );
+const _ = require( "lodash" );
+const fs = require( "fs" );
+const path = require( "path" );
+const callsite = require( "callsite" );
 
-var fileCache = {};
+const fileCache = {};
 
 function isAbsolutePath( p ) {
 	// eslint-disable-next-line no-useless-escape

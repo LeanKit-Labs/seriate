@@ -1,5 +1,5 @@
 /* eslint-disable prefer-rest-params */
-var tedious = require( "tedious" );
+const tedious = require( "tedious" );
 
 // I've seen things you people wouldn't believe
 // WHAT DO YOU MEAN BY 'YOU PEOPLE'?!
@@ -17,7 +17,7 @@ var tedious = require( "tedious" );
 	and we added `isInPreparedSqlQuery` as part of the patch below.
 */
 if ( !tedious.Connection.prototype.makeRequest.__seriatePatched ) {
-	var existing = tedious.Connection.prototype.makeRequest;
+	const existing = tedious.Connection.prototype.makeRequest;
 	tedious.Connection.prototype.makeRequest = function( request, packetType, payload ) {
 		if ( this.inTransaction || this.isInPreparedSqlQuery ||
 			this.isInBulkLoadOperation || this.resetConnectionOnNextRequest ) {
@@ -37,7 +37,7 @@ if ( !tedious.Connection.prototype.makeRequest.__seriatePatched ) {
 }
 
 if ( !tedious.Connection.prototype.newBulkLoad.__seriatePatched ) {
-	var origNewBulkLoad = tedious.Connection.prototype.newBulkLoad;
+	const origNewBulkLoad = tedious.Connection.prototype.newBulkLoad;
 	tedious.Connection.prototype.newBulkLoad = function( table, callback ) {
 		// eslint-disable-next-line consistent-this
 		const thus = this;
@@ -51,7 +51,7 @@ if ( !tedious.Connection.prototype.newBulkLoad.__seriatePatched ) {
 }
 
 if ( !tedious.Connection.prototype.execBulkLoad.__seriatePatched ) {
-	var origExecBulkLoad = tedious.Connection.prototype.execBulkLoad;
+	const origExecBulkLoad = tedious.Connection.prototype.execBulkLoad;
 	tedious.Connection.prototype.execBulkLoad = function() {
 		this.isInBulkLoadOperation = true;
 		return origExecBulkLoad.apply( this, arguments );

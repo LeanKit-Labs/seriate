@@ -1,7 +1,7 @@
 require( "../setup" );
 
 describe( "Tedious makeRequest patch", function() {
-	var existingMakeRequest, existingNewBulkLoad, existingExecBulkLoad, Connection;
+	let existingMakeRequest, existingNewBulkLoad, existingExecBulkLoad, Connection;
 
 	beforeEach( function() {
 		existingMakeRequest = sinon.stub();
@@ -32,7 +32,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when executing normal queries", function() {
-		var connection;
+		let connection;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -67,7 +67,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when executing prepared SQL", function() {
-		var connection;
+		let connection;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -132,7 +132,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when executing a transaction", function() {
-		var connection;
+		let connection;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -182,7 +182,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when doing a bulk load", function() {
-		var connection;
+		let connection;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -232,7 +232,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when calling newBulkLoad", function() {
-		var connection, callback, result;
+		let connection, callback, result;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -261,7 +261,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when calling execBulkLoad", function() {
-		var connection, result;
+		let connection, result;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -282,7 +282,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "When getting executed twice", function() {
-		var currentMakeRequest, currentNewBulkLoad, currentExecBulkLoad;
+		let currentMakeRequest, currentNewBulkLoad, currentExecBulkLoad;
 
 		beforeEach( function() {
 			currentMakeRequest = Connection.prototype.makeRequest;

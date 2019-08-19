@@ -1,10 +1,10 @@
-var _ = require( "lodash" );
-var util = require( "util" );
-var EventEmitter = require( "events" );
+const _ = require( "lodash" );
+const util = require( "util" );
+const EventEmitter = require( "events" );
 
-var machina = require( "machina" );
-var log = require( "debug" )( "seriate:sql" );
-var addState = require( "./sqlContextUtils" ).addState;
+const machina = require( "machina" );
+const log = require( "debug" )( "seriate:sql" );
+const addState = require( "./sqlContextUtils" ).addState;
 
 module.exports = function() {
 	const SqlContext = machina.Fsm.extend( {
