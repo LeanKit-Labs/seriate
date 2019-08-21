@@ -219,7 +219,7 @@ sql.getPlainContext( "example-1" )
 		// determine what's fed to this step's executable
 		// action. Let's pretend we fished out a particular
 		// user from the readUsers step and then did this:
-		var userId = getUserIdFrom( data.readUsers );
+		const userId = getUserIdFrom( data.readUsers );
 		execute( {
 			procedure: "GetExtendedUserInfo",
 			params: {
@@ -408,7 +408,7 @@ sql.getTransactionContext( null, { userId: "1234" } )
 		// determine what's fed to this step's executable
 		// action. Let's pretend we fished out a particular
 		// user from the readUsers step and then did this:
-		var userId = getUserIdFrom( data.readUsers );
+		const userId = getUserIdFrom( data.readUsers );
 		execute( {
 			procedure: "GetExtendedUserInfo",
 			params: {
@@ -444,7 +444,7 @@ This is a shortcut method to getting a `TransactionContext` instance to execute 
 // re-use of this variable to API calls
 // will result in the same underlying pool
 // being used.
-var connection = {
+const connection = {
 	user: "username",
 	password: "pwd",
 	host: "127.0.0.1",
@@ -504,7 +504,7 @@ This is a shortcut method to getting a `SqlContext` instance to execute one step
 // re-use of this variable to API calls
 // will result in the same underlying pool
 // being used.
-var connection = {
+const connection = {
 	user: "username",
 	password: "pwd",
 	host: "127.0.0.1",
@@ -555,7 +555,7 @@ The `TransactionContext` is mostly identical to the SqlContext, except that it h
 
 * You"ll need to run `npm install` at the root of this project once you clone it to install the dependencies.
 * To run unit tests: `npm test`
-* To run integration tests: `npm run intspec`
+* To run integration tests: `npm run test:int`
 * To run the example module: `npm run example`
 
 *Please* note that in order to run the integration tests, you will need to create a `local-config.json` file in the `spec/integration` directory, matching something similar to this:

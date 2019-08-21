@@ -1,0 +1,4 @@
+{
+	"extends": [ "leankit", "leankit/es6" ],
+	"rules":{ }
+}

@@ -1,8 +1,7 @@
-require( "../setup" );
-var mockConnectionFn = require( "../data/mockConnection" );
+const mockConnectionFn = require( "../data/mockConnection" );
 
 describe( "Connections", function() {
-	var connections, sql, mockConnection, config;
+	let connections, sql, mockConnection, config;
 	before( function() {
 		mockConnection = mockConnectionFn( true );
 		sql = {
@@ -10,7 +9,7 @@ describe( "Connections", function() {
 				return mockConnection;
 			}
 		};
-		connections = proxyquire( "../src/connections", {
+		connections = proxyquire( "~/src/connections", {
 			mssql: sql
 		} );
 	} );
@@ -72,7 +71,7 @@ describe( "Connections", function() {
 	} );
 
 	describe( "when requesting non-existing connection", function() {
-		var byConfig, missingConfig;
+		let byConfig, missingConfig;
 		before( function() {
 			missingConfig = {
 				name: "missing",
@@ -100,7 +99,7 @@ describe( "Connections", function() {
 	} );
 
 	describe( "when adding valid new connection without name (implicit default)", function() {
-		var connection;
+		let connection;
 		before( function() {
 			config = {
 				host: "ohhai",
@@ -126,7 +125,7 @@ describe( "Connections", function() {
 	} );
 
 	describe( "when requesting connection", function() {
-		var explicit, implicit, byConfig;
+		let explicit, implicit, byConfig;
 		before( function() {
 			explicit = connections.get( "default" );
 			implicit = connections.get();
@@ -147,7 +146,7 @@ describe( "Connections", function() {
 	} );
 
 	describe( "when requesting connection that was closed", function() {
-		var explicit, implicit, byConfig;
+		let explicit, implicit, byConfig;
 		before( function() {
 			mockConnection.raise( "close" );
 			explicit = connections.get( "default" );
@@ -169,7 +168,7 @@ describe( "Connections", function() {
 	} );
 
 	describe( "when requesting connection that had an error", function() {
-		var explicit, implicit, byConfig;
+		let explicit, implicit, byConfig;
 		before( function() {
 			mockConnection.raise( "error", [ new Error( "Just to be silly?" ) ] );
 			explicit = connections.get( "default" );

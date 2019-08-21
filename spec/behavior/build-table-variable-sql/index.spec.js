@@ -1,9 +1,9 @@
-var mssql = require( "mssql" );
-var utils = require( "../../../src/utils" );
-var buildTableVariableSql = require( "../../../src/build-table-variable-sql" );
+const mssql = require( "mssql" );
+const utils = require( "../../../src/utils" );
+const buildTableVariableSql = require( "../../../src/build-table-variable-sql" );
 
 describe( "buildTableVariableSql", function() {
-	var key, schema, hasData;
+	let key, schema, hasData;
 
 	before( function() {
 		key = "parameter";
@@ -16,8 +16,8 @@ describe( "buildTableVariableSql", function() {
 		} );
 
 		it( "should open xml document", function() {
-			var expected = utils.fromFile( "./table-variable-sql-with-xml.sql" );
-			var sql = buildTableVariableSql( key, schema, hasData );
+			const expected = utils.fromFile( "./table-variable-sql-with-xml.sql" );
+			const sql = buildTableVariableSql( key, schema, hasData );
 			sql.should.equal( expected );
 		} );
 	} );
@@ -28,8 +28,8 @@ describe( "buildTableVariableSql", function() {
 		} );
 
 		it( "should not open xml document", function() {
-			var expected = utils.fromFile( "./table-variable-sql-without-xml.sql" );
-			var sql = buildTableVariableSql( key, schema, hasData );
+			const expected = utils.fromFile( "./table-variable-sql-without-xml.sql" );
+			const sql = buildTableVariableSql( key, schema, hasData );
 			sql.should.equal( expected );
 		} );
 	} );

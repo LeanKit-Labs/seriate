@@ -1,17 +1,11 @@
-require( "../setup" );
-var mockConnectionFn = require( "../data/mockConnection" );
-var when = require( "when" );
+const mockConnectionFn = require( "../data/mockConnection" );
 
-/***************************************************
-
-	SqlContext *Successful* Execution Tests
-
-****************************************************/
+/* SqlContext *Successful* Execution Tests */
 describe( "SqlContext", function() {
-	var sql, seriate, reqMock, prepMock;
+	let sql, seriate, reqMock, prepMock;
 	function setup() {
-		var request = { query: _.noop, execute: _.noop, input: _.noop };
-		var preparedStatement = {
+		const request = { query: _.noop, execute: _.noop, input: _.noop };
+		const preparedStatement = {
 			prepare: _.noop,
 			execute: _.noop,
 			unprepare: _.noop,
@@ -22,8 +16,8 @@ describe( "SqlContext", function() {
 		reqMock = sinon.mock( request );
 		prepMock = sinon.mock( preparedStatement );
 
-		var connection = mockConnectionFn( true );
-		var mssql = require( "mssql" );
+		const connection = mockConnectionFn( true );
+		const mssql = require( "mssql" );
 		sql = _.merge( mssql, {
 			Connection: function() {
 				return connection;
@@ -37,26 +31,26 @@ describe( "SqlContext", function() {
 			"@global": true
 		} );
 
-		seriate = proxyquire( "../src/index", {
+		seriate = proxyquire( "~/src/index", {
 			mssql: sql
 		} );
 		seriate.addConnection( {} );
 	}
 
 	describe( "when getting a SqlContext instance", function() {
-		var ctx;
+		let ctx;
 		before( function() {
 			setup();
 			ctx = seriate.getPlainContext();
 		} );
 
 		it( "should start in uninitialized", function() {
-			ctx.states.uninitialized.should.be.ok;
+			ctx.states.uninitialized.should.be.ok();
 		} );
 	} );
 
 	describe( "when adding a duplicate step to a context", function() {
-		var ctx;
+		let ctx;
 		before( function() {
 			setup();
 			ctx = seriate.getPlainContext();
@@ -75,7 +69,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when calling a query without parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "query" )
@@ -92,15 +86,15 @@ describe( "SqlContext", function() {
 		} );
 
 		it( "should create a \"read\" state", function() {
-			ctx.states.read.should.be.ok;
+			ctx.states.read.should.be.ok();
 		} );
 
 		it( "should create \"read\" state success handler", function() {
-			ctx.states.read.success.should.be.ok;
+			ctx.states.read.success.should.be.ok();
 		} );
 
 		it( "should create \"read\" state error handler", function() {
-			ctx.states.read.error.should.be.ok;
+			ctx.states.read.error.should.be.ok();
 		} );
 
 		it( "should call query on request", function() {
@@ -115,7 +109,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when calling a stored procedure without parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -132,15 +126,15 @@ describe( "SqlContext", function() {
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call execute on request", function() {
@@ -155,7 +149,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when executing a stored procedure with parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -184,15 +178,15 @@ describe( "SqlContext", function() {
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call execute and input for each parameter", function() {
@@ -207,7 +201,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when calling prepared sql with parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			prepMock.expects( "prepare" )
@@ -245,15 +239,15 @@ describe( "SqlContext", function() {
 		} );
 
 		it( "should create a \"prepped\" state", function() {
-			ctx.states.prepped.should.be.ok;
+			ctx.states.prepped.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state success handler", function() {
-			ctx.states.prepped.success.should.be.ok;
+			ctx.states.prepped.success.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state error handler", function() {
-			ctx.states.prepped.error.should.be.ok;
+			ctx.states.prepped.error.should.be.ok();
 		} );
 
 		it( "should call prepare, execute, unprepare on prepared statement and input for each parameter", function() {
@@ -269,7 +263,7 @@ describe( "SqlContext", function() {
 
 	describe( "when executing a query throws an error", function() {
 		function reqSetup() {
-			var testError = new Error( "faux pas" );
+			const testError = new Error( "faux pas" );
 			testError.precedingErrors = [
 				{ message: "preceding one" },
 				{ message: "preceding two" }
@@ -285,9 +279,9 @@ describe( "SqlContext", function() {
 		}
 
 		describe( "when passing an error handler", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = reqSetup();
+				const ctx = reqSetup();
 
 				return ctx.step( "read", {
 					query: "select * from sys.tables"
@@ -310,9 +304,9 @@ describe( "SqlContext", function() {
 		} );
 
 		describe( "when handling the error from the returned promise", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = reqSetup();
+				const ctx = reqSetup();
 
 				return ctx.step( "read", {
 					query: "select * from sys.tables"
@@ -347,9 +341,9 @@ describe( "SqlContext", function() {
 		}
 
 		describe( "when passing an error handler", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = reqSetup();
+				const ctx = reqSetup();
 
 				return ctx.step( "proc", {
 					procedure: "sp_who2"
@@ -372,9 +366,9 @@ describe( "SqlContext", function() {
 		} );
 
 		describe( "when handling the error from the returned promise", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = reqSetup();
+				const ctx = reqSetup();
 
 				return ctx.step( "proc", {
 					procedure: "sp_who2"
@@ -424,9 +418,9 @@ describe( "SqlContext", function() {
 		}
 
 		describe( "when passing an error handler", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = prepSetup();
+				const ctx = prepSetup();
 
 				return ctx.step( "prepped", {
 					preparedSql: "select * from sys.tables where type_desc = @usertable",
@@ -455,9 +449,9 @@ describe( "SqlContext", function() {
 		} );
 
 		describe( "when handling the error from the returned promise", function() {
-			var error;
+			let error;
 			before( function() {
-				var ctx = prepSetup();
+				const ctx = prepSetup();
 
 				return ctx.step( "prepped", {
 					preparedSql: "select * from sys.tables where type_desc = @usertable",
@@ -487,7 +481,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when skipping execute call on a step", function() {
-		var ctx;
+		let ctx;
 		before( function() {
 			setup();
 
@@ -498,7 +492,7 @@ describe( "SqlContext", function() {
 
 			ctx = seriate.getPlainContext();
 			return ctx
-				.step( "skipped", function( execute ) {
+				.step( "skipped", function( _execute ) {
 					return;
 				} )
 				.step( "read", {
@@ -512,7 +506,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when failing to return execute promise", function() {
-		var result;
+		let result;
 		before( function() {
 			setup();
 
@@ -544,7 +538,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when failing to return execute promise from inside promise", function() {
-		var result;
+		let result;
 		before( function() {
 			setup();
 
@@ -555,8 +549,7 @@ describe( "SqlContext", function() {
 
 			return seriate.getPlainContext()
 				.step( "badPromise", function( execute ) {
-					return when( true )
-						.delay( 10 ) // Here to delay the call to execute so we can see our assertion wait on the runaway promise.
+					return new Promise( resolve => setTimeout( resolve( true ), 10 ) ) // Here to delay the call to execute so we can see our assertion wait on the runaway promise.
 						.then( function() {
 							execute( {
 								query: "select * from sys.tables"
@@ -580,7 +573,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when returning early with a value ", function() {
-		var result;
+		let result;
 		before( function() {
 			setup();
 
@@ -589,8 +582,8 @@ describe( "SqlContext", function() {
 				.never();
 
 			return seriate.getPlainContext()
-				.step( "early-return-value", function( execute ) {
-					return when( true )
+				.step( "early-return-value", function( _execute ) {
+					return Promise.resolve( true )
 						.then( function() {
 							return "hi!";
 						} );
@@ -612,7 +605,7 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when attaching transformation to execute promise", function() {
-		var result;
+		let result;
 		before( function() {
 			setup();
 
@@ -624,10 +617,10 @@ describe( "SqlContext", function() {
 			return seriate.getPlainContext()
 				.step( "transform", function( execute ) {
 					return execute( {
-							query: "select * from sys.tables"
-						} ).then( function() {
-							return "lol";
-						} );
+						query: "select * from sys.tables"
+					} ).then( function() {
+						return "lol";
+					} );
 				} )
 				.then( function( res ) {
 					result = res;
@@ -658,22 +651,22 @@ describe( "SqlContext", function() {
 			return seriate.getPlainContext()
 				.step( "fail", function( execute ) {
 					return execute( {
-							query: "select * from sys.tables"
-						} ).tap( function() {
-							throw new TypeError( "😭" );
-						} );
+						query: "select * from sys.tables"
+					} ).then( function() {
+						throw new TypeError( "😭" );
+					} );
 				} ).should.be.rejectedWith( TypeError, "SqlContext Error. Failed on step \"fail\" with: \"😭\"" );
 		} );
 	} );
 
 	describe( "when a step return rejects a promise", function() {
-		var error;
+		let error;
 		before( function() {
 			setup();
 
 			return seriate.getPlainContext()
-				.step( "brokenPromise", function( execute ) {
-					return when.reject( new Error( "NOPE!" ) );
+				.step( "brokenPromise", function( _execute ) {
+					return Promise.reject( new Error( "NOPE!" ) );
 				} )
 				.then( null, function( err ) {
 					error = err;
@@ -687,12 +680,12 @@ describe( "SqlContext", function() {
 	} );
 
 	describe( "when a step throws an error", function() {
-		var error;
+		let error;
 		before( function() {
 			setup();
 
 			return seriate.getPlainContext()
-				.step( "brokenPromise", function( execute ) {
+				.step( "brokenPromise", function( _execute ) {
 					throw new Error( "NOPE!" );
 				} )
 				.then( null, function( err ) {
@@ -708,11 +701,14 @@ describe( "SqlContext", function() {
 
 	describe( "with metrics", function() {
 		describe( "when executing a query", function() {
-			var metrics, adapter;
+			let metrics;
 			before( function() {
-				metrics = require( "metronic" )();
-				adapter = require( "../data/mockAdapter" )();
-				metrics.use( adapter );
+				metrics = {
+					instrument: sinon.spy( obj => {
+						const { call } = obj;
+						return call();
+					} )
+				};
 				setup();
 
 				reqMock.expects( "query" )
@@ -730,38 +726,24 @@ describe( "SqlContext", function() {
 			} );
 
 			it( "should capture metrics for each step", function() {
-				return adapter.should.partiallyEql( {
-					durations: [
+				metrics.instrument.should.be.calledOnce()
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.read.duration",
-							type: "time",
-							units: "ms"
-						}
-					],
-					metrics: [
-						{
-							key: "seriate-tests.sql.read.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.read.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						}
-					]
-				} );
+							key: [ "sql", "read" ],
+							namespace: "seriate-tests"
+						} );
 			} );
 		} );
 
 		describe( "when executing a procedure", function() {
-			var metrics, adapter;
+			let metrics;
 			before( function() {
-				metrics = require( "metronic" )();
-				adapter = require( "../data/mockAdapter" )();
-				metrics.use( adapter );
+				metrics = {
+					instrument: sinon.spy( obj => {
+						const { call } = obj;
+						return call();
+					} )
+				};
 				setup();
 
 				reqMock.expects( "execute" )
@@ -779,38 +761,24 @@ describe( "SqlContext", function() {
 			} );
 
 			it( "should capture metrics for each step", function() {
-				return adapter.should.partiallyEql( {
-					durations: [
+				metrics.instrument.should.be.calledOnce()
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.myStoredProc.duration",
-							type: "time",
-							units: "ms"
-						}
-					],
-					metrics: [
-						{
-							key: "seriate-tests.sql.myStoredProc.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.myStoredProc.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						}
-					]
-				} );
+							key: [ "sql", "myStoredProc" ],
+							namespace: "seriate-tests"
+						} );
 			} );
 		} );
 
 		describe( "when executing multiple steps", function() {
-			var metrics, adapter;
+			let metrics;
 			before( function() {
-				metrics = require( "metronic" )();
-				adapter = require( "../data/mockAdapter" )();
-				metrics.use( adapter );
+				metrics = {
+					instrument: sinon.spy( obj => {
+						const { call } = obj;
+						return call();
+					} )
+				};
 				setup();
 
 				reqMock.expects( "query" )
@@ -850,63 +818,22 @@ describe( "SqlContext", function() {
 			} );
 
 			it( "should capture metrics for each step", function() {
-				return adapter.should.partiallyEql( {
-					durations: [
+				metrics.instrument.should.be.calledThrice()
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.read.duration",
-							type: "time",
-							units: "ms"
-						},
+							key: [ "sql", "read" ],
+							namespace: "seriate-tests"
+						} )
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.proc.duration",
-							type: "time",
-							units: "ms"
-						},
+							key: [ "sql", "proc" ],
+							namespace: "seriate-tests"
+						} )
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.prepared.duration",
-							type: "time",
-							units: "ms"
-						}
-					],
-					metrics: [
-						{
-							key: "seriate-tests.sql.read.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.read.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.proc.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.proc.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.prepared.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.prepared.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						}
-					]
-				} );
+							key: [ "sql", "prepared" ],
+							namespace: "seriate-tests"
+						} );
 			} );
 		} );
 	} );

@@ -1,7 +1,5 @@
-require( "../setup" );
-
 describe( "Tedious makeRequest patch", function() {
-	var existingMakeRequest, existingNewBulkLoad, existingExecBulkLoad, makeRequest, Connection;
+	let existingMakeRequest, existingNewBulkLoad, existingExecBulkLoad, Connection;
 
 	beforeEach( function() {
 		existingMakeRequest = sinon.stub();
@@ -24,17 +22,15 @@ describe( "Tedious makeRequest patch", function() {
 		Connection.prototype.newBulkLoad = existingNewBulkLoad;
 		Connection.prototype.execBulkLoad = existingExecBulkLoad;
 
-		proxyquire( "../src/tedious-patch", {
+		proxyquire( "~/src/tedious-patch", {
 			tedious: {
 				Connection: Connection
 			}
 		} );
-
-		makeRequest = Connection.prototype.makeRequest;
 	} );
 
 	describe( "when executing normal queries", function() {
-		var connection;
+		let connection;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -69,7 +65,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when executing prepared SQL", function() {
-		var connection;
+		let connection;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -134,7 +130,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when executing a transaction", function() {
-		var connection;
+		let connection;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -184,7 +180,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when doing a bulk load", function() {
-		var connection;
+		let connection;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -234,7 +230,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when calling newBulkLoad", function() {
-		var connection, callback, result;
+		let connection, callback, result;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -263,7 +259,7 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "when calling execBulkLoad", function() {
-		var connection, result;
+		let connection, result;
 
 		beforeEach( function() {
 			connection = new Connection();
@@ -284,14 +280,14 @@ describe( "Tedious makeRequest patch", function() {
 	} );
 
 	describe( "When getting executed twice", function() {
-		var currentMakeRequest, currentNewBulkLoad, currentExecBulkLoad;
+		let currentMakeRequest, currentNewBulkLoad, currentExecBulkLoad;
 
 		beforeEach( function() {
 			currentMakeRequest = Connection.prototype.makeRequest;
 			currentNewBulkLoad = Connection.prototype.newBulkLoad;
 			currentExecBulkLoad = Connection.prototype.execBulkLoad;
 
-			proxyquire( "../src/tedious-patch", {
+			proxyquire( "~/src/tedious-patch", {
 				tedious: {
 					Connection: Connection
 				}

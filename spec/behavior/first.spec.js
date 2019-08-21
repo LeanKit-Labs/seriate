@@ -1,21 +1,20 @@
-require( "../setup" );
-var records = require( "../data/fakeRecordSet.json" );
-var mockConnectionFn = require( "../data/mockConnection" );
+const records = require( "../data/fakeRecordSet.json" );
+const mockConnectionFn = require( "../data/mockConnection" );
 
 describe( "First", function() {
-	var result, reqMock, transMock, seriate, sql;
+	let result, reqMock, seriate, sql;
 	function setup() {
-		var request = { query: _.noop, execute: _.noop, input: _.noop };
-		var transaction = {
+		const request = { query: _.noop, execute: _.noop, input: _.noop };
+		const transaction = {
 			begin: _.noop,
 			commit: _.noop,
 			rollback: _.noop
 		};
 		reqMock = sinon.mock( request );
-		transMock = sinon.mock( transaction );
+		sinon.mock( transaction );
 
-		var connection = mockConnectionFn( true );
-		var mssql = require( "mssql" );
+		const connection = mockConnectionFn( true );
+		const mssql = require( "mssql" );
 		sql = _.merge( mssql, {
 			Connection: function() {
 				return connection;
@@ -29,7 +28,7 @@ describe( "First", function() {
 			"@global": true
 		} );
 
-		seriate = proxyquire( "../src/index", {
+		seriate = proxyquire( "~/src/index", {
 			mssql: sql
 		} );
 		seriate.addConnection( {} );

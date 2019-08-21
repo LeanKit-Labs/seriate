@@ -1,4 +1,5 @@
-var tedious = require( "tedious" );
+/* eslint-disable prefer-rest-params */
+const tedious = require( "tedious" );
 
 // I've seen things you people wouldn't believe
 // WHAT DO YOU MEAN BY 'YOU PEOPLE'?!
@@ -16,7 +17,7 @@ var tedious = require( "tedious" );
 	and we added `isInPreparedSqlQuery` as part of the patch below.
 */
 if ( !tedious.Connection.prototype.makeRequest.__seriatePatched ) {
-	var existing = tedious.Connection.prototype.makeRequest;
+	const existing = tedious.Connection.prototype.makeRequest;
 	tedious.Connection.prototype.makeRequest = function( request, packetType, payload ) {
 		if ( this.inTransaction || this.isInPreparedSqlQuery ||
 			this.isInBulkLoadOperation || this.resetConnectionOnNextRequest ) {
@@ -24,23 +25,23 @@ if ( !tedious.Connection.prototype.makeRequest.__seriatePatched ) {
 				this.isInPreparedSqlQuery = false;
 			}
 			return existing.call( this, request, packetType, payload );
-		} else {
-			return this.reset( function() {
-				if ( request.sqlTextOrProcedure === "sp_prepare" ) {
-					this.isInPreparedSqlQuery = true;
-				}
-				return existing.call( this, request, packetType, payload );
-			}.bind( this ) );
 		}
+		return this.reset( function() {
+			if ( request.sqlTextOrProcedure === "sp_prepare" ) {
+				this.isInPreparedSqlQuery = true;
+			}
+			return existing.call( this, request, packetType, payload );
+		}.bind( this ) );
 	};
 	tedious.Connection.prototype.makeRequest.__seriatePatched = true;
 }
 
 if ( !tedious.Connection.prototype.newBulkLoad.__seriatePatched ) {
-	var origNewBulkLoad = tedious.Connection.prototype.newBulkLoad;
+	const origNewBulkLoad = tedious.Connection.prototype.newBulkLoad;
 	tedious.Connection.prototype.newBulkLoad = function( table, callback ) {
-		var thus = this;
-		var result = origNewBulkLoad.call( this, table, function() {
+		// eslint-disable-next-line consistent-this
+		const thus = this;
+		const result = origNewBulkLoad.call( this, table, function() {
 			callback.apply( this, arguments );
 			thus.isInBulkLoadOperation = false;
 		} );
@@ -50,7 +51,7 @@ if ( !tedious.Connection.prototype.newBulkLoad.__seriatePatched ) {
 }
 
 if ( !tedious.Connection.prototype.execBulkLoad.__seriatePatched ) {
-	var origExecBulkLoad = tedious.Connection.prototype.execBulkLoad;
+	const origExecBulkLoad = tedious.Connection.prototype.execBulkLoad;
 	tedious.Connection.prototype.execBulkLoad = function() {
 		this.isInBulkLoadOperation = true;
 		return origExecBulkLoad.apply( this, arguments );

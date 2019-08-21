@@ -2,4 +2,4 @@ example/
 spec/
 node_modules/
 coverage/
-plato/
+.nyc_output/

@@ -1,11 +1,10 @@
-var lift = require( "when/node" ).lift;
-var sql = require( "mssql" );
-var util = require( "util" );
-var _ = require( "lodash" );
-var when = require( "when" );
-var Readable = require( "stream" ).Readable;
+/* eslint-disable max-nested-callbacks */
+const sql = require( "mssql" );
+const util = require( "util" );
+const _ = require( "lodash" );
+const Readable = require( "stream" ).Readable;
 
-var specialParamOptions = [
+const specialParamOptions = [
 	require( "./asTable" ),
 	require( "./asList" )
 ];
@@ -13,7 +12,7 @@ var specialParamOptions = [
 util.inherits( DataResultStream, Readable );
 
 function DataResultStream( request, options ) {
-	var self = this;
+	const self = this;
 	Readable.call( this, _.extend( {}, options, { objectMode: true } ) );
 
 	request.on( "recordset", function( columns ) {
@@ -21,7 +20,7 @@ function DataResultStream( request, options ) {
 	} );
 
 	request.on( "row", function( row ) {
-		self.push( { row: row } );
+		self.push( { row } );
 	} );
 
 	request.on( "error", function( error ) {
@@ -57,81 +56,81 @@ function instrument( state, name, op ) {
 }
 
 function bulkLoadTable( state, name, options ) {
-	var table = new sql.Table( options.bulkLoadTable.name );
+	const table = new sql.Table( options.bulkLoadTable.name );
 	table.create = true;
 
 	_.forEach( options.bulkLoadTable.columns, function( column, columnName ) {
 		table.columns.add( columnName, column.type, { nullable: column.nullable === undefined ? true : column.nullable } );
 	} );
 
-	var columnNames = Object.keys( options.bulkLoadTable.columns );
+	const columnNames = Object.keys( options.bulkLoadTable.columns );
 
 	options.bulkLoadTable.rows.forEach( function( row ) {
-		var values = columnNames.map( function( columnName ) {
+		const values = columnNames.map( function( columnName ) {
 			return row[ columnName ];
 		} );
 
-		table.rows.add.apply( table.rows, values );
+		table.rows.add( ...values );
 	} );
 
-	var req = new sql.Request( state.transaction || state.connection );
+	const req = new sql.Request( state.transaction || state.connection );
 
-	return when.resolve()
-	.then( function() {
-		if ( !isTempTableName( options.bulkLoadTable.name ) ) {
-			return;
-		}
+	return Promise.resolve()
+		.then( function() {
+			if ( !isTempTableName( options.bulkLoadTable.name ) ) {
+				return;
+			}
 
-		var dropSql = "IF OBJECT_ID('tempdb.." + options.bulkLoadTable.name + "') IS NOT NULL DROP TABLE " + options.bulkLoadTable.name + ";";
+			const dropSql = `IF OBJECT_ID('tempdb..${ options.bulkLoadTable.name }') IS NOT NULL DROP TABLE ${ options.bulkLoadTable.name };`;
 
-		if ( !options.bulkLoadTable.useExisting ) {
+			if ( !options.bulkLoadTable.useExisting ) {
 			// Make sure we're not adding to an existing temp table
-			nonPreparedSql( state, name + "-pre-drop", { query: dropSql } );
-		}
+				nonPreparedSql( state, `${ name }-pre-drop`, { query: dropSql } );
+			}
 
-		// Accumulate list of tables on state, which is the transaction object, to enforce appropriate scope
-		// Keep this list to avoid double-dropping tables when we bulk load the same temp table more than once using `useExisting`
-		state.droppedTempTables = state.droppedTempTables || {};
+			// Accumulate list of tables on state, which is the transaction object, to enforce appropriate scope
+			// Keep this list to avoid double-dropping tables when we bulk load the same temp table more than once using `useExisting`
+			state.droppedTempTables = state.droppedTempTables || {};
 
-		if ( state.droppedTempTables[ options.bulkLoadTable.name ] ) {
-			return;
-		}
+			if ( state.droppedTempTables[ options.bulkLoadTable.name ] ) {
+				return;
+			}
 
-		state.droppedTempTables[ options.bulkLoadTable.name ] = true;
+			state.droppedTempTables[ options.bulkLoadTable.name ] = true;
 
-		// Add to drop sql for each temp table, to be run in a single step at end of transaction
-		if ( state.tempTablesDropSql ) {
-			state.tempTablesDropSql += "\n" + dropSql;
-		} else {
-			state.tempTablesDropSql = dropSql;
+			// Add to drop sql for each temp table, to be run in a single step at end of transaction
+			if ( state.tempTablesDropSql ) {
+				state.tempTablesDropSql += `\n${ dropSql }`;
+			} else {
+				state.tempTablesDropSql = dropSql;
 
-			// Add step at end to drop temp tables
-			addState( state, "__drop-temp-tables", function( execute ) {
-				return execute( { query: state.tempTablesDropSql } );
+				// Add step at end to drop temp tables
+				addState( state, "__drop-temp-tables", function( execute ) {
+					return execute( { query: state.tempTablesDropSql } );
+				} );
+			}
+		} )
+		.then( function() {
+			return instrument( state, name, function() {
+				return util.promisify( req.bulk ).bind( req )( table );
 			} );
-		}
-	} )
-	.then( function() {
-		return instrument( state, name, function() {
-			return lift( req.bulk ).bind( req )( table );
 		} );
-	} );
 }
 
 function createParameter( val, key ) {
 	if ( typeof val !== "object" ) {
 		return {
-			key: key,
+			key,
 			value: val
 		};
 	}
 
-	var specialOption = _.find( specialParamOptions, function( option ) {
+	const specialOption = _.find( specialParamOptions, function( option ) {
 		return option.matchesParam( val );
 	} );
 
 	return specialOption ? specialOption.createParameter( val, key ) : {
-		key: key,
+		key,
 		type: val.type,
 		value: val.val
 	};
@@ -139,9 +138,9 @@ function createParameter( val, key ) {
 
 function createParameters( params ) {
 	return _( params )
-	.map( createParameter )
-	.flatten()
-	.value();
+		.map( createParameter )
+		.flatten()
+		.value();
 }
 
 function transformQuery( params, query ) {
@@ -151,10 +150,10 @@ function transformQuery( params, query ) {
 }
 
 function nonPreparedSql( state, name, options ) {
-	var req = new sql.Request( state.transaction || state.connection );
+	const req = new sql.Request( state.transaction || state.connection );
 	req.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 
-	var params = createParameters( options.params );
+	const params = createParameters( options.params );
 
 	params.forEach( function( param ) {
 		if ( param.type ) {
@@ -164,37 +163,48 @@ function nonPreparedSql( state, name, options ) {
 		}
 	} );
 
-	var operation = options.query ? "query" : "execute";
-	var sqlCmd = transformQuery( options.params, options.query || options.procedure );
+	const operation = options.query ? "query" : "execute";
+	const sqlCmd = transformQuery( options.params, options.query || options.procedure );
 
 	return instrument( state, name, function() {
 		if ( !options.stream ) {
-			return lift( req[ operation ] ).bind( req )( sqlCmd );
+			return new Promise( ( resolve, reject ) => {
+				req[ operation ]( sqlCmd, ( err, data, returnValue ) => {
+					if ( err ) { return reject( err ); }
+
+					if ( returnValue !== undefined ) {
+						// stored procedures are returned with data and return value
+						// this is weird, but was a result of using when.lift functionality
+						// we've removed when.lift, but kept original api
+						return resolve( [ data, returnValue ] );
+					}
+					return resolve( data );
+				} );
+			} );
 		}
-		var stream;
 		req.stream = true;
-		stream = new DataResultStream( req );
+		const stream = new DataResultStream( req );
 		req[ operation ]( sqlCmd );
-		return when.resolve( stream );
+		return Promise.resolve( stream );
 	} );
 }
 
 function preparedSql( state, name, options ) {
-	var cmd = new sql.PreparedStatement( state.transaction || state.connection );
+	const cmd = new sql.PreparedStatement( state.transaction || state.connection );
 	cmd.multiple = options.hasOwnProperty( "multiple" ) ? options.multiple : false;
 
-	var params = createParameters( options.params );
-	var paramKeyValues = {};
+	const params = createParameters( options.params );
+	const paramKeyValues = {};
 
 	params.forEach( function( param ) {
 		cmd.input( param.key, param.type );
 		paramKeyValues[ param.key ] = param.value;
 	} );
 
-	var prepare = lift( cmd.prepare ).bind( cmd );
-	var execute = lift( cmd.execute ).bind( cmd );
-	var unprepare = lift( cmd.unprepare ).bind( cmd );
-	var statement = transformQuery( options.params, options.preparedSql );
+	const prepare = util.promisify( cmd.prepare ).bind( cmd );
+	const execute = util.promisify( cmd.execute ).bind( cmd );
+	const unprepare = util.promisify( cmd.unprepare ).bind( cmd );
+	const statement = transformQuery( options.params, options.preparedSql );
 
 	return instrument( state, name, function() {
 		return prepare( statement )
@@ -202,13 +212,13 @@ function preparedSql( state, name, options ) {
 				if ( options.stream ) {
 					cmd.stream = true;
 
-					// Can't use the lifted execute here because we need the
+					// Can't use the promisified execute here because we need the
 					// request returned by the original callback version, which the
-					// lift would replace with a promise.
-					var req = cmd.execute( paramKeyValues, _.noop );
-					var stream = new DataResultStream( req );
+					// promisify would replace with a promise.
+					const req = cmd.execute( paramKeyValues, _.noop );
+					const stream = new DataResultStream( req );
 					stream.on( "end", unprepare );
-					return when.resolve( stream );
+					return Promise.resolve( stream );
 				}
 				return execute( paramKeyValues )
 					.then( function( result ) {
@@ -248,7 +258,7 @@ function executeSql( state, name, options ) {
 
 function addState( fsm, name, stepAction ) {
 	if ( fsm.states[ name ] ) {
-		throw new Error( "A step by that name already exists: " + fsm.instance );
+		throw new Error( `A step by that name already exists: ${ fsm.instance }` );
 	}
 
 	if ( name === "__beforeHook__" ) {
@@ -257,17 +267,17 @@ function addState( fsm, name, stepAction ) {
 		fsm.pipeline.push( name );
 	}
 	fsm.states[ name ] = {
-		_onEnter: function() {
-			var promise;
-			var exec = function( options ) {
+		_onEnter() {
+			let promise;
+			const exec = function( options ) {
 				// Capture call stack for call to execute from within a step.
 				// This provides call context that would otherwise get lost when we
 				// pass around an execute function and call it multiple times.
-				var callStack = new Error().stack;
+				const callStack = new Error().stack;
 				promise = executeSql( fsm, name, options )
 					.catch( function( error ) {
 						// Remove the "Error" top line of captured stack and replace it with error message from actual error.
-						var capturedStackParts = callStack.split( "\n" ).slice( 1 );
+						const capturedStackParts = callStack.split( "\n" ).slice( 1 );
 						capturedStackParts.unshift( error.toString() );
 						error.stack = capturedStackParts.join( "\n" );
 						throw error;
@@ -276,25 +286,25 @@ function addState( fsm, name, stepAction ) {
 			};
 
 			try {
-				var stepReturnValue = stepAction.call(
+				const stepReturnValue = stepAction.call(
 					fsm,
 					exec,
 					fsm.results
 				);
 
-				when( stepReturnValue )
+				Promise.resolve( stepReturnValue )
 					.then( function( result ) {
-						return when( promise ) // We'll not force the caller to return the execute promise
+						return Promise.resolve( promise ) // We'll not force the caller to return the execute promise
 							.then( function( promiseResult ) {
 								return result || promiseResult;
 							} );
 					} )
-					.then( fsm.handle.bind( fsm, "success" ), fsm.handle.bind( fsm, "error" ) ) ;
+					.then( fsm.handle.bind( fsm, "success" ), fsm.handle.bind( fsm, "error" ) );
 			} catch ( err ) {
 				fsm.handle( "error", err );
 			}
 		},
-		success: function( result ) {
+		success( result ) {
 			fsm.results[ name ] = result;
 			fsm.emit( "data", result );
 			fsm.nextState();
@@ -304,5 +314,5 @@ function addState( fsm, name, stepAction ) {
 }
 
 module.exports = {
-	addState: addState
+	addState
 };

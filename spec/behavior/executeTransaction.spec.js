@@ -1,11 +1,10 @@
-require( "../setup" );
-var mockConnectionFn = require( "../data/mockConnection" );
+const mockConnectionFn = require( "../data/mockConnection" );
 
 describe( "ExecuteTransaction", function() {
-	var sql, seriate, reqMock, transMock;
+	let sql, seriate, reqMock, transMock;
 	function setup() {
-		var request = { query: _.noop, execute: _.noop, input: _.noop };
-		var transaction = {
+		const request = { query: _.noop, execute: _.noop, input: _.noop };
+		const transaction = {
 			begin: _.noop,
 			commit: _.noop,
 			rollback: _.noop
@@ -13,8 +12,8 @@ describe( "ExecuteTransaction", function() {
 		reqMock = sinon.mock( request );
 		transMock = sinon.mock( transaction );
 
-		var connection = mockConnectionFn( true );
-		var mssql = require( "mssql" );
+		const connection = mockConnectionFn( true );
+		const mssql = require( "mssql" );
 		sql = _.merge( mssql, {
 			Connection: function() {
 				return connection;
@@ -28,14 +27,14 @@ describe( "ExecuteTransaction", function() {
 			"@global": true
 		} );
 
-		seriate = proxyquire( "../src/index", {
+		seriate = proxyquire( "~/src/index", {
 			mssql: sql
 		} );
 		seriate.addConnection( {} );
 	}
 
 	describe( "when transaction is successful", function() {
-		var result;
+		let result;
 
 		before( function() {
 			setup();
@@ -74,7 +73,7 @@ describe( "ExecuteTransaction", function() {
 	} );
 
 	describe( "when transaction fails to begin", function() {
-		var error;
+		let error;
 
 		before( function() {
 			setup();
@@ -103,7 +102,7 @@ describe( "ExecuteTransaction", function() {
 	} );
 
 	describe( "when automatic rollback on failed transaction throws an error", function() {
-		var error;
+		let error;
 
 		before( function() {
 			setup();
@@ -164,7 +163,7 @@ describe( "ExecuteTransaction", function() {
 	} );
 
 	describe( "when rolling back because of an error", function() {
-		var error;
+		let error;
 
 		before( function() {
 			setup();
@@ -202,7 +201,7 @@ describe( "ExecuteTransaction", function() {
 	} );
 
 	describe( "when rolling back because of a commit invocation error", function() {
-		var error;
+		let error;
 
 		before( function() {
 			setup();
@@ -247,7 +246,7 @@ describe( "ExecuteTransaction", function() {
 	} );
 
 	describe( "when automatic roll back fails", function() {
-		var error;
+		let error;
 
 		before( function() {
 			setup();
@@ -292,7 +291,7 @@ describe( "ExecuteTransaction", function() {
 	} );
 
 	describe( "when explicit roll back fails", function() {
-		var error;
+		let error;
 
 		before( function() {
 			setup();

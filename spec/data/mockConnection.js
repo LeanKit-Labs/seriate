@@ -1,17 +1,14 @@
-var when = require( "when" );
-
 function mockConnectionFn( valid, rejection ) {
-	var connection = {
+	const connection = {
 		handles: {},
 		connect: function() {
 			if ( valid ) {
 				this.raise( "connect" );
-				return when.resolve();
-			} else {
-				var error = new Error( rejection );
-				this.raise( "error", error );
-				return when.reject( error );
+				return Promise.resolve();
 			}
+			const error = new Error( rejection );
+			this.raise( "error", error );
+			return Promise.reject( error );
 		},
 		raise: function( event, args ) {
 			this.handles[ event ].apply( undefined, args );

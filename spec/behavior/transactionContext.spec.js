@@ -1,11 +1,10 @@
-require( "../setup" );
-var mockConnectionFn = require( "../data/mockConnection" );
+const mockConnectionFn = require( "../data/mockConnection" );
 
 describe( "TransactionContext", function() {
-	var sql, seriate, reqMock, prepMock, transMock;
+	let sql, seriate, reqMock, prepMock, transMock;
 	function setup() {
-		var request = { query: _.noop, execute: _.noop, input: _.noop };
-		var preparedStatement = {
+		const request = { query: _.noop, execute: _.noop, input: _.noop };
+		const preparedStatement = {
 			prepare: _.noop,
 			execute: _.noop,
 			unprepare: _.noop,
@@ -13,7 +12,7 @@ describe( "TransactionContext", function() {
 			procedure: undefined,
 			params: undefined
 		};
-		var transaction = {
+		const transaction = {
 			begin: _.noop,
 			commit: _.noop,
 			rollback: _.noop
@@ -22,8 +21,8 @@ describe( "TransactionContext", function() {
 		prepMock = sinon.mock( preparedStatement );
 		transMock = sinon.mock( transaction );
 
-		var connection = mockConnectionFn( true );
-		var mssql = require( "mssql" );
+		const connection = mockConnectionFn( true );
+		const mssql = require( "mssql" );
 		sql = _.merge( mssql, {
 			Connection: function() {
 				return connection;
@@ -39,15 +38,14 @@ describe( "TransactionContext", function() {
 			},
 			"@global": true
 		} );
-
-		seriate = proxyquire( "../src/index", {
+		seriate = proxyquire( "~/src/index", {
 			mssql: sql
 		} );
 		seriate.addConnection( {} );
 	}
 
 	describe( "when getting a TransactionContext instance", function() {
-		var ctx;
+		let ctx;
 
 		before( function() {
 			setup();
@@ -55,12 +53,12 @@ describe( "TransactionContext", function() {
 		} );
 
 		it( "should start in uninitialized", function() {
-			ctx.states.uninitialized.should.be.ok;
+			ctx.states.uninitialized.should.be.ok();
 		} );
 	} );
 
 	describe( "when calling a query with explicit isolation and no params", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "query" )
@@ -77,21 +75,21 @@ describe( "TransactionContext", function() {
 			return ctx.step( "read", {
 				query: "select * from sys.tables"
 			} )
-			.then( function( res ) {
-				result = res.sets.read;
-			} );
+				.then( function( res ) {
+					result = res.sets.read;
+				} );
 		} );
 
 		it( "should create a \"read\" state", function() {
-			ctx.states.read.should.be.ok;
+			ctx.states.read.should.be.ok();
 		} );
 
 		it( "should create \"read\" state success handler", function() {
-			ctx.states.read.success.should.be.ok;
+			ctx.states.read.success.should.be.ok();
 		} );
 
 		it( "should create \"read\" state error handler", function() {
-			ctx.states.read.error.should.be.ok;
+			ctx.states.read.error.should.be.ok();
 		} );
 
 		it( "should call transaction.begin with an explicit isolation level", function() {
@@ -108,7 +106,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a proc without parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -125,21 +123,21 @@ describe( "TransactionContext", function() {
 			ctx.step( "proc", {
 				procedure: "sp_who2"
 			} )
-			.then( function( res ) {
-				result = res;
-			} );
+				.then( function( res ) {
+					result = res;
+				} );
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -156,7 +154,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a proc with parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -170,7 +168,7 @@ describe( "TransactionContext", function() {
 				.once();
 
 			reqMock.expects( "input" )
-					.withArgs( "param1", sql.INT, 9 ).once();
+				.withArgs( "param1", sql.INT, 9 ).once();
 
 			reqMock.expects( "input" )
 				.withArgs( "param2", "Hai Mom" ).once();
@@ -186,21 +184,21 @@ describe( "TransactionContext", function() {
 					param2: "Hai Mom"
 				}
 			} )
-			.then( function( res ) {
-				result = res;
-			} );
+				.then( function( res ) {
+					result = res;
+				} );
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -217,7 +215,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling prepared sql with parameters", function() {
-		var ctx, result;
+		let ctx, result;
 		before( function() {
 			setup();
 			prepMock.expects( "prepare" )
@@ -241,8 +239,8 @@ describe( "TransactionContext", function() {
 				.once();
 
 			transMock.expects( "begin" )
-					.callsArgWith( 0, null )
-					.once();
+				.callsArgWith( 0, null )
+				.once();
 
 			ctx = seriate.getTransactionContext();
 			ctx.step( "prepped", {
@@ -254,21 +252,21 @@ describe( "TransactionContext", function() {
 					}
 				}
 			} )
-			.then( function( res ) {
-				result = res;
-			} );
+				.then( function( res ) {
+					result = res;
+				} );
 		} );
 
 		it( "should create a \"prepped\" state", function() {
-			ctx.states.prepped.should.be.ok;
+			ctx.states.prepped.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state success handler", function() {
-			ctx.states.prepped.success.should.be.ok;
+			ctx.states.prepped.success.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state error handler", function() {
-			ctx.states.prepped.error.should.be.ok;
+			ctx.states.prepped.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -285,9 +283,9 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a query throws an error", function() {
-		var ctx, error;
+		let ctx, error;
 		before( function() {
-			var testError = new Error( "so much fail" );
+			const testError = new Error( "so much fail" );
 			testError.precedingErrors = [
 				{ message: "preceding one" },
 				{ message: "preceding two" }
@@ -311,21 +309,21 @@ describe( "TransactionContext", function() {
 			ctx.step( "read", {
 				query: "select * from sys.tables"
 			} )
-			.then( undefined, function( err ) {
-				error = err;
-			} );
+				.then( undefined, function( err ) {
+					error = err;
+				} );
 		} );
 
 		it( "should create a \"read\" state", function() {
-			ctx.states.read.should.be.ok;
+			ctx.states.read.should.be.ok();
 		} );
 
 		it( "should create \"read\" state success handler", function() {
-			ctx.states.read.success.should.be.ok;
+			ctx.states.read.success.should.be.ok();
 		} );
 
 		it( "should create \"read\" state error handler", function() {
-			ctx.states.read.error.should.be.ok;
+			ctx.states.read.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -346,7 +344,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a stored procedure without parameters throws an error", function() {
-		var ctx, error;
+		let ctx, error;
 		before( function() {
 			setup();
 			reqMock.expects( "execute" )
@@ -366,21 +364,21 @@ describe( "TransactionContext", function() {
 			ctx.step( "proc", {
 				procedure: "sp_who2"
 			} )
-			.then( undefined, function( err ) {
-				error = err;
-			} );
+				.then( undefined, function( err ) {
+					error = err;
+				} );
 		} );
 
 		it( "should create a \"proc\" state", function() {
-			ctx.states.proc.should.be.ok;
+			ctx.states.proc.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state success handler", function() {
-			ctx.states.proc.success.should.be.ok;
+			ctx.states.proc.success.should.be.ok();
 		} );
 
 		it( "should create \"proc\" state error handler", function() {
-			ctx.states.proc.error.should.be.ok;
+			ctx.states.proc.error.should.be.ok();
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -400,7 +398,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling a stored procedure with parameters throws an error", function() {
-		var ctx, error;
+		let ctx, error;
 
 		before( function() {
 			setup();
@@ -434,9 +432,9 @@ describe( "TransactionContext", function() {
 					param2: "Hai Mom"
 				}
 			} )
-			.then( undefined, function( err ) {
-				error = err;
-			} );
+				.then( undefined, function( err ) {
+					error = err;
+				} );
 		} );
 
 		it( "should call begin on the transaction", function() {
@@ -457,7 +455,7 @@ describe( "TransactionContext", function() {
 	} );
 
 	describe( "when calling prepared sql with parameters throws an error", function() {
-		var ctx, error;
+		let ctx, error;
 		before( function() {
 			setup();
 
@@ -499,21 +497,21 @@ describe( "TransactionContext", function() {
 					}
 				}
 			} )
-			.then( undefined, function( err ) {
-				error = err;
-			} );
+				.then( undefined, function( err ) {
+					error = err;
+				} );
 		} );
 
 		it( "should create a \"prepped\" state", function() {
-			ctx.states.prepped.should.be.ok;
+			ctx.states.prepped.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state success handler", function() {
-			ctx.states.prepped.success.should.be.ok;
+			ctx.states.prepped.success.should.be.ok();
 		} );
 
 		it( "should create \"prepped\" state error handler", function() {
-			ctx.states.prepped.error.should.be.ok;
+			ctx.states.prepped.error.should.be.ok();
 		} );
 
 		it( "should call begin and rollback on the transaction", function() {
@@ -535,11 +533,14 @@ describe( "TransactionContext", function() {
 
 	describe( "with metrics", function() {
 		describe( "when executing a query", function() {
-			var metrics, adapter;
+			let metrics;
 			before( function() {
-				metrics = require( "metronic" )();
-				adapter = require( "../data/mockAdapter" )();
-				metrics.use( adapter );
+				metrics = {
+					instrument: sinon.spy( obj => {
+						const { call } = obj;
+						return call();
+					} )
+				};
 				setup();
 
 				reqMock.expects( "query" )
@@ -562,38 +563,24 @@ describe( "TransactionContext", function() {
 			} );
 
 			it( "should capture metrics for each step", function() {
-				return adapter.should.partiallyEql( {
-					durations: [
+				metrics.instrument.should.be.calledOnce()
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.read.duration",
-							type: "time",
-							units: "ms"
-						}
-					],
-					metrics: [
-						{
-							key: "seriate-tests.sql.read.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.read.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						}
-					]
-				} );
+							key: [ "sql", "read" ],
+							namespace: "seriate-tests"
+						} );
 			} );
 		} );
 
 		describe( "when executing a procedure", function() {
-			var metrics, adapter;
+			let metrics;
 			before( function() {
-				metrics = require( "metronic" )();
-				adapter = require( "../data/mockAdapter" )();
-				metrics.use( adapter );
+				metrics = {
+					instrument: sinon.spy( obj => {
+						const { call } = obj;
+						return call();
+					} )
+				};
 				setup();
 
 				reqMock.expects( "execute" )
@@ -616,38 +603,24 @@ describe( "TransactionContext", function() {
 			} );
 
 			it( "should capture metrics for each step", function() {
-				return adapter.should.partiallyEql( {
-					durations: [
+				metrics.instrument.should.be.calledOnce()
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.myStoredProc.duration",
-							type: "time",
-							units: "ms"
-						}
-					],
-					metrics: [
-						{
-							key: "seriate-tests.sql.myStoredProc.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.myStoredProc.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						}
-					]
-				} );
+							key: [ "sql", "myStoredProc" ],
+							namespace: "seriate-tests"
+						} );
 			} );
 		} );
 
 		describe( "when executing a multiple steps", function() {
-			var metrics, adapter;
+			let metrics;
 			before( function() {
-				metrics = require( "metronic" )();
-				adapter = require( "../data/mockAdapter" )();
-				metrics.use( adapter );
+				metrics = {
+					instrument: sinon.spy( obj => {
+						const { call } = obj;
+						return call();
+					} )
+				};
 				setup();
 
 				reqMock.expects( "query" )
@@ -693,63 +666,22 @@ describe( "TransactionContext", function() {
 			} );
 
 			it( "should capture metrics for each step", function() {
-				adapter.should.partiallyEql( {
-					durations: [
+				metrics.instrument.should.be.calledThrice()
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.read.duration",
-							type: "time",
-							units: "ms"
-						},
+							key: [ "sql", "read" ],
+							namespace: "seriate-tests"
+						} )
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.proc.duration",
-							type: "time",
-							units: "ms"
-						},
+							key: [ "sql", "proc" ],
+							namespace: "seriate-tests"
+						} )
+					.and.calledWithMatch(
 						{
-							key: "seriate-tests.sql.prepared.duration",
-							type: "time",
-							units: "ms"
-						}
-					],
-					metrics: [
-						{
-							key: "seriate-tests.sql.read.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.read.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.proc.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.proc.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.prepared.attempted",
-							type: "meter",
-							units: "count",
-							value: 1
-						},
-						{
-							key: "seriate-tests.sql.prepared.succeeded",
-							type: "meter",
-							units: "count",
-							value: 1
-						}
-					]
-				} );
+							key: [ "sql", "prepared" ],
+							namespace: "seriate-tests"
+						} );
 			} );
 		} );
 	} );
