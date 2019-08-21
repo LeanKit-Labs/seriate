@@ -56,7 +56,8 @@
     "lodash": "^4.17.15",
     "machina": "^4.0.2",
     "mssql": "~2.3.2",
-    "xmldom": "^0.1.22"
+    "xmldom": "^0.1.22",
+    "tedious": "~1.13.2"
   },
   "devDependencies": {
     "chai": "^4.2.0",
