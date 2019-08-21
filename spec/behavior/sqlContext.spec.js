@@ -1,10 +1,6 @@
 const mockConnectionFn = require( "../data/mockConnection" );
 
-/** *************************************************
-
-	SqlContext *Successful* Execution Tests
-
-****************************************************/
+/* SqlContext *Successful* Execution Tests */
 describe( "SqlContext", function() {
 	let sql, seriate, reqMock, prepMock;
 	function setup() {

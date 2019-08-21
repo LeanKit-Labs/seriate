@@ -1,8 +1,4 @@
-/** *************************************************
-
-	    Loading External SQL From File
-
-****************************************************/
+/* Loading External SQL From File */
 
 describe( "FromFile", function() {
 	let seriate;
