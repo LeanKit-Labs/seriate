@@ -1,3 +1,21 @@
+## 3.x
+
+### 3.0.0
+
+* Add missing tedious dependency
+* fix eslint error
+* Consolidate test setup
+* Removed var variable declarations
+* Update to use native promises
+* Remove unused vars
+* Removed dev dep on metronic
+* Replaced monologue.js with EventEmitter
+* Updated machina and removed postal
+* Updated lodash
+* Removed whistlepunk
+* Replaced jshint with eslint + nyc for coverage. Goodbye gulp.
+* removed unused dependencies
+
 ## 2.x
 
 ### 2.0.0
