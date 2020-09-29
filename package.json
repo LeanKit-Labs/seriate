@@ -52,24 +52,24 @@
   ],
   "dependencies": {
     "callsite": "^1.0.0",
-    "debug": "^4.1.1",
-    "lodash": "^4.17.15",
+    "debug": "^4.2.0",
+    "lodash": "^4.17.20",
     "machina": "^4.0.2",
     "mssql": "~2.3.2",
-    "xmldom": "^0.1.22",
-    "tedious": "~1.13.2"
+    "tedious": "~1.13.2",
+    "xmldom": "^0.1.31"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "dirty-chai": "^2.0.1",
-    "eslint-config-leankit": "^5.1.0",
-    "mocha": "^6.2.0",
-    "nodemon": "^1.19.1",
+    "eslint-config-leankit": "^5.2.0",
+    "mocha": "^6.2.3",
+    "nodemon": "^1.19.4",
     "nyc": "^14.1.1",
     "proxyquire": "^2.1.3",
-    "sinon": "^7.4.1",
-    "sinon-chai": "^3.3.0"
+    "sinon": "^7.5.0",
+    "sinon-chai": "^3.5.0"
   },
   "scripts": {
     "lint": "eslint --fix ./",
