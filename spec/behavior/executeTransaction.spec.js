@@ -122,7 +122,7 @@ describe( "ExecuteTransaction", function() {
 		} );
 
 		it( "should reject promise with error", function() {
-			error.message.should.eql( "Error occurred during automatic roll back after error on transaction on step startingTransaction.\n\tTransaction error: TransactionContext Error. Failed on step \"startingTransaction\" with: \"A bad thing happened :(\"\n\tRollback error: Error: This is just the worst\n" );
+			error.message.should.contain( "Error occurred during automatic roll back after error on transaction on step startingTransaction.\n\tTransaction error: TransactionContext Error. Failed on step \"startingTransaction\" with: \"A bad thing happened :(\"\n\tRollback error: Error: This is just the worst\n" );
 		} );
 
 		it( "should not progress transaction after error", function() {
@@ -278,7 +278,9 @@ describe( "ExecuteTransaction", function() {
 		} );
 
 		it( "should reject promise with error", function() {
-			error.message.should.eql( "Error occurred during automatic roll back after a commit error.\n\tCommit error: Error: A bad thing happened :(\n\tRollback error: Error: From bad to worse\n" );
+			error.message.should.contain( "Error occurred during automatic roll back after a commit error" );
+			error.message.should.contain( "Commit error: Error: A bad thing happened :(" );
+			error.message.should.contain( "Rollback error: Error: From bad to worse\n" );
 		} );
 
 		it( "should call query on request", function() {
