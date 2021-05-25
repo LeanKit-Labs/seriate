@@ -1,3 +1,9 @@
+## 4.x
+
+### 4.0.0
+
+* Updated node version and outdated packages
+
 ## 3.x
 
 ### 3.0.0
