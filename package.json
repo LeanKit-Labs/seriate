@@ -51,13 +51,13 @@
     }
   ],
   "dependencies": {
+    "@xmldom/xmldom": "^0.8.0",
     "callsite": "^1.0.0",
     "debug": "^4.3.1",
     "lodash": "^4.17.21",
     "machina": "^4.0.2",
     "mssql": "~2.3.2",
-    "tedious": "~1.13.2",
-    "xmldom": "^0.6.0"
+    "tedious": "~1.13.2"
   },
   "devDependencies": {
     "chai": "^4.3.4",
