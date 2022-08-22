@@ -1,6 +1,6 @@
 const _ = require( "lodash" );
 const sql = require( "mssql" );
-const xmldom = require( "xmldom" );
+const xmldom = require( "@xmldom/xmldom" );
 const domImplementation = new xmldom.DOMImplementation();
 const xmlSerializer = new xmldom.XMLSerializer();
 const buildTableVariableSql = require( "./build-table-variable-sql" );
