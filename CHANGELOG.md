@@ -1,5 +1,9 @@
 ## 4.x
 
+### 4.0.1
+
+* Update dependency xmldom
+
 ### 4.0.0
 
 * Updated node version and outdated packages
