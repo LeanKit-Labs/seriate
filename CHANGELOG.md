@@ -1,5 +1,9 @@
 ## 4.x
 
+### 4.0.2
+
+* Update @xmldom/xmldom to 0.8.2
+
 ### 4.0.1
 
 * Update dependency xmldom
