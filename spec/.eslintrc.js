@@ -13,7 +13,7 @@ module.exports = {
 		sinon: true,
 		should: true,
 		expect: true,
-		fakeRecords:true,
-		_:true
+		fakeRecords: true,
+		_: true
 	}
 };
