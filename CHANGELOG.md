@@ -1,3 +1,11 @@
+## 5.x
+
+### 5.0.0
+
+* Update xmldom
+* Update dev deps
+* Bump to latest node LTS
+
 ## 4.x
 
 ### 4.0.2
