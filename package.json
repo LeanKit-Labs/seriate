@@ -51,7 +51,7 @@
     }
   ],
   "dependencies": {
-    "@xmldom/xmldom": "^0.8.2",
+    "@xmldom/xmldom": "^0.8.3",
     "callsite": "^1.0.0",
     "debug": "^4.3.1",
     "lodash": "^4.17.21",
